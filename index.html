@@ -1,12 +1,263 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Maxim PCE — Herramientas y equipos de presión</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maxim PCE — Herramientas y equipos de presión</title>
+<style>
+  :root{
+    --negro:#0d0e10; --panel:#16181c; --panel2:#1c1f24; --borde:#2a2e35;
+    --texto:#e7e9ec; --tenue:#9aa0a8; --naranja:#ff6a00; --naranja2:#ff8a3d;
+    --acero:#5fa8d3; --verde:#35c26a; --ambar:#f5a623; --rojo:#e2483f;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--negro);color:var(--texto);font-family:var(--sans);font-size:15px;-webkit-font-smoothing:antialiased}
+  .marca{font-weight:800;letter-spacing:.16em;font-size:17px;display:inline-flex;align-items:center;gap:8px}
+  .marca b{color:var(--naranja);font-weight:900}
+  .marca span{color:var(--negro);background:var(--naranja);padding:1px 7px;border-radius:3px;font-size:11px;letter-spacing:.14em}
+  .hidden{display:none!important}
+
+  /* Login */
+  #login{display:grid;place-items:center;min-height:100vh;padding:20px}
+  .card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--borde);border-top:3px solid var(--naranja);border-radius:8px;padding:30px 26px}
+  .lema{color:var(--tenue);margin:14px 0 24px;line-height:1.5}
+  form{display:grid;gap:15px}
+  label{display:grid;gap:6px;font-size:13px;color:var(--tenue)}
+  input{background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:11px 12px;border-radius:6px;font-size:15px}
+  input:focus{outline:2px solid var(--naranja);border-color:transparent}
+  .btn{background:var(--naranja);color:#180a00;border:0;padding:12px;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer}
+  .btn:hover{background:var(--naranja2)} .btn:disabled{opacity:.6;cursor:default}
+  .err{color:var(--rojo);font-size:13px;margin:0}
+
+  /* App */
+  .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5}
+  .buscar{flex:1;min-width:120px;background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:9px 14px;border-radius:6px;font-size:14px}
+  .buscar:focus{outline:2px solid var(--naranja);border-color:transparent}
+  .usuario{display:flex;align-items:center;gap:10px}
+  .nombre{color:var(--tenue);font-size:13px}
+  .rol{font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:3px;font-weight:700}
+  .rol.admin{background:rgba(255,106,0,.18);color:var(--naranja2)}
+  .rol.operador{background:rgba(95,168,211,.18);color:var(--acero)}
+  .rol.consulta{background:rgba(154,160,168,.15);color:var(--tenue)}
+  .salir{background:transparent;color:var(--tenue);border:1px solid var(--borde);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .salir:hover{color:var(--texto);border-color:var(--tenue)}
+  .filtros{display:flex;align-items:center;gap:12px;padding:14px 18px;flex-wrap:wrap}
+  select{background:var(--panel2);border:1px solid var(--borde);color:var(--texto);padding:8px 12px;border-radius:6px;font-size:14px}
+  .conteo{color:var(--naranja2);font-weight:700;font-size:14px;margin-left:auto}
+  .cargando{color:var(--tenue);font-size:13px}
+  .wrap{overflow-x:auto;padding:0 18px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{text-align:left;color:var(--tenue);font-size:11px;text-transform:uppercase;letter-spacing:.1em;padding:10px 12px;border-bottom:1px solid var(--borde)}
+  tbody td{padding:11px 12px;border-bottom:1px solid #1a1d22;vertical-align:middle}
+  tbody tr:hover{background:var(--panel)}
+  .desc{color:var(--tenue);max-width:420px}
+  .vacio{text-align:center;color:var(--tenue);padding:40px 0}
+  .cod{font-family:var(--mono);font-size:13px;letter-spacing:.04em;white-space:nowrap}
+  .c1{color:var(--naranja);font-weight:700}.c2{color:var(--acero);font-weight:700}.c3{color:var(--ambar)}.c4{color:var(--tenue)}
+  .badge{font-size:11px;text-transform:capitalize;padding:3px 9px;border-radius:3px;font-weight:600;white-space:nowrap}
+  .badge.activo{background:rgba(53,194,106,.15);color:var(--verde)}
+  .badge.en_mantenimiento{background:rgba(245,166,35,.15);color:var(--ambar)}
+  .badge.fuera_servicio{background:rgba(226,72,63,.15);color:var(--rojo)}
+  .badge.inactivo{background:rgba(154,160,168,.12);color:var(--tenue)}
+  .pag{display:flex;align-items:center;justify-content:center;gap:16px;padding:18px;color:var(--tenue);font-size:14px}
+  .pag button{background:var(--panel2);border:1px solid var(--borde);color:var(--texto);padding:8px 16px;border-radius:6px;cursor:pointer}
+  .pag button:disabled{opacity:.4;cursor:default}
+  @media(max-width:640px){.barra{flex-wrap:wrap}.buscar{order:3;flex-basis:100%}.desc{max-width:160px}}
+</style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login">
+    <div class="card">
+      <div class="marca"><b>✕</b> MAXIM <span>PCE</span></div>
+      <p class="lema">Control de herramientas y equipos de presión</p>
+      <form id="formLogin">
+        <label>Correo<input id="correo" type="email" required autocomplete="username"></label>
+        <label>Contraseña<input id="clave" type="password" required autocomplete="current-password"></label>
+        <p class="err hidden" id="loginErr"></p>
+        <button class="btn" id="btnEntrar" type="submit">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header class="barra">
+      <div class="marca"><b>✕</b> MAXIM <span>PCE</span></div>
+      <input class="buscar" id="q" placeholder="Buscar por código, S/N o descripción…">
+      <div class="usuario">
+        <span class="nombre" id="nombre"></span>
+        <span class="rol" id="rol"></span>
+        <button class="salir" id="salir">Salir</button>
+      </div>
+    </header>
+    <div class="filtros">
+      <select id="fLinea"><option value="">Todas las líneas</option></select>
+      <select id="fEstado">
+        <option value="">Todos los estados</option>
+        <option value="activo">Activo</option>
+        <option value="en_mantenimiento">En mantenimiento</option>
+        <option value="fuera_servicio">Fuera de servicio</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+      <span class="conteo" id="conteo"></span>
+      <span class="cargando hidden" id="cargando">buscando…</span>
+    </div>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Descripción</th><th>Línea</th><th>Tipo</th><th>Estado</th></tr></thead>
+        <tbody id="filas"></tbody>
+      </table>
+    </div>
+    <div class="pag">
+      <button id="prev">Anterior</button>
+      <span id="paginaTxt"></span>
+      <button id="next">Siguiente</button>
+    </div>
+  </div>
+
+<script>
+  const URL_SB = "https://ryfhzlbvcqnxaptltslo.supabase.co";
+  const KEY = "sb_publishable_KtRk1DP1IR5gNl_woH30YA_wiB--4V9";
+  const POR = 50;
+  let token = localStorage.getItem("maxim_token") || null;
+  let usuario = JSON.parse(localStorage.getItem("maxim_user") || "null");
+  let pagina = 0, total = 0;
+
+  const $ = s => document.querySelector(s);
+  const esc = s => (s==null?"":String(s));
+
+  function headers(auth){
+    const h = {"apikey":KEY,"Content-Type":"application/json"};
+    if(auth && token) h["Authorization"] = "Bearer "+token;
+    return h;
+  }
+
+  // ---- Login ----
+  $("#formLogin").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const btn=$("#btnEntrar"), err=$("#loginErr");
+    err.classList.add("hidden"); btn.disabled=true; btn.textContent="Entrando…";
+    try{
+      const r = await fetch(URL_SB+"/auth/v1/token?grant_type=password",{
+        method:"POST", headers:{"apikey":KEY,"Content-Type":"application/json"},
+        body: JSON.stringify({email:$("#correo").value, password:$("#clave").value})
+      });
+      const d = await r.json();
+      if(!r.ok || !d.access_token){ throw new Error(d.error_description||d.msg||"Credenciales inválidas"); }
+      token = d.access_token; usuario = d.user;
+      localStorage.setItem("maxim_token", token);
+      localStorage.setItem("maxim_user", JSON.stringify(usuario));
+      await iniciar();
+    }catch(ex){
+      err.textContent = "No pudimos iniciar sesión. Revisa el correo y la contraseña.";
+      err.classList.remove("hidden");
+    }finally{
+      btn.disabled=false; btn.textContent="Entrar";
+    }
+  });
+
+  $("#salir").addEventListener("click", ()=>{
+    token=null; usuario=null;
+    localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user");
+    $("#app").classList.add("hidden"); $("#login").classList.remove("hidden");
+  });
+
+  // ---- Código coloreado ----
+  function codHTML(c){
+    if(!c || c.length<9) return '<span class="cod">'+esc(c)+'</span>';
+    return '<span class="cod"><span class="c1">'+c.slice(0,2)+'</span><span class="c2">'+c.slice(2,5)+'</span><span class="c3">'+c.slice(5,8)+'</span><span class="c4">'+c.slice(8)+'</span></span>';
+  }
+
+  // ---- Cargar perfil + líneas ----
+  async function cargarPerfil(){
+    try{
+      const r = await fetch(URL_SB+"/rest/v1/profiles?select=nombre,rol&id=eq."+usuario.id, {headers:headers(true)});
+      const d = await r.json();
+      const p = (d && d[0]) || {nombre: usuario.email, rol:"consulta"};
+      $("#nombre").textContent = p.nombre || usuario.email;
+      const rol = p.rol || "consulta";
+      const el = $("#rol"); el.textContent = rol; el.className = "rol "+rol;
+    }catch(e){ $("#nombre").textContent = usuario.email; }
+  }
+  async function cargarLineas(){
+    try{
+      const r = await fetch(URL_SB+"/rest/v1/lineas?select=codigo,nombre&order=codigo",{headers:headers(true)});
+      const d = await r.json();
+      const sel=$("#fLinea");
+      (d||[]).forEach(l=>{
+        const o=document.createElement("option");
+        o.value=l.codigo; o.textContent=l.codigo+(l.nombre?" — "+l.nombre:"");
+        sel.appendChild(o);
+      });
+    }catch(e){}
+  }
+
+  // ---- Buscar ítems ----
+  let timer=null;
+  function debounce(fn){ clearTimeout(timer); timer=setTimeout(fn,300); }
+
+  async function buscar(){
+    $("#cargando").classList.remove("hidden");
+    const q=$("#q").value.trim(), linea=$("#fLinea").value, estado=$("#fEstado").value;
+    let url=URL_SB+"/rest/v1/items?select=codigo,descripcion,estado,linea_codigo,tipo_codigo,lineas(nombre),tipos_item(nombre)&order=codigo";
+    if(q){ const t=encodeURIComponent("*"+q+"*"); url+="&or=(codigo.ilike."+t+",sn.ilike."+t+",descripcion.ilike."+t+")"; }
+    if(linea) url+="&linea_codigo=eq."+encodeURIComponent(linea);
+    if(estado) url+="&estado=eq."+estado;
+    url+="&limit="+POR+"&offset="+(pagina*POR);
+    try{
+      const r=await fetch(url,{headers:Object.assign(headers(true),{"Prefer":"count=exact"})});
+      if(r.status===401){ $("#salir").click(); return; }
+      const rango=r.headers.get("content-range"); // "0-49/12550"
+      total = rango && rango.includes("/") ? parseInt(rango.split("/")[1]) : 0;
+      const d=await r.json();
+      pintar(d||[]);
+    }catch(e){
+      $("#filas").innerHTML='<tr><td colspan="5" class="vacio">No se pudo cargar. Revisa tu conexión.</td></tr>';
+    }finally{
+      $("#cargando").classList.add("hidden");
+    }
+  }
+
+  function pintar(items){
+    const tb=$("#filas");
+    if(items.length===0){
+      tb.innerHTML='<tr><td colspan="5" class="vacio">No hay ítems que coincidan. Ajusta la búsqueda o los filtros.</td></tr>';
+    }else{
+      tb.innerHTML=items.map(it=>{
+        const linea=(it.lineas&&it.lineas.nombre)||it.linea_codigo||"";
+        const tipo=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"";
+        const est=esc(it.estado);
+        return '<tr><td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+
+               '</td><td>'+esc(linea)+'</td><td>'+esc(tipo)+
+               '</td><td><span class="badge '+est+'">'+est.replace("_"," ")+'</span></td></tr>';
+      }).join("");
+    }
+    const paginas=Math.max(Math.ceil(total/POR),1);
+    $("#conteo").textContent = total.toLocaleString("es-CO")+" ítems";
+    $("#paginaTxt").textContent = "Página "+(pagina+1)+" de "+paginas;
+    $("#prev").disabled = pagina===0;
+    $("#next").disabled = (pagina+1)>=paginas;
+  }
+
+  $("#q").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
+  $("#fLinea").addEventListener("change", ()=>{ pagina=0; buscar(); });
+  $("#fEstado").addEventListener("change", ()=>{ pagina=0; buscar(); });
+  $("#prev").addEventListener("click", ()=>{ if(pagina>0){pagina--; buscar();} });
+  $("#next").addEventListener("click", ()=>{ pagina++; buscar(); });
+
+  async function iniciar(){
+    $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+    pagina=0;
+    await cargarPerfil();
+    if($("#fLinea").options.length<=1) await cargarLineas();
+    await buscar();
+  }
+
+  // Sesión guardada
+  if(token && usuario){ iniciar(); }
+</script>
+</body>
 </html>

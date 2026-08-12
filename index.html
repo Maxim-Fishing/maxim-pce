@@ -81,6 +81,9 @@
   .kpi.pv{border-left:4px solid var(--ambar)} .kpi.pv .n{color:var(--ambar)}
   .kpi.ok{border-left:4px solid var(--verde)} .kpi.ok .n{color:var(--verde)}
   .kpi.sr{border-left:4px solid var(--tenue)} .kpi.sr .n{color:var(--tenue)}
+  .kpi.venc,.kpi.pv,.kpi.ok,.kpi.sr{cursor:pointer;transition:transform .08s}
+  .kpi.venc:hover,.kpi.pv:hover,.kpi.ok:hover,.kpi.sr:hover{transform:translateY(-2px)}
+  .kpi.sel{outline:2px solid var(--naranja);outline-offset:-1px}
   .seccion{margin-top:22px;font-size:14px;color:var(--tenue);text-transform:uppercase;letter-spacing:.08em}
   .dias{font-weight:700;white-space:nowrap}
   .dias.rojo{color:var(--rojo)} .dias.ambar{color:var(--ambar)}
@@ -252,6 +255,7 @@
   let rolActual = "consulta";
   let pagina = 0, total = 0;
   let bases = [], unidades = [], modoNuevo = false, itemActual = null;
+  let dashBuckets={venc:[],pv:[],ok:[]}, dashState="aten", dashTotalItems=0;
 
   const $ = s => document.querySelector(s);
   const esc = s => (s==null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"));
@@ -378,8 +382,65 @@
   function barra(tipo,n,max){ const w=Math.max(Math.round(n/max*100),2);
     return '<div style="display:flex;align-items:center;gap:10px;padding:5px 0"><span style="width:210px;font-size:13px;color:var(--tenue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(tipo)+'</span><span style="flex:1;background:var(--panel2);border-radius:4px;height:10px;overflow:hidden"><span style="display:block;height:100%;width:'+w+'%;background:var(--naranja)"></span></span><span style="width:64px;text-align:right;font-weight:700">'+n.toLocaleString("es-CO")+'</span></div>'; }
 
+
+  function donutSVG(venc,pv,ok,sr){
+    var tot=venc+pv+ok+sr||1, r=52, C=2*Math.PI*r, off=0;
+    function seg(val,color,state){ if(val<=0) return ""; var f=val/tot, dash=f*C;
+      var s='<circle r="'+r+'" cx="70" cy="70" fill="none" stroke="'+color+'" stroke-width="20" stroke-dasharray="'+dash+' '+(C-dash)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 70 70)" data-seg="'+state+'" style="cursor:pointer"></circle>';
+      off+=dash; return s; }
+    return '<svg width="150" height="150" viewBox="0 0 140 140">'+
+      '<circle r="'+r+'" cx="70" cy="70" fill="none" stroke="var(--panel2)" stroke-width="20"></circle>'+
+      seg(venc,"var(--rojo)","venc")+seg(pv,"var(--ambar)","pv")+seg(ok,"var(--verde)","ok")+seg(sr,"#3a3f47","sr")+
+      '<text x="70" y="66" text-anchor="middle" fill="var(--texto)" font-size="20" font-weight="800">'+(venc+pv+ok+sr).toLocaleString("es-CO")+'</text>'+
+      '<text x="70" y="84" text-anchor="middle" fill="var(--tenue)" font-size="10">\u00edtems</text></svg>';
+  }
+  function setupDashboard(){
+    var panel=$("#panel"); if(!panel) return;
+    if(!$("#donut")){
+      var cardsFirst=panel.querySelector(".cards");
+      var d=document.createElement("div"); d.id="donut"; d.style.cssText="display:flex;justify-content:center;margin:6px 0 14px";
+      if(cardsFirst) panel.insertBefore(d, cardsFirst);
+    }
+    ["venc","pv","ok","sr"].forEach(function(s){
+      var el=panel.querySelector(".kpi."+s);
+      if(el && !el.getAttribute("data-lig")){ el.setAttribute("data-lig","1"); el.addEventListener("click", function(){ renderDetalle(s); }); }
+    });
+    var secs=panel.querySelectorAll(".seccion");
+    for(var i=0;i<secs.length;i++){ if(secs[i].textContent.indexOf("Requieren")>=0){ secs[i].id="pDetTitulo"; break; } }
+  }
+  function renderDetalle(state){
+    dashState=state;
+    ["venc","pv","ok","sr"].forEach(function(s){
+      var el=document.querySelector("#panel .kpi."+s);
+      if(el) el.classList.toggle("sel", s===state || (state==="aten" && (s==="venc"||s==="pv")));
+    });
+    var tit=$("#pDetTitulo"); var lista=[];
+    if(state==="aten"){ lista=dashBuckets.venc.concat(dashBuckets.pv); if(tit) tit.textContent="Requieren atenci\u00f3n"; }
+    else if(state==="venc"){ lista=dashBuckets.venc; if(tit) tit.textContent="Vencidos"; }
+    else if(state==="pv"){ lista=dashBuckets.pv; if(tit) tit.textContent="Por vencer (\u226410 d\u00edas)"; }
+    else if(state==="ok"){ lista=dashBuckets.ok; if(tit) tit.textContent="Al d\u00eda"; }
+    else if(state==="sr"){ if(tit) tit.textContent="Sin registro"; renderSinRegistro(); return; }
+    var tb=$("#pFilas"); tb.innerHTML="";
+    if(lista.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">Sin \u00edtems en este estado.</td></tr>'; return; }
+    lista.forEach(function(a){
+      var it=a.c.items; var baseN=(it.bases&&it.bases.nombre)||"\u2014";
+      var dtxt = a.dias<0 ? ("Vencido hace "+Math.abs(a.dias)+"d") : (a.dias<=10 ? ("Faltan "+a.dias+"d") : ("En "+a.dias+"d"));
+      var cls = a.dias<0 ? "rojo" : (a.dias<=10 ? "ambar" : "");
+      var tr=document.createElement("tr");
+      tr.innerHTML='<td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+'</td><td>'+esc(baseN)+'</td><td>'+esc(a.c.fecha_vencimiento)+'</td><td><span class="dias '+cls+'">'+dtxt+'</span></td>';
+      tr.addEventListener("click", function(){ fetchItemYFicha(it.id); });
+      tb.appendChild(tr);
+    });
+  }
+  function renderSinRegistro(){
+    var tb=$("#pFilas");
+    tb.innerHTML='<tr><td colspan="5" class="vacio">Son los \u00edtems sin ning\u00fan mantenimiento registrado (la mayor\u00eda por ahora). <a href="#" id="verInvSR" style="color:var(--naranja2)">Verlos en Inventario</a></td></tr>';
+    var a=$("#verInvSR"); if(a) a.addEventListener("click", function(e){ e.preventDefault(); verInventario(); });
+  }
+
   async function cargarPanel(){
     $("#pCargando").classList.remove("hidden");
+    setupDashboard();
     const linea=$("#pLinea").value, cat=$("#pCategoria").value, base=$("#pBase").value;
     let itemFiltro = linea ? "&items.linea_codigo=eq."+linea : "&items.linea_codigo=in.("+LINEAS_OK.join(",")+")";
     if(cat) itemFiltro+="&items.categoria_id=eq."+cat;
@@ -399,31 +460,22 @@
     let ciclos=[];
     try{ const rc=await fetch(cUrl,{headers:headers()}); if(rc.ok) ciclos=await rc.json(); }catch(e){}
     const hoy=new Date(hoyISO()); const lim=new Date(hoy); lim.setDate(lim.getDate()+10);
-    let venc=0,pv=0,ok=0; const atencion=[];
+    let venc=0,pv=0,ok=0; const bVenc=[],bPv=[],bOk=[];
     ciclos.forEach(c=>{
       const v=new Date(c.fecha_vencimiento);
       const dias=Math.round((v-hoy)/86400000);
-      if(v<hoy){ venc++; atencion.push({c,dias,tipo:"vencido"}); }
-      else if(v<=lim){ pv++; atencion.push({c,dias,tipo:"pv"}); }
-      else ok++;
+      if(v<hoy){ venc++; bVenc.push({c,dias}); }
+      else if(v<=lim){ pv++; bPv.push({c,dias}); }
+      else { ok++; bOk.push({c,dias}); }
     });
     const sr = Math.max(totalItems - ciclos.length, 0);
+    dashBuckets={venc:bVenc,pv:bPv,ok:bOk}; dashTotalItems=totalItems;
     $("#kVenc").textContent=venc; $("#kPv").textContent=pv; $("#kOk").textContent=ok; $("#kSr").textContent=sr.toLocaleString("es-CO");
     const nAlerta=venc+pv;
     const pt=$("#ptAlerta"); pt.textContent=nAlerta; pt.classList.toggle("hidden", nAlerta===0);
-    const tb=$("#pFilas"); tb.innerHTML="";
-    if(atencion.length===0){
-      tb.innerHTML='<tr><td colspan="5" class="vacio">'+(totalItems>0?"Nada por vencer. Registra mantenimientos para empezar a controlar vencimientos.":"Sin datos.")+'</td></tr>';
-    }else atencion.forEach(a=>{
-      const it=a.c.items; const baseN=(it.bases&&it.bases.nombre)||"\u2014";
-      const dtxt = a.dias<0 ? ("Vencido hace "+Math.abs(a.dias)+"d") : ("Faltan "+a.dias+"d");
-      const cls = a.dias<0 ? "rojo" : "ambar";
-      const tr=document.createElement("tr");
-      tr.innerHTML='<td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+'</td><td>'+esc(baseN)+
-        '</td><td>'+esc(a.c.fecha_vencimiento)+'</td><td><span class="dias '+cls+'">'+dtxt+'</span></td>';
-      tr.addEventListener("click", ()=>{ fetchItemYFicha(it.id); });
-      tb.appendChild(tr);
-    });
+    const don=$("#donut");
+    if(don){ don.innerHTML=donutSVG(venc,pv,ok,sr); don.querySelectorAll("[data-seg]").forEach(function(s){ s.addEventListener("click", function(){ renderDetalle(s.getAttribute("data-seg")); }); }); }
+    renderDetalle(dashState);
     // Completitud documental y cantidades por tipo (via RPC)
     try{
       const body={p_linea: linea||null, p_categoria: cat||null, p_base: base?parseInt(base):null};

@@ -102,6 +102,14 @@
   .msg.ok{color:var(--verde)} .msg.bad{color:var(--rojo)}
   .mant-box{margin-top:20px;border-top:1px solid var(--borde);padding-top:16px}
   .mant-estado{font-size:13px;margin:0 0 12px}
+  .slot{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a1d22}
+  .slot .sn{flex:1;font-size:14px}
+  .slot .est{font-size:12px;color:var(--tenue)}
+  .slot .est.ok{color:var(--verde)}
+  .slot a,.slot button{font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer;text-decoration:none}
+  .slot a{background:var(--panel2);color:var(--acero);border:1px solid var(--borde)}
+  .slot .up{background:var(--naranja);color:#180a00;border:0;font-weight:700}
+  .slot .rep{background:var(--panel2);color:var(--texto);border:1px solid var(--borde)}
   @media(max-width:640px){.desc{max-width:130px}.modal{max-width:100%}}
 </style>
 </head>
@@ -126,7 +134,7 @@
       <div class="marca"><b>&#10005;</b> MAXIM <span>PCE</span></div>
       <div class="nav">
         <button id="navInv" class="on">Inventario</button>
-        <button id="navPanel">Panel</button>
+        <button id="navPanel">Dashboard</button>
       </div>
       <input class="buscar" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
       <button class="campana" id="campana" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
@@ -188,6 +196,10 @@
         <div class="kpi ok"><div class="n" id="kOk">0</div><div class="t">Al d&iacute;a</div></div>
         <div class="kpi sr"><div class="n" id="kSr">0</div><div class="t">Sin registro</div></div>
       </div>
+      <div class="seccion">Completitud documental</div>
+      <div class="cards" id="docCards"></div>
+      <div class="seccion">Cantidades por tipo</div>
+      <div id="porTipo" class="wrap"></div>
       <div class="seccion">Requieren atenci&oacute;n</div>
       <div class="wrap">
         <table>
@@ -204,6 +216,10 @@
       <h2 id="mTitulo">Ficha del &iacute;tem</h2>
       <p class="sub" id="mSub"></p>
       <div class="grid" id="mCampos"></div>
+      <div class="mant-box hidden" id="mDocsBox">
+        <div class="seccion" style="margin-top:0">Documentos est&aacute;ticos</div>
+        <div id="mDocsEst"></div>
+      </div>
       <div class="mant-box hidden" id="mMantBox">
         <div class="seccion" style="margin-top:0">Mantenimiento</div>
         <p class="mant-estado" id="mMantEstado"></p>
@@ -216,6 +232,7 @@
           <label>Observaciones<textarea id="mObs" rows="2" placeholder="Notas del mantenimiento"></textarea></label>
           <button class="btn" id="mMantGuardar" type="button">Guardar mantenimiento</button>
         </div>
+        <div id="mDocsDin" style="margin-top:14px"></div>
       </div>
       <p class="msg hidden" id="mMsg"></p>
       <div class="acc">
@@ -355,6 +372,12 @@
   }
 
   // ---- Panel de vencimientos ----
+
+  function docCard(nombre, con, total){ con=con||0; const sin=Math.max(total-con,0);
+    return '<div class="kpi"><div class="n">'+con.toLocaleString("es-CO")+'</div><div class="t">con '+nombre+' &middot; sin: '+sin.toLocaleString("es-CO")+'</div></div>'; }
+  function barra(tipo,n,max){ const w=Math.max(Math.round(n/max*100),2);
+    return '<div style="display:flex;align-items:center;gap:10px;padding:5px 0"><span style="width:210px;font-size:13px;color:var(--tenue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(tipo)+'</span><span style="flex:1;background:var(--panel2);border-radius:4px;height:10px;overflow:hidden"><span style="display:block;height:100%;width:'+w+'%;background:var(--naranja)"></span></span><span style="width:64px;text-align:right;font-weight:700">'+n.toLocaleString("es-CO")+'</span></div>'; }
+
   async function cargarPanel(){
     $("#pCargando").classList.remove("hidden");
     const linea=$("#pLinea").value, cat=$("#pCategoria").value, base=$("#pBase").value;
@@ -401,6 +424,16 @@
       tr.addEventListener("click", ()=>{ fetchItemYFicha(it.id); });
       tb.appendChild(tr);
     });
+    // Completitud documental y cantidades por tipo (via RPC)
+    try{
+      const body={p_linea: linea||null, p_categoria: cat||null, p_base: base?parseInt(base):null};
+      const rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify(body)});
+      const R=await rr.json();
+      const T=(R&&R.total)||0;
+      $("#docCards").innerHTML = docCard("COC",R&&R.con_coc,T)+docCard("Ficha t\u00e9cnica",R&&R.con_ficha,T)+docCard("Manual O&M",R&&R.con_manual,T);
+      const pt=(R&&R.por_tipo)||[]; const mx=pt.length?pt[0].n:1;
+      $("#porTipo").innerHTML = pt.length ? pt.map(x=>barra(x.tipo,x.n,mx)).join("") : '<div class="vacio">Sin datos.</div>';
+    }catch(e){ $("#porTipo").innerHTML=""; }
     $("#pCargando").classList.add("hidden");
   }
 
@@ -450,6 +483,10 @@
     $("#mMantBox").classList.remove("hidden");
     $("#mMantAbrir").classList.toggle("hidden", !puedeMant());
     $("#mFecha").value = hoyISO();
+    cicloVigente = null;
+    $("#mDocsBox").classList.remove("hidden");
+    cargarDocsEstaticos();
+    $("#mDocsDin").innerHTML="";
     cargarEstadoMant(it.id);
     $("#modalBg").classList.remove("hidden");
   }
@@ -457,14 +494,15 @@
   async function cargarEstadoMant(itemId){
     const el=$("#mMantEstado"); el.textContent="Consultando\u2026";
     try{
-      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=fecha_realizado,fecha_vencimiento&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
+      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,fecha_vencimiento&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
       const d=await r.json();
       if(d&&d[0]){
+        cicloVigente={id:d[0].id}; cargarDocsDinamicos();
         const v=new Date(d[0].fecha_vencimiento); const hoy=new Date(hoyISO());
         const dias=Math.round((v-hoy)/86400000);
         const est = dias<0 ? ("VENCIDO hace "+Math.abs(dias)+" d\u00edas") : (dias<=10 ? ("Por vencer en "+dias+" d\u00edas") : ("Al d\u00eda ("+dias+" d\u00edas)"));
         el.innerHTML = "\u00daltimo: "+d[0].fecha_realizado+" &middot; Vence: "+d[0].fecha_vencimiento+" &middot; <b>"+est+"</b>";
-      } else { el.textContent = "Sin mantenimiento registrado."; }
+      } else { cicloVigente=null; el.textContent = "Sin mantenimiento registrado."; $("#mDocsDin").innerHTML=""; }
     }catch(e){ el.textContent=""; }
   }
 
@@ -502,6 +540,7 @@
       '<div class="row2">'+campoSelect("f_base","Base","", baseOpts)+campoSelect("f_uni","Unidad","", uniOpts)+'</div>';
     $("#mMsg").className="msg hidden";
     $("#mMantBox").classList.add("hidden");
+    $("#mDocsBox").classList.add("hidden");
     $("#mGuardar").classList.remove("hidden");
     $("#modalBg").classList.remove("hidden");
   }
@@ -570,6 +609,93 @@
   $("#prev").addEventListener("click", ()=>{ if(pagina>0){pagina--; buscar();} });
   $("#next").addEventListener("click", ()=>{ pagina++; buscar(); });
 
+
+  // ---- Documentos ----
+  const ESTATICOS = [{k:"coc",t:"COC"},{k:"ficha_tecnica",t:"Ficha t\u00e9cnica"},{k:"manual",t:"Manual O&M"}];
+  const DIN_BASE = [{k:"reporte_mantenimiento",t:"Reporte de mantenimiento"},{k:"reporte_falla",t:"Reporte de falla"},{k:"ndt",t:"Reporte NDT"}];
+  const DIN_EQUIPO = [{k:"prueba_presion",t:"Prueba de presi\u00f3n"},{k:"espesores",t:"Espesores"},{k:"prueba_dureza",t:"Prueba de dureza"}];
+  let cicloVigente = null;
+  let pendiente = null;
+
+  function rutaBase(){ const it=itemActual; return (it.categoria_id||"herramienta")+"/"+(it.tipo_codigo||"SINTIPO")+"/"+it.codigo; }
+  function encPath(p){ return p.split("/").map(encodeURIComponent).join("/"); }
+
+  async function subirArchivo(path, file){
+    const r = await fetch(URL_SB+"/storage/v1/object/documentos/"+encPath(path),{
+      method:"POST",
+      headers:{ "apikey":KEY, "Authorization":"Bearer "+token, "x-upsert":"true", "Content-Type": file.type||"application/pdf" },
+      body: file });
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"upload"); }
+    return path;
+  }
+  async function verArchivo(path){
+    try{
+      const r=await fetch(URL_SB+"/storage/v1/object/sign/documentos/"+encPath(path),{
+        method:"POST", headers:headers(), body:JSON.stringify({expiresIn:3600})});
+      const d=await r.json();
+      if(d && d.signedURL){ window.open(URL_SB+"/storage/v1"+d.signedURL, "_blank"); }
+      else { mostrarMsg("No se pudo abrir el archivo.", false); }
+    }catch(e){ mostrarMsg("No se pudo abrir el archivo.", false); }
+  }
+  function slotHTML(scope, tipoObj, doc, permiteSubir){
+    const tiene = !!doc; let acc = "";
+    if(tiene) acc += '<a href="#" data-ver="'+esc(doc.archivo_path)+'">Ver</a>';
+    if(permiteSubir) acc += '<button class="'+(tiene?"rep":"up")+'" data-sub="'+scope+':'+tipoObj.k+'">'+(tiene?"Reemplazar":"Subir")+'</button>';
+    return '<div class="slot"><span class="sn">'+tipoObj.t+'</span><span class="est'+(tiene?" ok":"")+'">'+(tiene?"Cargado":"Sin cargar")+'</span>'+acc+'</div>';
+  }
+  function enlazarSlots(cont){
+    cont.querySelectorAll("[data-ver]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();verArchivo(a.getAttribute("data-ver"));}));
+    cont.querySelectorAll("[data-sub]").forEach(b=>b.addEventListener("click",()=>{
+      const partes=b.getAttribute("data-sub").split(":"); pendiente={scope:partes[0],tipo:partes[1]};
+      $("#filePicker").value=""; $("#filePicker").click();
+    }));
+  }
+  async function cargarDocsEstaticos(){
+    const cont=$("#mDocsEst"); cont.innerHTML='<div class="est" style="color:var(--tenue);font-size:13px">Consultando\u2026</div>';
+    let docs=[];
+    try{ const r=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=id,tipo,archivo_path&item_id=eq."+itemActual.id,{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
+    const mapa={}; docs.forEach(d=>mapa[d.tipo]=d);
+    cont.innerHTML = ESTATICOS.map(x=>slotHTML("est",x,mapa[x.k],esAdmin())).join("");
+    enlazarSlots(cont);
+  }
+  async function cargarDocsDinamicos(){
+    const cont=$("#mDocsDin");
+    if(!cicloVigente){ cont.innerHTML=""; return; }
+    let docs=[];
+    try{ const r=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,tipo,archivo_path&ciclo_id=eq."+cicloVigente.id,{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
+    const mapa={}; docs.forEach(d=>mapa[d.tipo]=d);
+    const lista = (itemActual.categoria_id==="equipo") ? DIN_BASE.concat(DIN_EQUIPO) : DIN_BASE;
+    cont.innerHTML='<div class="seccion" style="margin-top:4px">Documentos del ciclo actual</div>'+lista.map(x=>slotHTML("din",x,mapa[x.k],puedeMant())).join("");
+    enlazarSlots(cont);
+  }
+
+
+  $("#filePicker").addEventListener("change", async function(e){
+    const file=e.target.files[0]; if(!file||!pendiente) return;
+    const scope=pendiente.scope, tipo=pendiente.tipo; pendiente=null;
+    mostrarMsg("Subiendo\u2026", true);
+    try{
+      if(scope==="est"){
+        const path=rutaBase()+"/estatico_"+tipo+".pdf";
+        await subirArchivo(path,file);
+        const rq=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=id&item_id=eq."+itemActual.id+"&tipo=eq."+tipo,{headers:headers()});
+        const ex=await rq.json();
+        if(ex&&ex[0]) await fetch(URL_SB+"/rest/v1/documentos_estaticos?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({archivo_path:path})});
+        else await fetch(URL_SB+"/rest/v1/documentos_estaticos",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({item_id:itemActual.id,tipo:tipo,archivo_path:path})});
+        mostrarMsg("Documento cargado.", true); cargarDocsEstaticos();
+      } else {
+        if(!cicloVigente){ mostrarMsg("Primero registra un mantenimiento.", false); return; }
+        const path=rutaBase()+"/ciclo_"+cicloVigente.id+"/dinamico_"+tipo+".pdf";
+        await subirArchivo(path,file);
+        const rq=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id&ciclo_id=eq."+cicloVigente.id+"&tipo=eq."+tipo,{headers:headers()});
+        const ex=await rq.json();
+        if(ex&&ex[0]) await fetch(URL_SB+"/rest/v1/documentos_dinamicos?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({archivo_path:path})});
+        else await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({ciclo_id:cicloVigente.id,tipo:tipo,archivo_path:path})});
+        mostrarMsg("Documento cargado.", true); cargarDocsDinamicos();
+      }
+    }catch(ex){ mostrarMsg("No se pudo subir el archivo.", false); }
+  });
+
   async function iniciar(){
     $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
     pagina=0;
@@ -581,5 +707,6 @@
   }
   if(token && usuario){ iniciar(); }
 </script>
+  <input type="file" id="filePicker" accept="application/pdf,.pdf" class="hidden">
 </body>
 </html>

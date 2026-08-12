@@ -227,6 +227,8 @@
         <div class="seccion" style="margin-top:0">Mantenimiento</div>
         <p class="mant-estado" id="mMantEstado"></p>
         <button class="btn2 hidden" id="mMantAbrir">Registrar mantenimiento</button>
+        <button class="btn hidden" id="mFormWLAbrir">Formulario Wireline</button>
+        <button class="btn2 hidden" id="mVerFormWL">Ver formulario</button>
         <div class="grid hidden" id="mMantForm" style="margin-top:8px">
           <div class="row2">
             <label>Fecha realizado<input id="mFecha" type="date"></label>
@@ -245,6 +247,65 @@
     </div>
   </div>
 
+  <!-- FORMULARIO WIRELINE (MF-F-MTO-025) -->
+  <div id="formWLbg" class="modal-bg hidden">
+    <div class="modal" style="max-width:660px">
+      <h2>Reporte de mantenimiento &mdash; Wireline</h2>
+      <p class="sub" id="wlSub"></p>
+      <div class="grid">
+        <div class="row2">
+          <label>Fecha<input id="wl_fecha" type="date"></label>
+          <label>N&ordm; Reporte<input id="wl_reporte" type="text"></label>
+        </div>
+        <div class="row2">
+          <label>Lugar/Base<input id="wl_lugar" type="text"></label>
+          <label>T&eacute;cnico que repara<input id="wl_tecnico" type="text"></label>
+        </div>
+
+        <div class="seccion" style="margin-top:6px">1. Visual</div>
+        <div class="row2">
+          <label>Fishneck<select id="wl_fishneck"><option value="">&mdash;</option><option value="bueno">Bueno</option><option value="malo">Malo</option></select></label>
+          <label>Rosca<select id="wl_rosca"><option value="">&mdash;</option><option value="buena">Buena</option><option value="mala">Mala</option></select></label>
+        </div>
+        <label>Cuerpo<select id="wl_cuerpo"><option value="">&mdash;</option><option value="bueno">Bueno</option><option value="malo">Malo</option></select></label>
+        <label>Si el cuerpo est&aacute; malo, &iquest;cu&aacute;l?<select id="wl_cuerpo_cual"><option value="">&mdash;</option><option value="colapso">Colapso</option><option value="fisura">Fisura</option><option value="deformidad">Deformidad</option><option value="otro">Otro</option></select></label>
+        <div class="row2">
+          <label>Otro (cu&aacute;l)<input id="wl_cuerpo_otro" type="text"></label>
+          <label>Parte afectada (N&ordm;)<input id="wl_parte_afectada" type="text"></label>
+        </div>
+
+        <div class="seccion">2. Dimensiones</div>
+        <div class="row2">
+          <label>Rosca (OD)<input id="wl_rosca_od" type="text"></label>
+          <label>Fishneck (OD)<input id="wl_fishneck_od" type="text"></label>
+        </div>
+        <label>Dimensiones por parte</label>
+        <div id="wl_dims" class="grid"></div>
+        <button class="btn2" type="button" id="wl_dim_add">+ Agregar dimensi&oacute;n</button>
+
+        <div class="seccion">3. Operatividad</div>
+        <label>Operatividad<select id="wl_operatividad"><option value="">&mdash;</option><option value="buena">Buena</option><option value="mala">Mala</option><option value="na">No aplica</option></select></label>
+
+        <div class="seccion">Partes reemplazadas</div>
+        <div id="wl_partes" class="grid"></div>
+        <button class="btn2" type="button" id="wl_parte_add">+ Agregar parte</button>
+
+        <div class="seccion">4. Estado final</div>
+        <label>Estado final de la herramienta<select id="wl_estado_final"><option value="">&mdash;</option><option value="buena">Buena</option><option value="regular">Regular</option><option value="mala">Mala</option></select></label>
+        <label>Observaciones<textarea id="wl_obs" rows="3"></textarea></label>
+        <div class="row2">
+          <label>Firma/nombre quien repara<input id="wl_firma" type="text"></label>
+          <label>Nombre de quien supervisa<input id="wl_supervisa" type="text"></label>
+        </div>
+      </div>
+      <p class="msg hidden" id="wlMsg"></p>
+      <div class="acc">
+        <button class="btn" id="wlGuardar">Guardar mantenimiento</button>
+        <button class="btn2" id="wlCerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="filePicker" accept="application/pdf,.pdf" class="hidden">
 
 <script>
@@ -254,6 +315,8 @@
   const DRIVE_TOKEN = "maxim-pce-2026"; // debe coincidir con el TOKEN del Apps Script
   const POR = 50;
   const LINEAS_OK = ["EL","EP","FB","SL","SW","WL","WS","WT"];
+  const GRUPO = {EL:"WL",EP:"WL",SL:"WL",WL:"WL",FB:"WS",SW:"WS",WT:"WS",WS:"WS"};
+  function grupoDe(it){ return GRUPO[String((it&&it.linea_codigo)||"").toUpperCase()] || ""; }
   let token = localStorage.getItem("maxim_token") || null;
   let usuario = JSON.parse(localStorage.getItem("maxim_user") || "null");
   let rolActual = "consulta";
@@ -538,6 +601,9 @@
     $("#mMantForm").classList.add("hidden");
     $("#mMantBox").classList.remove("hidden");
     $("#mMantAbrir").classList.toggle("hidden", !puedeMant());
+    var _esWL = grupoDe(it)==="WL";
+    $("#mFormWLAbrir").classList.toggle("hidden", !(_esWL && puedeMant()));
+    $("#mVerFormWL").classList.add("hidden");
     $("#mFecha").value = hoyISO();
     cicloVigente = null;
     $("#mDocsBox").classList.remove("hidden");
@@ -550,15 +616,16 @@
   async function cargarEstadoMant(itemId){
     const el=$("#mMantEstado"); el.textContent="Consultando\u2026";
     try{
-      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,fecha_vencimiento&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
+      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,fecha_vencimiento,metodo,datos_formulario&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
       const d=await r.json();
       if(d&&d[0]){
-        cicloVigente={id:d[0].id}; cargarDocsDinamicos();
+        cicloVigente={id:d[0].id, fecha_realizado:d[0].fecha_realizado}; cicloDatos=d[0].datos_formulario||null; cargarDocsDinamicos();
+        $("#mVerFormWL").classList.toggle("hidden", !(d[0].metodo==="formulario" && grupoDe(itemActual)==="WL"));
         const v=new Date(d[0].fecha_vencimiento); const hoy=new Date(hoyISO());
         const dias=Math.round((v-hoy)/86400000);
         const est = dias<0 ? ("VENCIDO hace "+Math.abs(dias)+" d\u00edas") : (dias<=10 ? ("Por vencer en "+dias+" d\u00edas") : ("Al d\u00eda ("+dias+" d\u00edas)"));
         el.innerHTML = "\u00daltimo: "+d[0].fecha_realizado+" &middot; Vence: "+d[0].fecha_vencimiento+" &middot; <b>"+est+"</b>";
-      } else { cicloVigente=null; el.textContent = "Sin mantenimiento registrado."; $("#mDocsDin").innerHTML=""; }
+      } else { cicloVigente=null; cicloDatos=null; $("#mVerFormWL").classList.add("hidden"); el.textContent = "Sin mantenimiento registrado."; $("#mDocsDin").innerHTML=""; }
     }catch(e){ el.textContent=""; }
   }
 
@@ -671,6 +738,7 @@
   const DIN_BASE = [{k:"reporte_mantenimiento",t:"Reporte de mantenimiento"},{k:"reporte_falla",t:"Reporte de falla"},{k:"ndt",t:"Reporte NDT"}];
   const DIN_EQUIPO = [{k:"prueba_presion",t:"Prueba de presi\u00f3n"},{k:"espesores",t:"Espesores"},{k:"prueba_dureza",t:"Prueba de dureza"}];
   let cicloVigente = null;
+  let cicloDatos = null;
   let pendiente = null;
 
   function rutaBase(){ const it=itemActual; return (it.categoria_id||"herramienta")+"/"+(it.tipo_codigo||"SINTIPO")+"/"+it.codigo; }
@@ -769,6 +837,84 @@
         reflejarDrive({categoria:(itemActual.categoria_id||"herramienta"), tipo_codigo:(itemActual.tipo_codigo||"SINTIPO"), codigo:itemActual.codigo, ciclo:cicloVigente.id, filename:"dinamico_"+tipo+".pdf"}, file);
       }
     }catch(ex){ mostrarMsg("No se pudo subir el archivo.", false); }
+  });
+
+  // ---- Formulario Wireline ----
+  function wlMsg(t,ok){ var m=$("#wlMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
+  function wlAddDim(p,d){
+    var w=document.createElement("div"); w.className="row2"; w.style.gap="8px";
+    w.innerHTML='<input class="wl-dp" placeholder="Parte No" value="'+esc(p||"")+'"><input class="wl-dv" placeholder="Dimension" value="'+esc(d||"")+'">';
+    $("#wl_dims").appendChild(w);
+  }
+  function wlAddParte(p,n,c){
+    var w=document.createElement("div"); w.style.cssText="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px";
+    w.innerHTML='<input class="wl-pp" placeholder="Parte" value="'+esc(p||"")+'"><input class="wl-pn" placeholder="No Part" value="'+esc(n||"")+'"><input class="wl-pc" placeholder="Cant" value="'+esc(c||"")+'">';
+    $("#wl_partes").appendChild(w);
+  }
+  function wlSet(id,v){ var el=$("#"+id); if(el) el.value=(v==null?"":v); }
+  function abrirFormWL(datos, soloLectura){
+    if(!itemActual) return;
+    var d=datos||{};
+    $("#wlSub").innerHTML = codHTML(itemActual.codigo)+" &nbsp; "+esc(itemActual.descripcion||"");
+    wlSet("wl_fecha", (soloLectura && cicloVigente && cicloVigente.fecha_realizado) ? cicloVigente.fecha_realizado : hoyISO());
+    wlSet("wl_reporte", d.n_reporte); wlSet("wl_lugar", d.lugar_base); wlSet("wl_tecnico", d.tecnico_repara);
+    var vis=d.visual||{};
+    wlSet("wl_fishneck", vis.fishneck); wlSet("wl_rosca", vis.rosca); wlSet("wl_cuerpo", vis.cuerpo);
+    wlSet("wl_cuerpo_cual", vis.cuerpo_cual); wlSet("wl_cuerpo_otro", vis.cuerpo_otro); wlSet("wl_parte_afectada", vis.parte_afectada);
+    var dim=d.dimensiones||{};
+    wlSet("wl_rosca_od", dim.rosca_od); wlSet("wl_fishneck_od", dim.fishneck_od);
+    $("#wl_dims").innerHTML=""; $("#wl_partes").innerHTML="";
+    var dp=(dim.partes||[]); if(dp.length){ dp.forEach(function(x){ wlAddDim(x.parte,x.dim); }); } else { wlAddDim("",""); wlAddDim("",""); }
+    var pr=(d.partes_reemplazadas||[]); if(pr.length){ pr.forEach(function(x){ wlAddParte(x.parte,x.n_part,x.cant); }); } else { wlAddParte("","",""); wlAddParte("","",""); }
+    wlSet("wl_operatividad", d.operatividad); wlSet("wl_estado_final", d.estado_final);
+    wlSet("wl_obs", d.observaciones); wlSet("wl_firma", d.firma_repara); wlSet("wl_supervisa", d.supervisa);
+    var dis=!!soloLectura;
+    $("#formWLbg").querySelectorAll("input,select,textarea").forEach(function(el){ el.disabled=dis; });
+    $("#wlGuardar").classList.toggle("hidden", dis);
+    $("#wl_dim_add").classList.toggle("hidden", dis);
+    $("#wl_parte_add").classList.toggle("hidden", dis);
+    $("#wlMsg").className="msg hidden";
+    $("#formWLbg").classList.remove("hidden");
+  }
+  function recolectarWL(){
+    var dims=[]; $("#wl_dims").querySelectorAll(".row2").forEach(function(r){
+      var p=r.querySelector(".wl-dp").value.trim(), v=r.querySelector(".wl-dv").value.trim();
+      if(p||v) dims.push({parte:p, dim:v});
+    });
+    var partes=[]; $("#wl_partes").querySelectorAll(":scope > div").forEach(function(r){
+      var p=r.querySelector(".wl-pp").value.trim(), n=r.querySelector(".wl-pn").value.trim(), c=r.querySelector(".wl-pc").value.trim();
+      if(p||n||c) partes.push({parte:p, n_part:n, cant:c});
+    });
+    return {
+      tipo:"reporte_mantenimiento_wl",
+      n_reporte:$("#wl_reporte").value.trim(), lugar_base:$("#wl_lugar").value.trim(), tecnico_repara:$("#wl_tecnico").value.trim(),
+      visual:{ fishneck:$("#wl_fishneck").value, rosca:$("#wl_rosca").value, cuerpo:$("#wl_cuerpo").value, cuerpo_cual:$("#wl_cuerpo_cual").value, cuerpo_otro:$("#wl_cuerpo_otro").value.trim(), parte_afectada:$("#wl_parte_afectada").value.trim() },
+      dimensiones:{ rosca_od:$("#wl_rosca_od").value.trim(), fishneck_od:$("#wl_fishneck_od").value.trim(), partes:dims },
+      operatividad:$("#wl_operatividad").value,
+      partes_reemplazadas:partes,
+      estado_final:$("#wl_estado_final").value,
+      observaciones:$("#wl_obs").value.trim(),
+      firma_repara:$("#wl_firma").value.trim(), supervisa:$("#wl_supervisa").value.trim()
+    };
+  }
+  $("#wl_dim_add").addEventListener("click", function(){ wlAddDim("",""); });
+  $("#wl_parte_add").addEventListener("click", function(){ wlAddParte("","",""); });
+  $("#wlCerrar").addEventListener("click", function(){ $("#formWLbg").classList.add("hidden"); });
+  $("#formWLbg").addEventListener("click", function(e){ if(e.target===$("#formWLbg")) $("#formWLbg").classList.add("hidden"); });
+  $("#mFormWLAbrir").addEventListener("click", function(){ abrirFormWL(null,false); });
+  $("#mVerFormWL").addEventListener("click", function(){ abrirFormWL(cicloDatos,true); });
+  $("#wlGuardar").addEventListener("click", async function(){
+    if(!itemActual) return;
+    var btn=$("#wlGuardar"); btn.disabled=true;
+    try{
+      var datos=recolectarWL();
+      var body={ p_item_id:itemActual.id, p_linea_codigo:itemActual.linea_codigo, p_fecha_realizado:($("#wl_fecha").value||hoyISO()), p_metodo:"formulario", p_datos:datos };
+      var r=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{method:"POST",headers:headers(),body:JSON.stringify(body)});
+      if(!r.ok){ var e=await r.json().catch(function(){return{};}); throw new Error(e.message||"error"); }
+      wlMsg("Mantenimiento guardado.", true);
+      setTimeout(function(){ $("#formWLbg").classList.add("hidden"); if(itemActual) cargarEstadoMant(itemActual.id); }, 700);
+    }catch(e){ wlMsg("No se pudo guardar el mantenimiento.", false); }
+    finally{ btn.disabled=false; }
   });
 
   async function iniciar(){

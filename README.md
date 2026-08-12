@@ -34,7 +34,7 @@ Los usuarios NO se registran solos; los creas tú:
 3. Supabase → **SQL Editor** y ejecuta (reemplaza el UID y el nombre):
 ```sql
 insert into profiles (id, nombre, rol)
-values ('PEGA-AQUI-EL-UID', 'Cristian Repizo', 'admin');
+values ('14129f3d-5a7b-43ec-9596-c10e887c53e3', 'Cristian Repizo', 'admin');
 ```
 Roles posibles: `admin`, `operador`, `consulta`.
 

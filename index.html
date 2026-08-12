@@ -250,6 +250,8 @@
 <script>
   const URL_SB = "https://ryfhzlbvcqnxaptltslo.supabase.co";
   const KEY = "sb_publishable_KtRk1DP1IR5gNl_woH30YA_wiB--4V9";
+  const DRIVE_URL = "https://script.google.com/macros/s/AKfycbxeZtWbb8jcBGBYioD-zqWcwcJ54ZBOPHyk8A32MgjE6ywRfGJVOrsVfx_sCjq4yr6o/exec"; // URL del Apps Script
+  const DRIVE_TOKEN = "maxim-pce-2026"; // debe coincidir con el TOKEN del Apps Script
   const POR = 50;
   const LINEAS_OK = ["EL","EP","FB","SL","SW","WL","WS","WT"];
   let token = localStorage.getItem("maxim_token") || null;
@@ -674,6 +676,23 @@
   function rutaBase(){ const it=itemActual; return (it.categoria_id||"herramienta")+"/"+(it.tipo_codigo||"SINTIPO")+"/"+it.codigo; }
   function encPath(p){ return p.split("/").map(encodeURIComponent).join("/"); }
 
+  function fileToB64(file){
+    return new Promise(function(res,rej){
+      var fr=new FileReader();
+      fr.onload=function(){ var t=String(fr.result); res(t.slice(t.indexOf(",")+1)); };
+      fr.onerror=rej; fr.readAsDataURL(file);
+    });
+  }
+  async function reflejarDrive(meta, file){
+    if(!DRIVE_URL) return; // aun no configurado: no hace nada
+    try{
+      var dataB64 = await fileToB64(file);
+      var cuerpo = Object.assign({token:DRIVE_TOKEN, mime:(file.type||"application/pdf"), dataB64:dataB64}, meta);
+      await fetch(DRIVE_URL, { method:"POST", mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify(cuerpo) });
+    }catch(e){ /* el reflejo a Drive nunca debe romper la carga principal */ }
+  }
   async function subirArchivo(path, file){
     const r = await fetch(URL_SB+"/storage/v1/object/documentos/"+encPath(path),{
       method:"POST",
@@ -737,6 +756,7 @@
         if(ex&&ex[0]) await fetch(URL_SB+"/rest/v1/documentos_estaticos?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({archivo_path:path})});
         else await fetch(URL_SB+"/rest/v1/documentos_estaticos",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({item_id:itemActual.id,tipo:tipo,archivo_path:path})});
         mostrarMsg("Documento cargado.", true); cargarDocsEstaticos();
+        reflejarDrive({categoria:(itemActual.categoria_id||"herramienta"), tipo_codigo:(itemActual.tipo_codigo||"SINTIPO"), codigo:itemActual.codigo, filename:"estatico_"+tipo+".pdf"}, file);
       } else {
         if(!cicloVigente){ mostrarMsg("Primero registra un mantenimiento.", false); return; }
         const path=rutaBase()+"/ciclo_"+cicloVigente.id+"/dinamico_"+tipo+".pdf";
@@ -746,6 +766,7 @@
         if(ex&&ex[0]) await fetch(URL_SB+"/rest/v1/documentos_dinamicos?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({archivo_path:path})});
         else await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({ciclo_id:cicloVigente.id,tipo:tipo,archivo_path:path})});
         mostrarMsg("Documento cargado.", true); cargarDocsDinamicos();
+        reflejarDrive({categoria:(itemActual.categoria_id||"herramienta"), tipo_codigo:(itemActual.tipo_codigo||"SINTIPO"), codigo:itemActual.codigo, ciclo:cicloVigente.id, filename:"dinamico_"+tipo+".pdf"}, file);
       }
     }catch(ex){ mostrarMsg("No se pudo subir el archivo.", false); }
   });

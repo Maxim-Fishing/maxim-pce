@@ -19,22 +19,26 @@
   .marca span{color:var(--negro);background:var(--naranja);padding:1px 7px;border-radius:3px;font-size:11px;letter-spacing:.14em}
   .hidden{display:none!important}
 
-  /* Login */
   #login{display:grid;place-items:center;min-height:100vh;padding:20px}
   .card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--borde);border-top:3px solid var(--naranja);border-radius:8px;padding:30px 26px}
   .lema{color:var(--tenue);margin:14px 0 24px;line-height:1.5}
   form{display:grid;gap:15px}
   label{display:grid;gap:6px;font-size:13px;color:var(--tenue)}
-  input{background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:11px 12px;border-radius:6px;font-size:15px}
-  input:focus{outline:2px solid var(--naranja);border-color:transparent}
-  .btn{background:var(--naranja);color:#180a00;border:0;padding:12px;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer}
+  input,select,textarea{background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:10px 12px;border-radius:6px;font-size:15px;font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--naranja);border-color:transparent}
+  .btn{background:var(--naranja);color:#180a00;border:0;padding:11px 16px;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer}
   .btn:hover{background:var(--naranja2)} .btn:disabled{opacity:.6;cursor:default}
+  .btn2{background:var(--panel2);color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px}
+  .btn2:hover{border-color:var(--tenue)}
   .err{color:var(--rojo);font-size:13px;margin:0}
 
-  /* App */
-  .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5}
+  .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+  .nav{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;padding:3px}
+  .nav button{background:transparent;border:0;color:var(--tenue);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600}
+  .nav button.on{background:var(--naranja);color:#180a00}
+  .campana{position:relative;background:transparent;border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:15px}
+  .campana .pt{position:absolute;top:-7px;right:-7px;background:var(--rojo);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
   .buscar{flex:1;min-width:120px;background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:9px 14px;border-radius:6px;font-size:14px}
-  .buscar:focus{outline:2px solid var(--naranja);border-color:transparent}
   .usuario{display:flex;align-items:center;gap:10px}
   .nombre{color:var(--tenue);font-size:13px}
   .rol{font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:3px;font-weight:700}
@@ -42,17 +46,16 @@
   .rol.operador{background:rgba(95,168,211,.18);color:var(--acero)}
   .rol.consulta{background:rgba(154,160,168,.15);color:var(--tenue)}
   .salir{background:transparent;color:var(--tenue);border:1px solid var(--borde);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
-  .salir:hover{color:var(--texto);border-color:var(--tenue)}
   .filtros{display:flex;align-items:center;gap:12px;padding:14px 18px;flex-wrap:wrap}
-  select{background:var(--panel2);border:1px solid var(--borde);color:var(--texto);padding:8px 12px;border-radius:6px;font-size:14px}
   .conteo{color:var(--naranja2);font-weight:700;font-size:14px;margin-left:auto}
   .cargando{color:var(--tenue);font-size:13px}
   .wrap{overflow-x:auto;padding:0 18px}
   table{width:100%;border-collapse:collapse;font-size:14px}
   thead th{text-align:left;color:var(--tenue);font-size:11px;text-transform:uppercase;letter-spacing:.1em;padding:10px 12px;border-bottom:1px solid var(--borde)}
   tbody td{padding:11px 12px;border-bottom:1px solid #1a1d22;vertical-align:middle}
+  tbody tr{cursor:pointer}
   tbody tr:hover{background:var(--panel)}
-  .desc{color:var(--tenue);max-width:420px}
+  .desc{color:var(--tenue);max-width:340px}
   .vacio{text-align:center;color:var(--tenue);padding:40px 0}
   .cod{font-family:var(--mono);font-size:13px;letter-spacing:.04em;white-space:nowrap}
   .c1{color:var(--naranja);font-weight:700}.c2{color:var(--acero);font-weight:700}.c3{color:var(--ambar)}.c4{color:var(--tenue)}
@@ -61,21 +64,56 @@
   .badge.en_mantenimiento{background:rgba(245,166,35,.15);color:var(--ambar)}
   .badge.fuera_servicio{background:rgba(226,72,63,.15);color:var(--rojo)}
   .badge.inactivo{background:rgba(154,160,168,.12);color:var(--tenue)}
+  .cat{font-size:11px;padding:3px 9px;border-radius:3px;font-weight:600;white-space:nowrap}
+  .cat.equipo{background:rgba(255,106,0,.15);color:var(--naranja2)}
+  .cat.herramienta{background:rgba(95,168,211,.15);color:var(--acero)}
   .pag{display:flex;align-items:center;justify-content:center;gap:16px;padding:18px;color:var(--tenue);font-size:14px}
   .pag button{background:var(--panel2);border:1px solid var(--borde);color:var(--texto);padding:8px 16px;border-radius:6px;cursor:pointer}
   .pag button:disabled{opacity:.4;cursor:default}
-  @media(max-width:640px){.barra{flex-wrap:wrap}.buscar{order:3;flex-basis:100%}.desc{max-width:160px}}
+
+  /* Panel */
+  #panel{padding:18px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:8px}
+  .kpi{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:16px 18px}
+  .kpi .n{font-size:30px;font-weight:800;line-height:1}
+  .kpi .t{color:var(--tenue);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
+  .kpi.venc{border-left:4px solid var(--rojo)} .kpi.venc .n{color:var(--rojo)}
+  .kpi.pv{border-left:4px solid var(--ambar)} .kpi.pv .n{color:var(--ambar)}
+  .kpi.ok{border-left:4px solid var(--verde)} .kpi.ok .n{color:var(--verde)}
+  .kpi.sr{border-left:4px solid var(--tenue)} .kpi.sr .n{color:var(--tenue)}
+  .seccion{margin-top:22px;font-size:14px;color:var(--tenue);text-transform:uppercase;letter-spacing:.08em}
+  .dias{font-weight:700;white-space:nowrap}
+  .dias.rojo{color:var(--rojo)} .dias.ambar{color:var(--ambar)}
+  @media(max-width:720px){.cards{grid-template-columns:repeat(2,1fr)}}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:flex-end;z-index:20}
+  .modal{width:100%;max-width:440px;height:100%;background:var(--panel);border-left:1px solid var(--borde);overflow-y:auto;padding:22px}
+  .modal h2{margin:0 0 4px;font-size:18px}
+  .modal .sub{color:var(--tenue);font-size:13px;margin:0 0 18px}
+  .grid{display:grid;gap:13px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .modal label{color:var(--tenue);font-size:12px}
+  .ro{color:var(--texto);font-size:14px;background:var(--negro);border:1px solid var(--borde);border-radius:6px;padding:9px 12px}
+  .acc{display:flex;gap:10px;margin-top:20px}
+  .unidad-add{display:flex;gap:8px}
+  .unidad-add input{flex:1}
+  .msg{font-size:13px;margin:10px 0 0}
+  .msg.ok{color:var(--verde)} .msg.bad{color:var(--rojo)}
+  .mant-box{margin-top:20px;border-top:1px solid var(--borde);padding-top:16px}
+  .mant-estado{font-size:13px;margin:0 0 12px}
+  @media(max-width:640px){.desc{max-width:130px}.modal{max-width:100%}}
 </style>
 </head>
 <body>
   <!-- LOGIN -->
   <div id="login">
     <div class="card">
-      <div class="marca"><b>✕</b> MAXIM <span>PCE</span></div>
-      <p class="lema">Control de herramientas y equipos de presión</p>
+      <div class="marca"><b>&#10005;</b> MAXIM <span>PCE</span></div>
+      <p class="lema">Control de herramientas y equipos de presi&oacute;n</p>
       <form id="formLogin">
         <label>Correo<input id="correo" type="email" required autocomplete="username"></label>
-        <label>Contraseña<input id="clave" type="password" required autocomplete="current-password"></label>
+        <label>Contrase&ntilde;a<input id="clave" type="password" required autocomplete="current-password"></label>
         <p class="err hidden" id="loginErr"></p>
         <button class="btn" id="btnEntrar" type="submit">Entrar</button>
       </form>
@@ -85,36 +123,105 @@
   <!-- APP -->
   <div id="app" class="hidden">
     <header class="barra">
-      <div class="marca"><b>✕</b> MAXIM <span>PCE</span></div>
-      <input class="buscar" id="q" placeholder="Buscar por código, S/N o descripción…">
+      <div class="marca"><b>&#10005;</b> MAXIM <span>PCE</span></div>
+      <div class="nav">
+        <button id="navInv" class="on">Inventario</button>
+        <button id="navPanel">Panel</button>
+      </div>
+      <input class="buscar" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
+      <button class="campana" id="campana" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
       <div class="usuario">
+        <button class="btn hidden" id="nuevo">+ Nuevo</button>
         <span class="nombre" id="nombre"></span>
         <span class="rol" id="rol"></span>
         <button class="salir" id="salir">Salir</button>
       </div>
     </header>
-    <div class="filtros">
-      <select id="fLinea"><option value="">Todas las líneas</option></select>
-      <select id="fEstado">
-        <option value="">Todos los estados</option>
-        <option value="activo">Activo</option>
-        <option value="en_mantenimiento">En mantenimiento</option>
-        <option value="fuera_servicio">Fuera de servicio</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
-      <span class="conteo" id="conteo"></span>
-      <span class="cargando hidden" id="cargando">buscando…</span>
+
+    <!-- VISTA INVENTARIO -->
+    <div id="vInv">
+      <div class="filtros">
+        <select id="fLinea"><option value="">Todas las l&iacute;neas</option></select>
+        <select id="fCategoria">
+          <option value="">Todas las categor&iacute;as</option>
+          <option value="equipo">Equipo de Presi&oacute;n</option>
+          <option value="herramienta">Herramienta</option>
+        </select>
+        <select id="fEstado">
+          <option value="">Todos los estados</option>
+          <option value="activo">Activo</option>
+          <option value="en_mantenimiento">En mantenimiento</option>
+          <option value="fuera_servicio">Fuera de servicio</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+        <span class="conteo" id="conteo"></span>
+        <span class="cargando hidden" id="cargando">buscando&hellip;</span>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>L&iacute;nea</th><th>Categor&iacute;a</th><th>Estado</th></tr></thead>
+          <tbody id="filas"></tbody>
+        </table>
+      </div>
+      <div class="pag">
+        <button id="prev">Anterior</button>
+        <span id="paginaTxt"></span>
+        <button id="next">Siguiente</button>
+      </div>
     </div>
-    <div class="wrap">
-      <table>
-        <thead><tr><th>Código</th><th>Descripción</th><th>Línea</th><th>Tipo</th><th>Estado</th></tr></thead>
-        <tbody id="filas"></tbody>
-      </table>
+
+    <!-- VISTA PANEL -->
+    <div id="panel" class="hidden">
+      <div class="filtros">
+        <select id="pLinea"><option value="">Todas las l&iacute;neas</option></select>
+        <select id="pCategoria">
+          <option value="">Todas las categor&iacute;as</option>
+          <option value="equipo">Equipo de Presi&oacute;n</option>
+          <option value="herramienta">Herramienta</option>
+        </select>
+        <select id="pBase"><option value="">Todas las bases</option></select>
+        <span class="cargando hidden" id="pCargando">calculando&hellip;</span>
+      </div>
+      <div class="cards">
+        <div class="kpi venc"><div class="n" id="kVenc">0</div><div class="t">Vencidos</div></div>
+        <div class="kpi pv"><div class="n" id="kPv">0</div><div class="t">Por vencer (&le;10 d&iacute;as)</div></div>
+        <div class="kpi ok"><div class="n" id="kOk">0</div><div class="t">Al d&iacute;a</div></div>
+        <div class="kpi sr"><div class="n" id="kSr">0</div><div class="t">Sin registro</div></div>
+      </div>
+      <div class="seccion">Requieren atenci&oacute;n</div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Base</th><th>Vence</th><th>Estado</th></tr></thead>
+          <tbody id="pFilas"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="pag">
-      <button id="prev">Anterior</button>
-      <span id="paginaTxt"></span>
-      <button id="next">Siguiente</button>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modalBg" class="modal-bg hidden">
+    <div class="modal">
+      <h2 id="mTitulo">Ficha del &iacute;tem</h2>
+      <p class="sub" id="mSub"></p>
+      <div class="grid" id="mCampos"></div>
+      <div class="mant-box hidden" id="mMantBox">
+        <div class="seccion" style="margin-top:0">Mantenimiento</div>
+        <p class="mant-estado" id="mMantEstado"></p>
+        <button class="btn2 hidden" id="mMantAbrir">Registrar mantenimiento</button>
+        <div class="grid hidden" id="mMantForm" style="margin-top:8px">
+          <div class="row2">
+            <label>Fecha realizado<input id="mFecha" type="date"></label>
+            <label>M&eacute;todo<select id="mMetodo"><option value="formulario">Formulario interno</option><option value="anexo">Anexo (reporte)</option></select></label>
+          </div>
+          <label>Observaciones<textarea id="mObs" rows="2" placeholder="Notas del mantenimiento"></textarea></label>
+          <button class="btn" id="mMantGuardar" type="button">Guardar mantenimiento</button>
+        </div>
+      </div>
+      <p class="msg hidden" id="mMsg"></p>
+      <div class="acc">
+        <button class="btn hidden" id="mGuardar">Guardar</button>
+        <button class="btn2" id="mCerrar">Cerrar</button>
+      </div>
     </div>
   </div>
 
@@ -122,128 +229,343 @@
   const URL_SB = "https://ryfhzlbvcqnxaptltslo.supabase.co";
   const KEY = "sb_publishable_KtRk1DP1IR5gNl_woH30YA_wiB--4V9";
   const POR = 50;
+  const LINEAS_OK = ["EL","EP","FB","SL","SW","WL","WS","WT"];
   let token = localStorage.getItem("maxim_token") || null;
   let usuario = JSON.parse(localStorage.getItem("maxim_user") || "null");
+  let rolActual = "consulta";
   let pagina = 0, total = 0;
+  let bases = [], unidades = [], modoNuevo = false, itemActual = null;
 
   const $ = s => document.querySelector(s);
-  const esc = s => (s==null?"":String(s));
-
-  function headers(auth){
+  const esc = s => (s==null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"));
+  function headers(extra){
     const h = {"apikey":KEY,"Content-Type":"application/json"};
-    if(auth && token) h["Authorization"] = "Bearer "+token;
-    return h;
+    if(token) h["Authorization"] = "Bearer "+token;
+    return Object.assign(h, extra||{});
   }
+  const esAdmin = () => rolActual === "admin";
+  const puedeMant = () => rolActual === "admin" || rolActual === "operador";
+  const hoyISO = () => new Date().toISOString().slice(0,10);
 
   // ---- Login ----
   $("#formLogin").addEventListener("submit", async e=>{
     e.preventDefault();
     const btn=$("#btnEntrar"), err=$("#loginErr");
-    err.classList.add("hidden"); btn.disabled=true; btn.textContent="Entrando…";
+    err.classList.add("hidden"); btn.disabled=true; btn.textContent="Entrando\u2026";
     try{
       const r = await fetch(URL_SB+"/auth/v1/token?grant_type=password",{
         method:"POST", headers:{"apikey":KEY,"Content-Type":"application/json"},
         body: JSON.stringify({email:$("#correo").value, password:$("#clave").value})
       });
       const d = await r.json();
-      if(!r.ok || !d.access_token){ throw new Error(d.error_description||d.msg||"Credenciales inválidas"); }
+      if(!r.ok || !d.access_token) throw new Error("bad");
       token = d.access_token; usuario = d.user;
       localStorage.setItem("maxim_token", token);
       localStorage.setItem("maxim_user", JSON.stringify(usuario));
       await iniciar();
     }catch(ex){
-      err.textContent = "No pudimos iniciar sesión. Revisa el correo y la contraseña.";
+      err.textContent = "No pudimos iniciar sesi\u00f3n. Revisa el correo y la contrase\u00f1a.";
       err.classList.remove("hidden");
-    }finally{
-      btn.disabled=false; btn.textContent="Entrar";
-    }
+    }finally{ btn.disabled=false; btn.textContent="Entrar"; }
   });
-
   $("#salir").addEventListener("click", ()=>{
     token=null; usuario=null;
     localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user");
     $("#app").classList.add("hidden"); $("#login").classList.remove("hidden");
   });
 
-  // ---- Código coloreado ----
   function codHTML(c){
     if(!c || c.length<9) return '<span class="cod">'+esc(c)+'</span>';
     return '<span class="cod"><span class="c1">'+c.slice(0,2)+'</span><span class="c2">'+c.slice(2,5)+'</span><span class="c3">'+c.slice(5,8)+'</span><span class="c4">'+c.slice(8)+'</span></span>';
   }
+  const catNombre = c => c==="equipo" ? "Equipo de Presi\u00f3n" : "Herramienta";
 
-  // ---- Cargar perfil + líneas ----
+  // ---- Cargas ----
   async function cargarPerfil(){
     try{
-      const r = await fetch(URL_SB+"/rest/v1/profiles?select=nombre,rol&id=eq."+usuario.id, {headers:headers(true)});
+      const r = await fetch(URL_SB+"/rest/v1/profiles?select=nombre,rol&id=eq."+usuario.id, {headers:headers()});
       const d = await r.json();
       const p = (d && d[0]) || {nombre: usuario.email, rol:"consulta"};
+      rolActual = p.rol || "consulta";
       $("#nombre").textContent = p.nombre || usuario.email;
-      const rol = p.rol || "consulta";
-      const el = $("#rol"); el.textContent = rol; el.className = "rol "+rol;
+      const el = $("#rol"); el.textContent = rolActual; el.className = "rol "+rolActual;
+      if(esAdmin()) $("#nuevo").classList.remove("hidden");
     }catch(e){ $("#nombre").textContent = usuario.email; }
   }
   async function cargarLineas(){
     try{
-      const r = await fetch(URL_SB+"/rest/v1/lineas?select=codigo,nombre&order=codigo",{headers:headers(true)});
+      const r = await fetch(URL_SB+"/rest/v1/lineas?select=codigo,nombre&order=codigo",{headers:headers()});
       const d = await r.json();
-      const sel=$("#fLinea");
-      (d||[]).forEach(l=>{
-        const o=document.createElement("option");
-        o.value=l.codigo; o.textContent=l.codigo+(l.nombre?" — "+l.nombre:"");
-        sel.appendChild(o);
+      (d||[]).filter(l=>LINEAS_OK.includes(l.codigo)).forEach(l=>{
+        const txt=l.codigo+(l.nombre?" \u2014 "+l.nombre:"");
+        [ "#fLinea", "#pLinea" ].forEach(sid=>{
+          const o=document.createElement("option"); o.value=l.codigo; o.textContent=txt; $(sid).appendChild(o);
+        });
       });
     }catch(e){}
   }
+  async function cargarBasesUnidades(){
+    try{
+      const rb = await fetch(URL_SB+"/rest/v1/bases?select=id,nombre&order=nombre",{headers:headers()});
+      bases = await rb.json();
+      bases.forEach(b=>{ const o=document.createElement("option"); o.value=String(b.id); o.textContent=b.nombre; $("#pBase").appendChild(o); });
+      const ru = await fetch(URL_SB+"/rest/v1/unidades?select=id,nombre&order=nombre",{headers:headers()});
+      unidades = await ru.json();
+    }catch(e){ bases=bases||[]; unidades=unidades||[]; }
+  }
 
-  // ---- Buscar ítems ----
+  // ---- Inventario ----
   let timer=null;
-  function debounce(fn){ clearTimeout(timer); timer=setTimeout(fn,300); }
-
+  const debounce = fn => { clearTimeout(timer); timer=setTimeout(fn,300); };
   async function buscar(){
     $("#cargando").classList.remove("hidden");
-    const q=$("#q").value.trim(), linea=$("#fLinea").value, estado=$("#fEstado").value;
-    let url=URL_SB+"/rest/v1/items?select=codigo,descripcion,estado,linea_codigo,tipo_codigo,lineas(nombre),tipos_item(nombre)&order=codigo";
+    const q=$("#q").value.trim(), linea=$("#fLinea").value, estado=$("#fEstado").value, cat=$("#fCategoria").value;
+    let url=URL_SB+"/rest/v1/items?select=id,codigo,codigo_ant,descripcion,estado,linea_codigo,tipo_codigo,categoria_id,sn,fabricante,medida,anio,presion,base_id,unidad_id,lineas(nombre),tipos_item(nombre),bases(nombre),unidades(nombre)&order=codigo";
+    if(linea){ url+="&linea_codigo=eq."+encodeURIComponent(linea); } else { url+="&linea_codigo=in.("+LINEAS_OK.join(",")+")"; }
     if(q){ const t=encodeURIComponent("*"+q+"*"); url+="&or=(codigo.ilike."+t+",sn.ilike."+t+",descripcion.ilike."+t+")"; }
-    if(linea) url+="&linea_codigo=eq."+encodeURIComponent(linea);
+    if(cat) url+="&categoria_id=eq."+cat;
     if(estado) url+="&estado=eq."+estado;
     url+="&limit="+POR+"&offset="+(pagina*POR);
     try{
-      const r=await fetch(url,{headers:Object.assign(headers(true),{"Prefer":"count=exact"})});
+      const r=await fetch(url,{headers:headers({"Prefer":"count=exact"})});
       if(r.status===401){ $("#salir").click(); return; }
-      const rango=r.headers.get("content-range"); // "0-49/12550"
+      const rango=r.headers.get("content-range");
       total = rango && rango.includes("/") ? parseInt(rango.split("/")[1]) : 0;
-      const d=await r.json();
-      pintar(d||[]);
-    }catch(e){
-      $("#filas").innerHTML='<tr><td colspan="5" class="vacio">No se pudo cargar. Revisa tu conexión.</td></tr>';
-    }finally{
-      $("#cargando").classList.add("hidden");
-    }
+      pintar(await r.json()||[]);
+    }catch(e){ $("#filas").innerHTML='<tr><td colspan="5" class="vacio">No se pudo cargar.</td></tr>'; }
+    finally{ $("#cargando").classList.add("hidden"); }
   }
-
   function pintar(items){
-    const tb=$("#filas");
-    if(items.length===0){
-      tb.innerHTML='<tr><td colspan="5" class="vacio">No hay ítems que coincidan. Ajusta la búsqueda o los filtros.</td></tr>';
-    }else{
-      tb.innerHTML=items.map(it=>{
-        const linea=(it.lineas&&it.lineas.nombre)||it.linea_codigo||"";
-        const tipo=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"";
-        const est=esc(it.estado);
-        return '<tr><td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+
-               '</td><td>'+esc(linea)+'</td><td>'+esc(tipo)+
-               '</td><td><span class="badge '+est+'">'+est.replace("_"," ")+'</span></td></tr>';
-      }).join("");
-    }
+    const tb=$("#filas"); tb.innerHTML="";
+    if(items.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">No hay \u00edtems que coincidan.</td></tr>'; }
+    else items.forEach(it=>{
+      const linea=(it.lineas&&it.lineas.nombre)||it.linea_codigo||"";
+      const est=esc(it.estado); const cat=it.categoria_id||"herramienta";
+      const tr=document.createElement("tr");
+      tr.innerHTML='<td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+
+        '</td><td>'+esc(linea)+'</td><td><span class="cat '+cat+'">'+catNombre(cat)+'</span></td>'+
+        '<td><span class="badge '+est+'">'+est.replace("_"," ")+'</span></td>';
+      tr.addEventListener("click", ()=>abrirFicha(it));
+      tb.appendChild(tr);
+    });
     const paginas=Math.max(Math.ceil(total/POR),1);
-    $("#conteo").textContent = total.toLocaleString("es-CO")+" ítems";
-    $("#paginaTxt").textContent = "Página "+(pagina+1)+" de "+paginas;
-    $("#prev").disabled = pagina===0;
-    $("#next").disabled = (pagina+1)>=paginas;
+    $("#conteo").textContent = total.toLocaleString("es-CO")+" \u00edtems";
+    $("#paginaTxt").textContent = "P\u00e1gina "+(pagina+1)+" de "+paginas;
+    $("#prev").disabled = pagina===0; $("#next").disabled = (pagina+1)>=paginas;
   }
 
+  // ---- Panel de vencimientos ----
+  async function cargarPanel(){
+    $("#pCargando").classList.remove("hidden");
+    const linea=$("#pLinea").value, cat=$("#pCategoria").value, base=$("#pBase").value;
+    let itemFiltro = linea ? "&items.linea_codigo=eq."+linea : "&items.linea_codigo=in.("+LINEAS_OK.join(",")+")";
+    if(cat) itemFiltro+="&items.categoria_id=eq."+cat;
+    if(base) itemFiltro+="&items.base_id=eq."+base;
+    // total de items segun filtro (para "sin registro")
+    let itemsUrl=URL_SB+"/rest/v1/items?select=id";
+    itemsUrl += linea ? "&linea_codigo=eq."+linea : "&linea_codigo=in.("+LINEAS_OK.join(",")+")";
+    if(cat) itemsUrl+="&categoria_id=eq."+cat;
+    if(base) itemsUrl+="&base_id=eq."+base;
+    let totalItems=0;
+    try{
+      const ri=await fetch(itemsUrl,{method:"HEAD",headers:headers({"Prefer":"count=exact"})});
+      const rg=ri.headers.get("content-range"); totalItems = rg&&rg.includes("/") ? parseInt(rg.split("/")[1]) : 0;
+    }catch(e){}
+    // ciclos vigentes
+    let cUrl=URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_vencimiento,fecha_realizado,items!inner(id,codigo,descripcion,linea_codigo,categoria_id,base_id,bases(nombre))&vigente=eq.true"+itemFiltro+"&order=fecha_vencimiento.asc&limit=2000";
+    let ciclos=[];
+    try{ const rc=await fetch(cUrl,{headers:headers()}); if(rc.ok) ciclos=await rc.json(); }catch(e){}
+    const hoy=new Date(hoyISO()); const lim=new Date(hoy); lim.setDate(lim.getDate()+10);
+    let venc=0,pv=0,ok=0; const atencion=[];
+    ciclos.forEach(c=>{
+      const v=new Date(c.fecha_vencimiento);
+      const dias=Math.round((v-hoy)/86400000);
+      if(v<hoy){ venc++; atencion.push({c,dias,tipo:"vencido"}); }
+      else if(v<=lim){ pv++; atencion.push({c,dias,tipo:"pv"}); }
+      else ok++;
+    });
+    const sr = Math.max(totalItems - ciclos.length, 0);
+    $("#kVenc").textContent=venc; $("#kPv").textContent=pv; $("#kOk").textContent=ok; $("#kSr").textContent=sr.toLocaleString("es-CO");
+    const nAlerta=venc+pv;
+    const pt=$("#ptAlerta"); pt.textContent=nAlerta; pt.classList.toggle("hidden", nAlerta===0);
+    const tb=$("#pFilas"); tb.innerHTML="";
+    if(atencion.length===0){
+      tb.innerHTML='<tr><td colspan="5" class="vacio">'+(totalItems>0?"Nada por vencer. Registra mantenimientos para empezar a controlar vencimientos.":"Sin datos.")+'</td></tr>';
+    }else atencion.forEach(a=>{
+      const it=a.c.items; const baseN=(it.bases&&it.bases.nombre)||"\u2014";
+      const dtxt = a.dias<0 ? ("Vencido hace "+Math.abs(a.dias)+"d") : ("Faltan "+a.dias+"d");
+      const cls = a.dias<0 ? "rojo" : "ambar";
+      const tr=document.createElement("tr");
+      tr.innerHTML='<td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+'</td><td>'+esc(baseN)+
+        '</td><td>'+esc(a.c.fecha_vencimiento)+'</td><td><span class="dias '+cls+'">'+dtxt+'</span></td>';
+      tr.addEventListener("click", ()=>{ fetchItemYFicha(it.id); });
+      tb.appendChild(tr);
+    });
+    $("#pCargando").classList.add("hidden");
+  }
+
+  async function fetchItemYFicha(id){
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/items?select=id,codigo,codigo_ant,descripcion,estado,linea_codigo,tipo_codigo,categoria_id,sn,fabricante,medida,anio,presion,base_id,unidad_id,lineas(nombre),tipos_item(nombre),bases(nombre),unidades(nombre)&id=eq."+id,{headers:headers()});
+      const d=await r.json(); if(d&&d[0]) abrirFicha(d[0]);
+    }catch(e){}
+  }
+
+  // ---- Ficha ----
+  function campoInput(id, label, val, tipo){
+    return '<label>'+label+(esAdmin()
+      ? '<input id="'+id+'" type="'+(tipo||"text")+'" value="'+esc(val)+'">'
+      : '<div class="ro">'+(esc(val)||"\u2014")+'</div>')+'</label>';
+  }
+  function campoSelect(id, label, val, opciones){
+    if(!esAdmin()){
+      const t=(opciones.find(o=>o.v===val)||{t:val}).t;
+      return '<label>'+label+'<div class="ro">'+(esc(t)||"\u2014")+'</div></label>';
+    }
+    let o=opciones.map(op=>'<option value="'+esc(op.v)+'"'+(op.v===val?" selected":"")+'>'+esc(op.t)+'</option>').join("");
+    return '<label>'+label+'<select id="'+id+'">'+o+'</select></label>';
+  }
+
+  async function abrirFicha(it){
+    modoNuevo=false; itemActual=it;
+    $("#mTitulo").textContent = "Ficha del \u00edtem";
+    $("#mSub").innerHTML = codHTML(it.codigo)+' &nbsp; '+esc((it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"");
+    const baseOpts=[{v:"",t:"\u2014 Sin base \u2014"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
+    const uniOpts=[{v:"",t:"\u2014 Sin unidad \u2014"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
+    $("#mCampos").innerHTML =
+      campoInput("f_desc","Descripci\u00f3n", it.descripcion) +
+      '<div class="row2">'+campoInput("f_sn","S/N", it.sn)+campoInput("f_fab","Fabricante", it.fabricante)+'</div>'+
+      '<div class="row2">'+campoInput("f_med","Medida", it.medida)+campoInput("f_anio","A\u00f1o", it.anio, "number")+'</div>'+
+      '<div class="row2">'+campoInput("f_pres","Presi\u00f3n", it.presion)+
+        campoSelect("f_cat","Categor\u00eda", it.categoria_id||"herramienta",[{v:"herramienta",t:"Herramienta"},{v:"equipo",t:"Equipo de Presi\u00f3n"}])+'</div>'+
+      campoSelect("f_estado","Estado", it.estado||"activo",[{v:"activo",t:"Activo"},{v:"en_mantenimiento",t:"En mantenimiento"},{v:"fuera_servicio",t:"Fuera de servicio"},{v:"inactivo",t:"Inactivo"}])+
+      '<div class="row2">'+campoSelect("f_base","Base", it.base_id?String(it.base_id):"", baseOpts)+
+        campoSelect("f_uni","Unidad", it.unidad_id?String(it.unidad_id):"", uniOpts)+'</div>'+
+      (esAdmin() ? '<label>Agregar unidad nueva<div class="unidad-add"><input id="f_uni_nueva" placeholder="Nombre de la unidad"><button class="btn2" id="f_uni_btn" type="button">Agregar</button></div></label>' : '');
+    $("#mMsg").className="msg hidden";
+    $("#mGuardar").classList.toggle("hidden", !esAdmin());
+    if(esAdmin()) $("#f_uni_btn").addEventListener("click", agregarUnidad);
+    // mantenimiento
+    $("#mMantForm").classList.add("hidden");
+    $("#mMantBox").classList.remove("hidden");
+    $("#mMantAbrir").classList.toggle("hidden", !puedeMant());
+    $("#mFecha").value = hoyISO();
+    cargarEstadoMant(it.id);
+    $("#modalBg").classList.remove("hidden");
+  }
+
+  async function cargarEstadoMant(itemId){
+    const el=$("#mMantEstado"); el.textContent="Consultando\u2026";
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=fecha_realizado,fecha_vencimiento&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
+      const d=await r.json();
+      if(d&&d[0]){
+        const v=new Date(d[0].fecha_vencimiento); const hoy=new Date(hoyISO());
+        const dias=Math.round((v-hoy)/86400000);
+        const est = dias<0 ? ("VENCIDO hace "+Math.abs(dias)+" d\u00edas") : (dias<=10 ? ("Por vencer en "+dias+" d\u00edas") : ("Al d\u00eda ("+dias+" d\u00edas)"));
+        el.innerHTML = "\u00daltimo: "+d[0].fecha_realizado+" &middot; Vence: "+d[0].fecha_vencimiento+" &middot; <b>"+est+"</b>";
+      } else { el.textContent = "Sin mantenimiento registrado."; }
+    }catch(e){ el.textContent=""; }
+  }
+
+  $("#mMantAbrir").addEventListener("click", ()=> $("#mMantForm").classList.toggle("hidden"));
+  $("#mMantGuardar").addEventListener("click", async ()=>{
+    if(!itemActual) return;
+    const btn=$("#mMantGuardar"); btn.disabled=true;
+    try{
+      const body={ p_item_id:itemActual.id, p_linea_codigo:itemActual.linea_codigo,
+        p_fecha_realizado: $("#mFecha").value || hoyISO(),
+        p_metodo: $("#mMetodo").value, p_datos: {observaciones: ($("#mObs").value||"").trim()} };
+      const r=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{method:"POST",headers:headers(),body:JSON.stringify(body)});
+      if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+      mostrarMsg("Mantenimiento registrado.", true);
+      $("#mMantForm").classList.add("hidden");
+      cargarEstadoMant(itemActual.id);
+    }catch(e){ mostrarMsg("No se pudo registrar el mantenimiento.", false); }
+    finally{ btn.disabled=false; }
+  });
+
+  function abrirNuevo(){
+    modoNuevo=true; itemActual=null;
+    $("#mTitulo").textContent = "Nuevo \u00edtem";
+    $("#mSub").textContent = "El c\u00f3digo define l\u00ednea (2), tipo (3) y medida (3). Ej: SLHPT140X0001";
+    const baseOpts=[{v:"",t:"\u2014 Sin base \u2014"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
+    const uniOpts=[{v:"",t:"\u2014 Sin unidad \u2014"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
+    $("#mCampos").innerHTML =
+      campoInput("f_codigo","C\u00f3digo (13 caracteres)","") +
+      campoInput("f_desc","Descripci\u00f3n","") +
+      '<div class="row2">'+campoInput("f_sn","S/N","")+campoInput("f_fab","Fabricante","")+'</div>'+
+      '<div class="row2">'+campoInput("f_med","Medida","")+campoInput("f_anio","A\u00f1o","","number")+'</div>'+
+      '<div class="row2">'+campoInput("f_pres","Presi\u00f3n","")+
+        campoSelect("f_cat","Categor\u00eda","herramienta",[{v:"herramienta",t:"Herramienta"},{v:"equipo",t:"Equipo de Presi\u00f3n"}])+'</div>'+
+      campoSelect("f_estado","Estado","activo",[{v:"activo",t:"Activo"},{v:"en_mantenimiento",t:"En mantenimiento"},{v:"fuera_servicio",t:"Fuera de servicio"},{v:"inactivo",t:"Inactivo"}])+
+      '<div class="row2">'+campoSelect("f_base","Base","", baseOpts)+campoSelect("f_uni","Unidad","", uniOpts)+'</div>';
+    $("#mMsg").className="msg hidden";
+    $("#mMantBox").classList.add("hidden");
+    $("#mGuardar").classList.remove("hidden");
+    $("#modalBg").classList.remove("hidden");
+  }
+
+  async function agregarUnidad(){
+    const nom = ($("#f_uni_nueva").value||"").trim(); if(!nom) return;
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/unidades",{method:"POST",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify({nombre:nom})});
+      const d=await r.json(); if(!r.ok) throw new Error("");
+      const nueva=d[0]; unidades.push(nueva); unidades.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+      const sel=$("#f_uni"); const o=document.createElement("option"); o.value=String(nueva.id); o.textContent=nueva.nombre; o.selected=true; sel.appendChild(o);
+      $("#f_uni_nueva").value=""; mostrarMsg("Unidad agregada.", true);
+    }catch(e){ mostrarMsg("No se pudo agregar la unidad.", false); }
+  }
+
+  function valOrNull(id){ const el=$("#"+id); if(!el) return null; const v=(el.value||"").trim(); return v===""?null:v; }
+
+  async function guardar(){
+    const btn=$("#mGuardar"); btn.disabled=true;
+    const cuerpo={
+      descripcion: valOrNull("f_desc"), sn: valOrNull("f_sn"), fabricante: valOrNull("f_fab"),
+      medida: valOrNull("f_med"), anio: valOrNull("f_anio")?parseInt(valOrNull("f_anio")):null,
+      presion: valOrNull("f_pres"), categoria_id: $("#f_cat").value, estado: $("#f_estado").value,
+      base_id: valOrNull("f_base")?parseInt(valOrNull("f_base")):null,
+      unidad_id: valOrNull("f_uni")?parseInt(valOrNull("f_uni")):null
+    };
+    try{
+      if(modoNuevo){
+        const codigo=(valOrNull("f_codigo")||"").toUpperCase();
+        if(codigo.length<9){ mostrarMsg("El c\u00f3digo debe tener al menos 9 caracteres.", false); btn.disabled=false; return; }
+        const linea=codigo.slice(0,2), tipo=codigo.slice(2,5);
+        if(!LINEAS_OK.includes(linea)){ mostrarMsg("La l\u00ednea "+linea+" no est\u00e1 habilitada.", false); btn.disabled=false; return; }
+        await fetch(URL_SB+"/rest/v1/tipos_item",{method:"POST",headers:headers({"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({codigo_tipo:tipo,nombre:cuerpo.descripcion||tipo,categoria_id:cuerpo.categoria_id})});
+        cuerpo.codigo=codigo; cuerpo.linea_codigo=linea; cuerpo.tipo_codigo=tipo; cuerpo.cvtools="CVTOOLS2";
+        const r=await fetch(URL_SB+"/rest/v1/items",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
+        if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+      }else{
+        const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+itemActual.id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
+        if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+      }
+      mostrarMsg("Guardado correctamente.", true);
+      setTimeout(()=>{ $("#modalBg").classList.add("hidden"); buscar(); }, 700);
+    }catch(e){ mostrarMsg("No se pudo guardar. "+(e.message&&e.message.includes("duplicate")?"Ese c\u00f3digo ya existe.":""), false); }
+    finally{ btn.disabled=false; }
+  }
+  function mostrarMsg(t, ok){ const m=$("#mMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
+
+  // ---- Navegaci\u00f3n ----
+  function verInventario(){ $("#navInv").classList.add("on"); $("#navPanel").classList.remove("on"); $("#vInv").classList.remove("hidden"); $("#panel").classList.add("hidden"); }
+  function verPanel(){ $("#navPanel").classList.add("on"); $("#navInv").classList.remove("on"); $("#panel").classList.remove("hidden"); $("#vInv").classList.add("hidden"); cargarPanel(); }
+  $("#navInv").addEventListener("click", verInventario);
+  $("#navPanel").addEventListener("click", verPanel);
+  $("#campana").addEventListener("click", verPanel);
+  $("#pLinea").addEventListener("change", cargarPanel);
+  $("#pCategoria").addEventListener("change", cargarPanel);
+  $("#pBase").addEventListener("change", cargarPanel);
+
+  $("#nuevo").addEventListener("click", abrirNuevo);
+  $("#mGuardar").addEventListener("click", guardar);
+  $("#mCerrar").addEventListener("click", ()=>$("#modalBg").classList.add("hidden"));
+  $("#modalBg").addEventListener("click", e=>{ if(e.target===$("#modalBg")) $("#modalBg").classList.add("hidden"); });
   $("#q").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
   $("#fLinea").addEventListener("change", ()=>{ pagina=0; buscar(); });
+  $("#fCategoria").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#fEstado").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#prev").addEventListener("click", ()=>{ if(pagina>0){pagina--; buscar();} });
   $("#next").addEventListener("click", ()=>{ pagina++; buscar(); });
@@ -253,10 +575,10 @@
     pagina=0;
     await cargarPerfil();
     if($("#fLinea").options.length<=1) await cargarLineas();
+    await cargarBasesUnidades();
     await buscar();
+    cargarPanel(); // para poblar el contador de alertas
   }
-
-  // Sesión guardada
   if(token && usuario){ iniciar(); }
 </script>
 </body>

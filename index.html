@@ -38,6 +38,8 @@
   .landing-inner{position:relative;z-index:2;text-align:center;padding:24px;display:grid;justify-items:center;gap:22px;animation:fadeUp .8s ease}
   .logo-grande{width:min(440px,74vw);filter:drop-shadow(0 6px 26px rgba(0,0,0,.6))}
   .landing-sub{color:#d3d7dc;letter-spacing:.42em;font-size:14px;font-weight:600;text-transform:uppercase;padding-left:.42em}
+  .landing-nombre{color:#fff;letter-spacing:.16em;font-size:27px;font-weight:900;text-transform:uppercase}
+  .landing-nombre b{color:var(--naranja)}
   .btn-cta{background:var(--naranja);color:#180a00;border:0;padding:14px 46px;border-radius:40px;font-weight:800;font-size:16px;cursor:pointer;
     box-shadow:0 8px 30px rgba(255,106,0,.45);transition:transform .12s, box-shadow .12s}
   .btn-cta:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,106,0,.62)}
@@ -52,7 +54,7 @@
   .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(255,255,255,.05);padding:5px;border-radius:12px;margin-bottom:18px}
   .tab{background:transparent;border:0;color:var(--tenue);padding:11px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
   .tab.on{background:rgba(46,52,64,.92);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35)}
-  .login-title{margin:2px 0 6px;font-size:21px;color:#fff}
+  .login-title{margin:2px 0 18px;font-size:20px;color:#fff;text-align:center;letter-spacing:.18em;font-weight:800}
   .login-desc{color:var(--tenue);font-size:13.5px;line-height:1.5;margin:0 0 18px}
   .login-card .lbl{display:grid;gap:7px;font-size:13px;color:#c7ccd2;margin-bottom:14px}
   .login-card input{background:rgba(13,14,16,.7);border:1px solid rgba(255,255,255,.12);padding:13px 14px;border-radius:10px;font-size:15px}
@@ -107,6 +109,33 @@
   .guia-cta{display:flex;gap:12px;justify-content:center;margin:38px 0 0;flex-wrap:wrap}
   @media(max-width:760px){.rol-grid,.legend{grid-template-columns:1fr 1fr}.grp-grid{grid-template-columns:1fr}}
   @media(max-width:520px){.rol-grid,.legend{grid-template-columns:1fr}.guia-top .btn-cta{padding:12px 20px}}
+
+  /* ===== Hub NEXUS TOOLS (modulos) ===== */
+  #hub{position:fixed;inset:0;z-index:9;overflow-y:auto;
+    background:radial-gradient(1100px 520px at 82% -12%, rgba(255,106,0,.12), transparent), var(--negro)}
+  .hub-wrap{max-width:1000px;margin:0 auto;padding:26px 22px 60px}
+  .hub-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--borde)}
+  .hub-top img{height:40px}
+  .hub-top .sp{flex:1}
+  .hub-hero{margin:26px 0 22px;text-align:center}
+  .hub-hero h1{font-size:40px;letter-spacing:.14em;margin:0 0 10px;text-transform:uppercase}
+  .hub-hero h1 b{color:var(--naranja)}
+  .hub-hero p{color:var(--tenue);font-size:15px;max-width:620px;margin:0 auto;line-height:1.6}
+  .mod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+  .mod{display:block;text-align:left;text-decoration:none;background:var(--panel);border:1px solid var(--borde);border-radius:14px;padding:22px;position:relative;color:var(--texto);font-family:inherit;cursor:pointer;transition:transform .12s, border-color .15s}
+  .mod.on:hover{transform:translateY(-3px);border-color:var(--naranja)}
+  .mod.link:hover{transform:translateY(-3px);border-color:var(--acero)}
+  .mod .mod-ic{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:15px;letter-spacing:.04em;margin-bottom:14px;background:rgba(255,106,0,.16);color:var(--naranja2)}
+  .mod.link .mod-ic{background:rgba(95,168,211,.16);color:var(--acero)}
+  .mod.soon .mod-ic{background:rgba(154,160,168,.14);color:var(--tenue)}
+  .mod h3{margin:0 0 6px;font-size:18px}
+  .mod p{margin:0;color:var(--tenue);font-size:13.5px;line-height:1.5}
+  .mod .mod-cta{display:inline-block;margin-top:14px;color:var(--naranja2);font-weight:700;font-size:13.5px}
+  .mod.link .mod-cta{color:var(--acero)}
+  .mod.soon{cursor:default;opacity:.72}
+  .mod .mod-badge{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tenue);background:var(--panel2);border:1px solid var(--borde);padding:4px 10px;border-radius:20px}
+  .hub-pend{margin-top:26px;border:1px dashed var(--borde);border-radius:12px;padding:22px;text-align:center;color:var(--tenue);font-size:13.5px}
+  @media(max-width:640px){.mod-grid{grid-template-columns:1fr}.hub-hero h1{font-size:32px}}
 
   .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5;flex-wrap:wrap}
   .logo-barra{height:34px;display:block;flex:none}
@@ -168,6 +197,22 @@
   .dias.rojo{color:var(--rojo)} .dias.ambar{color:var(--ambar)}
   @media(max-width:720px){.cards{grid-template-columns:repeat(2,1fr)}}
 
+  /* Movilizacion */
+  #vMov{padding:18px}
+  .mov-form{max-width:660px;background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:18px 20px;margin-bottom:8px}
+  .mov-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .mov-row input,.mov-row select{flex:1;min-width:190px}
+  .mov-info{color:var(--texto);font-size:13px;margin:12px 0 0;min-height:18px}
+  .mov-info .u{color:var(--naranja2);font-weight:700}
+  .mov-toolbar{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;padding:20px 0 6px}
+
+  /* Fabricantes */
+  .fab-nota{color:var(--tenue);font-size:13px;line-height:1.5;margin:0 0 10px;padding:0 18px}
+  #fabMsg{padding:0 18px}
+  .fab-tipo{border:1px solid var(--borde);border-radius:10px;padding:12px 16px;margin:0 18px 12px;background:var(--panel)}
+  .fab-tipo-h{font-size:14px;margin-bottom:4px}
+  .fab-tipo-h .cod{color:var(--naranja2);font-weight:700;margin-right:6px}
+
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:flex-end;z-index:20}
   .modal{width:100%;max-width:440px;height:100%;background:var(--panel);border-left:1px solid var(--borde);overflow-y:auto;padding:22px}
@@ -184,6 +229,10 @@
   .msg.ok{color:var(--verde)} .msg.bad{color:var(--rojo)}
   .mant-box{margin-top:20px;border-top:1px solid var(--borde);padding-top:16px}
   .mant-estado{font-size:13px;margin:0 0 12px}
+  .mant-chip{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 10px;border-radius:20px}
+  .mant-chip.ok{background:rgba(53,194,106,.15);color:var(--verde)}
+  .mant-chip.bad{background:rgba(226,72,63,.15);color:var(--rojo)}
+  .mant-falta{display:block;font-size:12px;color:var(--ambar);margin-top:7px}
   .slot{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a1d22}
   .slot .sn{flex:1;font-size:14px}
   .slot .est{font-size:12px;color:var(--tenue)}
@@ -204,7 +253,7 @@
     <div class="video-overlay"></div>
     <div class="landing-inner">
       <img src="logo.png" class="logo-grande" alt="Maxim Fishing">
-      <div class="landing-sub">QA / QC &middot; INSUMOS</div>
+      <div class="landing-nombre">NEXUS <b>TOOLS</b></div>
       <button class="btn-cta" id="btnLanding">Entrar</button>
     </div>
   </div>
@@ -218,20 +267,59 @@
     <div class="login-inner">
       <div class="login-card">
         <img src="logo.png" class="logo-card" alt="Maxim Fishing">
-        <div class="tabs">
-          <button class="tab on" data-tab="vis" type="button">Visualizar</button>
-          <button class="tab" data-tab="edit" type="button">Editar</button>
-        </div>
-        <h2 class="login-title" id="loginTitle">Solo visualizar</h2>
-        <p class="login-desc" id="loginDesc">Ingresa con tu cuenta para consultar equipos, herramientas, documentos y fichas t&eacute;cnicas.</p>
+        <h2 class="login-title">INGRESO</h2>
         <form id="formLogin">
           <label class="lbl">Correo<input id="correo" type="email" required autocomplete="username" placeholder="tucorreo@maximfishing.com"></label>
           <label class="lbl">Contrase&ntilde;a<input id="clave" type="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></label>
           <p class="err hidden" id="loginErr"></p>
-          <button class="btn-cta full" id="btnEntrar" type="submit">Entrar a consultar</button>
+          <button class="btn-cta full" id="btnEntrar" type="submit">Ingresar</button>
         </form>
         <a href="#" class="volver" id="btnVolver">&larr; Volver al inicio</a>
       </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA HUB (NEXUS TOOLS) -->
+  <div id="hub" class="hidden">
+    <div class="hub-wrap">
+      <header class="hub-top">
+        <img src="logo.png" alt="Maxim Fishing">
+        <span class="sp"></span>
+        <span class="nombre" id="hNombre"></span>
+        <span class="rol" id="hRol"></span>
+        <button class="salir" id="hubSalir">Salir</button>
+      </header>
+      <div class="hub-hero">
+        <h1>NEXUS <b>TOOLS</b></h1>
+        <p>Plataforma de Maxim Fishing Solutions para administrar y controlar las herramientas, equipos y procesos de la operaci&oacute;n. Elige un m&oacute;dulo para comenzar.</p>
+      </div>
+      <div class="mod-grid">
+        <button class="mod on" id="modMtto" type="button">
+          <div class="mod-ic">MO</div>
+          <h3>Mtto Operativo</h3>
+          <p>Inventario, hojas de vida, mantenimientos con alertas y dashboard de herramientas y equipos de control de presi&oacute;n.</p>
+          <span class="mod-cta">Entrar &rarr;</span>
+        </button>
+        <div class="mod soon">
+          <div class="mod-ic">ME</div>
+          <h3>Mtto Electromec&aacute;nico</h3>
+          <p>Gesti&oacute;n del mantenimiento de equipos electromec&aacute;nicos.</p>
+          <span class="mod-badge">Pr&oacute;ximamente</span>
+        </div>
+        <div class="mod soon">
+          <div class="mod-ic">PO</div>
+          <h3>Procedimientos Operativos</h3>
+          <p>Biblioteca de procedimientos e instructivos de la operaci&oacute;n.</p>
+          <span class="mod-badge">Pr&oacute;ximamente</span>
+        </div>
+        <a class="mod link" href="https://maxim-fishing.github.io/maxim-qaqc/login.html" target="_blank" rel="noopener">
+          <div class="mod-ic">QC</div>
+          <h3>QA/QC Insumos</h3>
+          <p>Control de calidad de insumos. Se abre la plataforma MAXIM QA/QC en una pesta&ntilde;a nueva.</p>
+          <span class="mod-cta">Ingresar &rarr;</span>
+        </a>
+      </div>
+      <div class="hub-pend">Banco de infograf&iacute;as &mdash; pr&oacute;ximamente.</div>
     </div>
   </div>
 
@@ -247,7 +335,7 @@
       </div>
 
       <div class="guia-hero">
-        <h1>Maxim <b>PCE</b> &middot; Control de presi&oacute;n</h1>
+        <h1>Mtto Operativo &middot; <b>NEXUS TOOLS</b></h1>
         <p>Este sistema guarda, administra y controla el mantenimiento de las herramientas y equipos de control de presi&oacute;n: una hoja de vida por cada &iacute;tem, sus documentos, los mantenimientos con alertas de vencimiento, un dashboard con el estado general y un archivo maestro que se refleja autom&aacute;ticamente en Google Drive.</p>
       </div>
 
@@ -337,12 +425,15 @@
       <img src="logo.png" alt="Maxim Fishing" class="logo-barra">
       <div class="nav">
         <button id="navInv" class="on">Inventario</button>
+        <button id="navMov">Movilizaci&oacute;n</button>
         <button id="navPanel">Dashboard</button>
+        <button id="navFab">Fabricantes</button>
       </div>
       <input class="buscar" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
       <button class="campana" id="campana" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
       <div class="usuario">
         <button class="btn hidden" id="nuevo">+ Nuevo</button>
+        <button class="salir" id="navHome" title="Volver a los m&oacute;dulos">&larr; Inicio</button>
         <button class="salir" id="navGuia" title="Ver la gu&iacute;a">Gu&iacute;a</button>
         <span class="nombre" id="nombre"></span>
         <span class="rol" id="rol"></span>
@@ -421,6 +512,43 @@
           <tbody id="pFilas"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- VISTA MOVILIZACIÓN -->
+    <div id="vMov" class="hidden">
+      <div class="mov-form" id="movForm">
+        <div class="seccion" style="margin-top:0">Movilizar equipo / herramienta</div>
+        <div class="mov-row">
+          <input id="movCodigo" placeholder="C&oacute;digo del &iacute;tem (ej. EPBMS350X0002)" autocomplete="off">
+          <button class="btn2" id="movBuscar" type="button">Buscar</button>
+        </div>
+        <p class="mov-info" id="movInfo"></p>
+        <div class="mov-row">
+          <select id="movDestino"><option value="">Mover a&hellip;</option></select>
+          <button class="btn" id="movGuardar" type="button" disabled>Registrar movimiento</button>
+        </div>
+        <p class="msg hidden" id="movMsg"></p>
+      </div>
+      <div class="mov-toolbar">
+        <div class="seccion" style="margin:0">Historial de movimientos</div>
+        <button class="btn2" id="movInforme" type="button">Descargar informe &uacute;ltima semana (CSV)</button>
+      </div>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Origen</th><th>Destino</th><th>Usuario</th></tr></thead>
+          <tbody id="movFilas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VISTA FABRICANTES -->
+    <div id="vFab" class="hidden">
+      <div class="filtros">
+        <select id="fabSelect"><option value="">Elige un fabricante&hellip;</option></select>
+      </div>
+      <p class="fab-nota">La ficha t&eacute;cnica y el manual O&amp;M que se cargan aqu&iacute; se aplican a <b>todos</b> los c&oacute;digos de ese fabricante y tipo. En la ficha de cada &iacute;tem aparecen autom&aacute;ticamente como "Del fabricante".</p>
+      <p class="msg hidden" id="fabMsg"></p>
+      <div class="wrap" id="fabTipos"><div class="vacio">Elige un fabricante para ver y cargar sus documentos.</div></div>
     </div>
   </div>
 
@@ -551,30 +679,27 @@
 
   // ---- Pantallas (previa / ingreso / guia / app) ----
   function mostrarPantalla(id){
-    ["landing","login","guia","app"].forEach(function(p){
+    ["landing","login","hub","guia","app"].forEach(function(p){
       var el=document.getElementById(p); if(el) el.classList.toggle("hidden", p!==id);
     });
     window.scrollTo(0,0);
   }
   const verLanding = () => mostrarPantalla("landing");
   const verLogin   = () => mostrarPantalla("login");
+  const verHub     = () => mostrarPantalla("hub");
   const verGuia    = () => mostrarPantalla("guia");
   const verAppReal = () => mostrarPantalla("app");
+  function cerrarSesion(){
+    token=null; usuario=null;
+    localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user");
+    verLanding();
+  }
 
   $("#btnLanding").addEventListener("click", verLogin);
   $("#btnVolver").addEventListener("click", function(e){ e.preventDefault(); verLanding(); });
-  document.querySelectorAll(".tab").forEach(function(t){
-    t.addEventListener("click", function(){
-      document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("on"); });
-      t.classList.add("on");
-      var edit = t.getAttribute("data-tab")==="edit";
-      $("#loginTitle").textContent = edit ? "Editar" : "Solo visualizar";
-      $("#loginDesc").textContent = edit
-        ? "Ingresa con tu cuenta de administrador u operador para registrar mantenimientos, subir documentos y editar fichas."
-        : "Ingresa con tu cuenta para consultar equipos, herramientas, documentos y fichas técnicas.";
-      $("#btnEntrar").textContent = edit ? "Entrar a editar" : "Entrar a consultar";
-    });
-  });
+  $("#modMtto").addEventListener("click", verAppReal);   // modulo Mtto Operativo -> app actual
+  $("#navHome").addEventListener("click", verHub);       // volver al hub de modulos
+  $("#hubSalir").addEventListener("click", cerrarSesion);
   $("#gIr").addEventListener("click", verAppReal);
   $("#gIr2").addEventListener("click", verAppReal);
   $("#navGuia").addEventListener("click", verGuia);
@@ -607,11 +732,7 @@
       err.classList.remove("hidden");
     }finally{ btn.disabled=false; btn.textContent=lbl; }
   });
-  $("#salir").addEventListener("click", ()=>{
-    token=null; usuario=null;
-    localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user");
-    verLanding();
-  });
+  $("#salir").addEventListener("click", cerrarSesion);
 
   function codHTML(c){
     if(!c || c.length<9) return '<span class="cod">'+esc(c)+'</span>';
@@ -629,8 +750,10 @@
       const nom = p.nombre || usuario.email;
       $("#nombre").textContent = nom;
       $("#gNombre").textContent = "Hola, "+nom;
+      $("#hNombre").textContent = "Hola, "+nom;
       const el = $("#rol"); el.textContent = rolActual; el.className = "rol "+rolActual;
       const gel = $("#gRol"); gel.textContent = rolActual; gel.className = "rol "+rolActual;
+      const hel = $("#hRol"); hel.textContent = rolActual; hel.className = "rol "+rolActual;
       $("#nuevo").classList.toggle("hidden", !esAdmin());
     }catch(e){ $("#nombre").textContent = usuario.email; $("#gNombre").textContent = "Hola"; }
   }
@@ -911,7 +1034,7 @@
       const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,fecha_vencimiento,metodo,datos_formulario&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
       const d=await r.json();
       if(d&&d[0]){
-        cicloVigente={id:d[0].id, fecha_realizado:d[0].fecha_realizado}; cicloDatos=d[0].datos_formulario||null; cargarDocsDinamicos();
+        cicloVigente={id:d[0].id, fecha_realizado:d[0].fecha_realizado, metodo:d[0].metodo}; cicloDatos=d[0].datos_formulario||null; cargarDocsDinamicos();
         $("#mVerFormWL").classList.toggle("hidden", !(d[0].metodo==="formulario" && grupoDe(itemActual)==="WL"));
         const v=new Date(d[0].fecha_vencimiento); const hoy=new Date(hoyISO());
         const dias=Math.round((v-hoy)/86400000);
@@ -1004,11 +1127,157 @@
   function mostrarMsg(t, ok){ const m=$("#mMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
 
   // ---- Navegación interna app ----
-  function verInventario(){ $("#navInv").classList.add("on"); $("#navPanel").classList.remove("on"); $("#vInv").classList.remove("hidden"); $("#panel").classList.add("hidden"); }
-  function verPanel(){ $("#navPanel").classList.add("on"); $("#navInv").classList.remove("on"); $("#panel").classList.remove("hidden"); $("#vInv").classList.add("hidden"); cargarPanel(); }
+  function mostrarVista(vistaId, navId){
+    ["vInv","vMov","panel","vFab"].forEach(function(v){ $("#"+v).classList.toggle("hidden", v!==vistaId); });
+    ["navInv","navMov","navPanel","navFab"].forEach(function(n){ $("#"+n).classList.toggle("on", n===navId); });
+  }
+  function verInventario(){ mostrarVista("vInv","navInv"); }
+  function verMov(){ mostrarVista("vMov","navMov"); prepararMov(); cargarHistorial(); }
+  function verPanel(){ mostrarVista("panel","navPanel"); cargarPanel(); }
+  function verFab(){ mostrarVista("vFab","navFab"); prepararFab(); }
   $("#navInv").addEventListener("click", verInventario);
+  $("#navMov").addEventListener("click", verMov);
   $("#navPanel").addEventListener("click", verPanel);
+  $("#navFab").addEventListener("click", verFab);
   $("#campana").addEventListener("click", verPanel);
+
+  // ---- Movilizacion ----
+  let movItem=null, movDestinosCargados=false;
+  function movMsg(t,ok){ const m=$("#movMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
+  function prepararMov(){
+    $("#movForm").classList.toggle("hidden", !puedeMant());
+    if(!movDestinosCargados){
+      const sel=$("#movDestino");
+      if(bases&&bases.length){ const og=document.createElement("optgroup"); og.label="Bases"; bases.forEach(function(b){ const o=document.createElement("option"); o.value="base:"+b.id; o.textContent=b.nombre; og.appendChild(o); }); sel.appendChild(og); }
+      if(unidades&&unidades.length){ const og=document.createElement("optgroup"); og.label="Unidades"; unidades.forEach(function(u){ const o=document.createElement("option"); o.value="uni:"+u.id; o.textContent=u.nombre; og.appendChild(o); }); sel.appendChild(og); }
+      movDestinosCargados=true;
+    }
+  }
+  async function movBuscarItem(){
+    const cod=($("#movCodigo").value||"").trim().toUpperCase(); if(!cod) return;
+    $("#movInfo").textContent="Buscando…"; $("#movGuardar").disabled=true; movItem=null;
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/items?select=id,codigo,descripcion,base_id,unidad_id,bases(nombre),unidades(nombre)&codigo=eq."+encodeURIComponent(cod)+"&limit=1",{headers:headers()});
+      const d=await r.json();
+      if(d&&d[0]){ movItem=d[0];
+        const ub=(d[0].bases&&d[0].bases.nombre)||(d[0].unidades&&d[0].unidades.nombre)||"Sin ubicación";
+        $("#movInfo").innerHTML="<b>"+esc(d[0].descripcion||"")+"</b> &middot; Ubicación actual: <span class=\"u\">"+esc(ub)+"</span>";
+        $("#movGuardar").disabled=false;
+      } else { $("#movInfo").textContent="No se encontró ese código."; }
+    }catch(e){ $("#movInfo").textContent="No se pudo buscar."; }
+  }
+  async function movGuardar(){
+    if(!movItem){ movMsg("Primero busca un código válido.",false); return; }
+    const val=$("#movDestino").value; if(!val){ movMsg("Elige un destino.",false); return; }
+    const btn=$("#movGuardar"); btn.disabled=true;
+    let p_base=null,p_uni=null;
+    if(val.indexOf("base:")===0) p_base=parseInt(val.slice(5)); else if(val.indexOf("uni:")===0) p_uni=parseInt(val.slice(4));
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/rpc/mover_item",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:movItem.id,p_base_id:p_base,p_unidad_id:p_uni})});
+      if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+      movMsg("Movimiento registrado.",true);
+      $("#movCodigo").value=""; $("#movInfo").textContent=""; $("#movDestino").value=""; movItem=null; $("#movGuardar").disabled=true;
+      cargarHistorial();
+    }catch(e){ movMsg("No se pudo registrar el movimiento. "+(e.message&&e.message.indexOf("permiso")>=0?"(sin permiso)":""), false); }
+    finally{ btn.disabled=false; }
+  }
+  async function cargarHistorial(){
+    const tb=$("#movFilas"); tb.innerHTML='<tr><td colspan="6" class="vacio">Cargando…</td></tr>';
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:60})});
+      const d=await r.json()||[];
+      if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="vacio">Sin movimientos en los últimos 60 días.</td></tr>'; return; }
+      tb.innerHTML=d.map(function(m){ return '<tr><td>'+esc(String(m.fecha||"").slice(0,16).replace("T"," "))+'</td><td>'+codHTML(m.codigo)+'</td><td class="desc">'+esc(m.descripcion)+'</td><td>'+esc(m.origen)+'</td><td>'+esc(m.destino)+'</td><td>'+esc(m.usuario)+'</td></tr>'; }).join("");
+    }catch(e){ tb.innerHTML='<tr><td colspan="6" class="vacio">No se pudo cargar el historial.</td></tr>'; }
+  }
+  async function movInforme(){
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:7})});
+      const d=await r.json()||[];
+      const cab=["Fecha","Codigo","Descripcion","Origen","Destino","Usuario"];
+      const cq=function(s){ return '"'+String(s==null?"":s).replace(/"/g,'""')+'"'; };
+      const lineas=[cab.join(",")].concat(d.map(function(m){ return [String(m.fecha||"").slice(0,16).replace("T"," "),m.codigo,m.descripcion,m.origen,m.destino,m.usuario].map(cq).join(","); }));
+      const csv="﻿"+lineas.join("\r\n");
+      const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+      const a=document.createElement("a"); a.href=window.URL.createObjectURL(blob);
+      a.download="movimientos_ultima_semana_"+hoyISO()+".csv"; document.body.appendChild(a); a.click(); a.remove();
+    }catch(e){ movMsg("No se pudo generar el informe.",false); }
+  }
+  $("#movBuscar").addEventListener("click", movBuscarItem);
+  $("#movCodigo").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); movBuscarItem(); } });
+  $("#movGuardar").addEventListener("click", movGuardar);
+  $("#movInforme").addEventListener("click", movInforme);
+
+  // ---- Fabricantes (documentos compartidos por fabricante + tipo) ----
+  let fabTree=null;
+  const FSEP="~~";
+  function fabMsg(t,ok){ const m=$("#fabMsg"); if(!m) return; m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
+  async function cargarFabricantes(){
+    if(fabTree) return;
+    fabTree={};
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/items?select=fabricante,tipo_codigo,tipos_item(nombre)&fabricante=not.is.null&limit=20000",{headers:headers()});
+      const d=await r.json()||[]; const seen={};
+      d.forEach(function(it){
+        const f=String(it.fabricante||"").trim(); if(!f) return;
+        const tc=it.tipo_codigo||""; const key=f+FSEP+tc;
+        if(seen[key]) return; seen[key]=1;
+        (fabTree[f]=fabTree[f]||[]).push({tipo_codigo:tc, nombre:(it.tipos_item&&it.tipos_item.nombre)||tc});
+      });
+      Object.keys(fabTree).forEach(function(f){ fabTree[f].sort(function(a,b){ return String(a.nombre).localeCompare(String(b.nombre)); }); });
+    }catch(e){ fabTree={}; }
+  }
+  async function prepararFab(){
+    await cargarFabricantes();
+    const sel=$("#fabSelect");
+    if(sel.options.length<=1){
+      const keys=Object.keys(fabTree).sort();
+      keys.forEach(function(f){ const o=document.createElement("option"); o.value=f; o.textContent=f; sel.appendChild(o); });
+      if(!keys.length){ sel.insertAdjacentHTML("beforeend", '<option value="" disabled>(aun no hay fabricantes registrados)</option>'); }
+    }
+  }
+  function fabSlot(fab,tc,tipo,label,doc){
+    const tiene=!!doc; let acc="";
+    if(tiene) acc+='<a href="#" data-fabver="'+esc(doc.archivo_path)+'">Ver</a>';
+    if(esAdmin()) acc+='<button class="'+(tiene?"rep":"up")+'" data-fabsub="'+esc(fab+FSEP+tc+FSEP+tipo)+'">'+(tiene?"Reemplazar":"Subir")+'</button>';
+    return '<div class="slot"><span class="sn">'+label+'</span><span class="est'+(tiene?" ok":"")+'">'+(tiene?"Cargado":"Sin cargar")+'</span>'+acc+'</div>';
+  }
+  async function renderFabTipos(fab){
+    const cont=$("#fabTipos");
+    if(!fab){ cont.innerHTML='<div class="vacio">Elige un fabricante para ver y cargar sus documentos.</div>'; return; }
+    const tipos=(fabTree&&fabTree[fab])||[];
+    if(!tipos.length){ cont.innerHTML='<div class="vacio">Este fabricante no tiene tipos asociados.</div>'; return; }
+    cont.innerHTML='<div class="cargando" style="padding:0 18px">Cargando documentos&hellip;</div>';
+    let docs=[];
+    try{ const r=await fetch(URL_SB+"/rest/v1/documentos_fabricante?select=tipo_codigo,tipo,archivo_path&fabricante=eq."+encodeURIComponent(fab),{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
+    const mapa={}; docs.forEach(function(d){ mapa[d.tipo_codigo+FSEP+d.tipo]=d; });
+    cont.innerHTML=tipos.map(function(t){
+      const ft=mapa[t.tipo_codigo+FSEP+"ficha_tecnica"], mn=mapa[t.tipo_codigo+FSEP+"manual"];
+      return '<div class="fab-tipo"><div class="fab-tipo-h"><span class="cod">'+esc(t.tipo_codigo)+'</span>'+esc(t.nombre||"")+'</div>'+
+        fabSlot(fab,t.tipo_codigo,"ficha_tecnica","Ficha tecnica",ft)+
+        fabSlot(fab,t.tipo_codigo,"manual","Manual O&M",mn)+'</div>';
+    }).join("");
+    cont.querySelectorAll("[data-fabver]").forEach(function(a){ a.addEventListener("click",function(e){ e.preventDefault(); verArchivo(a.getAttribute("data-fabver")); }); });
+    cont.querySelectorAll("[data-fabsub]").forEach(function(b){ b.addEventListener("click",function(){
+      const p=b.getAttribute("data-fabsub").split(FSEP); pendiente={scope:"fab",fabricante:p[0],tipo_codigo:p[1],tipo:p[2]};
+      $("#filePicker").value=""; $("#filePicker").click();
+    }); });
+  }
+  $("#fabSelect").addEventListener("change", function(){ $("#fabMsg").className="msg hidden"; renderFabTipos($("#fabSelect").value); });
+
+  async function subirFab(pend, file){
+    fabMsg("Subiendo el documento\u2026", true);
+    try{
+      const path="fabricantes/"+pend.fabricante+"/"+pend.tipo_codigo+"/"+pend.tipo+".pdf";
+      await subirArchivo(path, file);
+      const rq=await fetch(URL_SB+"/rest/v1/documentos_fabricante?select=id&fabricante=eq."+encodeURIComponent(pend.fabricante)+"&tipo_codigo=eq."+encodeURIComponent(pend.tipo_codigo)+"&tipo=eq."+pend.tipo,{headers:headers()});
+      const ex=await rq.json();
+      if(ex&&ex[0]) await fetch(URL_SB+"/rest/v1/documentos_fabricante?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({archivo_path:path, actualizado:new Date().toISOString()})});
+      else await fetch(URL_SB+"/rest/v1/documentos_fabricante",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({fabricante:pend.fabricante,tipo_codigo:pend.tipo_codigo,tipo:pend.tipo,archivo_path:path})});
+      fabMsg("Documento cargado. Se aplica a todos los codigos de este fabricante y tipo.", true);
+      renderFabTipos(pend.fabricante);
+    }catch(e){ fabMsg("No se pudo subir el archivo.", false); }
+  }
   $("#pLinea").addEventListener("change", cargarPanel);
   $("#pCategoria").addEventListener("change", cargarPanel);
   $("#pBase").addEventListener("change", cargarPanel);
@@ -1090,8 +1359,21 @@
     let docs=[];
     try{ const r=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=id,tipo,archivo_path&item_id=eq."+itemActual.id,{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
     const mapa={}; docs.forEach(d=>mapa[d.tipo]=d);
-    cont.innerHTML = ESTATICOS.map(x=>slotHTML("est",x,mapa[x.k],esAdmin())).join("");
+    const fab=String(itemActual.fabricante||"").trim(), tc=itemActual.tipo_codigo||"";
+    const fmapa={};
+    if(fab && tc){
+      try{ const rf=await fetch(URL_SB+"/rest/v1/documentos_fabricante?select=tipo,archivo_path&fabricante=eq."+encodeURIComponent(fab)+"&tipo_codigo=eq."+encodeURIComponent(tc),{headers:headers()}); if(rf.ok){ (await rf.json()||[]).forEach(function(d){ fmapa[d.tipo]=d; }); } }catch(e){}
+    }
+    cont.innerHTML = ESTATICOS.map(function(x){
+      if(!mapa[x.k] && fmapa[x.k]) return slotHeredado(x, fmapa[x.k]);
+      return slotHTML("est",x,mapa[x.k],esAdmin());
+    }).join("");
     enlazarSlots(cont);
+  }
+  function slotHeredado(tipoObj, doc){
+    let acc='<a href="#" data-ver="'+esc(doc.archivo_path)+'">Ver</a>';
+    if(esAdmin()) acc+='<button class="rep" data-sub="est:'+tipoObj.k+'">Subir propio</button>';
+    return '<div class="slot"><span class="sn">'+tipoObj.t+'</span><span class="est ok">Del fabricante</span>'+acc+'</div>';
   }
   async function cargarDocsDinamicos(){
     const cont=$("#mDocsDin");
@@ -1100,14 +1382,30 @@
     try{ const r=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,tipo,archivo_path&ciclo_id=eq."+cicloVigente.id,{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
     const mapa={}; docs.forEach(d=>mapa[d.tipo]=d);
     const lista = (itemActual.categoria_id==="equipo") ? DIN_BASE.concat(DIN_EQUIPO) : DIN_BASE;
-    cont.innerHTML='<div class="seccion" style="margin-top:4px">Documentos del ciclo actual</div>'+lista.map(x=>slotHTML("din",x,mapa[x.k],puedeMant())).join("");
+    cont.innerHTML='<div class="seccion" style="margin-top:4px">Documentos del ciclo actual</div>'+
+      estadoCompletitud(mapa)+
+      lista.map(x=>slotHTML("din",x,mapa[x.k],puedeMant())).join("");
     enlazarSlots(cont);
+  }
+  // Completitud del ciclo: obligatorios todos MENOS reporte_falla y espesores.
+  // Si el mantenimiento se registro por formulario (Wireline), el reporte de mantenimiento ya cuenta.
+  function estadoCompletitud(mapa){
+    const NOMBRES={reporte_mantenimiento:"Reporte de mantenimiento", ndt:"Reporte NDT", prueba_presion:"Prueba de presión", prueba_dureza:"Prueba de dureza"};
+    let req=["ndt"];
+    if(itemActual.categoria_id==="equipo") req=req.concat(["prueba_presion","prueba_dureza"]);
+    if(!(cicloVigente && cicloVigente.metodo==="formulario")) req.push("reporte_mantenimiento");
+    const faltan=req.filter(k=>!mapa[k]);
+    if(faltan.length===0) return '<p style="margin:8px 0 6px"><span class="mant-chip ok">Mantenimiento completo</span></p>';
+    return '<p style="margin:8px 0 6px"><span class="mant-chip bad">Mantenimiento incompleto</span>'+
+      '<span class="mant-falta">Falta: '+faltan.map(k=>NOMBRES[k]||k).join(", ")+'</span></p>';
   }
 
 
   $("#filePicker").addEventListener("change", async function(e){
     const file=e.target.files[0]; if(!file||!pendiente) return;
-    const scope=pendiente.scope, tipo=pendiente.tipo; pendiente=null;
+    const pend=pendiente; pendiente=null;
+    if(pend.scope==="fab"){ await subirFab(pend,file); return; }
+    const scope=pend.scope, tipo=pend.tipo;
     mostrarMsg("Subiendo…", true);
     try{
       if(scope==="est"){
@@ -1219,7 +1517,7 @@
     await cargarTipos();
     await buscar();
     cargarPanel(); // para poblar el contador de alertas
-    verGuia();     // siempre mostramos la guia al entrar
+    verHub();      // al entrar mostramos el hub de modulos NEXUS TOOLS
   }
   if(token && usuario){ iniciar(); } else { verLanding(); }
 </script>

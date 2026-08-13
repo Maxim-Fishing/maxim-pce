@@ -19,18 +19,94 @@
   .marca span{color:var(--negro);background:var(--naranja);padding:1px 7px;border-radius:3px;font-size:11px;letter-spacing:.14em}
   .hidden{display:none!important}
 
-  #login{display:grid;place-items:center;min-height:100vh;padding:20px}
-  .card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--borde);border-top:3px solid var(--naranja);border-radius:8px;padding:30px 26px}
-  .lema{color:var(--tenue);margin:14px 0 24px;line-height:1.5}
-  form{display:grid;gap:15px}
-  label{display:grid;gap:6px;font-size:13px;color:var(--tenue)}
   input,select,textarea{background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:10px 12px;border-radius:6px;font-size:15px;font-family:inherit}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--naranja);border-color:transparent}
+  form{display:grid;gap:15px}
+  label{display:grid;gap:6px;font-size:13px;color:var(--tenue)}
   .btn{background:var(--naranja);color:#180a00;border:0;padding:11px 16px;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer}
   .btn:hover{background:var(--naranja2)} .btn:disabled{opacity:.6;cursor:default}
   .btn2{background:var(--panel2);color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px}
   .btn2:hover{border-color:var(--tenue)}
   .err{color:var(--rojo);font-size:13px;margin:0}
+
+  /* ===== Pantallas con video (previa / ingreso) ===== */
+  .pantalla-video{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden;z-index:10;
+    background:linear-gradient(135deg,#0d0e10,#1b1207 55%,#0d0e10)}
+  .bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .video-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 42%, rgba(13,14,16,.30), rgba(13,14,16,.86) 78%)}
+  /* Previa */
+  .landing-inner{position:relative;z-index:2;text-align:center;padding:24px;display:grid;justify-items:center;gap:22px;animation:fadeUp .8s ease}
+  .logo-grande{width:min(440px,74vw);filter:drop-shadow(0 6px 26px rgba(0,0,0,.6))}
+  .landing-sub{color:#d3d7dc;letter-spacing:.42em;font-size:14px;font-weight:600;text-transform:uppercase;padding-left:.42em}
+  .btn-cta{background:var(--naranja);color:#180a00;border:0;padding:14px 46px;border-radius:40px;font-weight:800;font-size:16px;cursor:pointer;
+    box-shadow:0 8px 30px rgba(255,106,0,.45);transition:transform .12s, box-shadow .12s}
+  .btn-cta:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,106,0,.62)}
+  .btn-cta.full{width:100%;padding:14px}
+  .btn-cta.ghost{background:transparent;color:var(--texto);border:1px solid var(--borde);box-shadow:none}
+  .btn-cta.ghost:hover{border-color:var(--naranja2);color:var(--naranja2)}
+  /* Tarjeta de ingreso */
+  .login-inner{position:relative;z-index:2;width:100%;max-width:432px;padding:20px}
+  .login-card{background:rgba(19,21,26,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:26px 26px 22px;box-shadow:0 24px 70px rgba(0,0,0,.55);animation:fadeUp .5s ease}
+  .logo-card{display:block;width:200px;margin:2px auto 18px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(255,255,255,.05);padding:5px;border-radius:12px;margin-bottom:18px}
+  .tab{background:transparent;border:0;color:var(--tenue);padding:11px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+  .tab.on{background:rgba(46,52,64,.92);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .login-title{margin:2px 0 6px;font-size:21px;color:#fff}
+  .login-desc{color:var(--tenue);font-size:13.5px;line-height:1.5;margin:0 0 18px}
+  .login-card .lbl{display:grid;gap:7px;font-size:13px;color:#c7ccd2;margin-bottom:14px}
+  .login-card input{background:rgba(13,14,16,.7);border:1px solid rgba(255,255,255,.12);padding:13px 14px;border-radius:10px;font-size:15px}
+  .volver{display:block;text-align:center;margin-top:14px;color:var(--tenue);font-size:13px;text-decoration:none}
+  .volver:hover{color:var(--naranja2)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ===== Guía interactiva ===== */
+  #guia{position:fixed;inset:0;z-index:9;overflow-y:auto;
+    background:radial-gradient(1100px 480px at 82% -12%, rgba(255,106,0,.10), transparent), var(--negro)}
+  .guia-wrap{max-width:1040px;margin:0 auto;padding:26px 22px 60px}
+  .guia-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--borde)}
+  .guia-top img{height:40px}
+  .guia-top .sp{flex:1}
+  .guia-hero{margin:22px 0 8px}
+  .guia-hero h1{font-size:30px;margin:0 0 8px;line-height:1.15}
+  .guia-hero h1 b{color:var(--naranja)}
+  .guia-hero p{color:var(--tenue);font-size:15px;max-width:700px;line-height:1.6;margin:0}
+  .guia-sec{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--naranja2);font-weight:800;margin:30px 0 14px}
+  .guia-sec .hint{color:var(--tenue);text-transform:none;letter-spacing:0;font-weight:400;font-size:12px}
+  .rol-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .rol-card{background:var(--panel);border:1px solid var(--borde);border-top:3px solid var(--tenue);border-radius:12px;padding:18px;cursor:pointer;transition:transform .12s}
+  .rol-card:hover{transform:translateY(-3px)}
+  .rol-card.admin{border-top-color:var(--naranja)} .rol-card.oper{border-top-color:var(--acero)} .rol-card.cons{border-top-color:var(--tenue)}
+  .rol-card h3{margin:0 0 6px;font-size:17px;display:flex;align-items:center;gap:10px}
+  .rol-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-weight:900;font-size:14px}
+  .rol-card.admin .rol-ic{background:rgba(255,106,0,.16);color:var(--naranja2)}
+  .rol-card.oper .rol-ic{background:rgba(95,168,211,.16);color:var(--acero)}
+  .rol-card.cons .rol-ic{background:rgba(154,160,168,.16);color:var(--tenue)}
+  .rol-card .cargo{color:var(--tenue);font-size:12.5px;margin:0}
+  .rol-card ul{margin:0;padding-left:18px;color:#d4d8dd;font-size:13px;line-height:1.7;max-height:0;overflow:hidden;opacity:0;transition:max-height .3s ease,opacity .3s ease}
+  .rol-card.open ul{max-height:320px;opacity:1;margin-top:10px}
+  .rol-more{color:var(--naranja2);font-size:12px;font-weight:700;margin-top:10px}
+  .grp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grp-card{background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+  .grp-card .tag{font-size:40px;font-weight:900;letter-spacing:.05em;opacity:.13;position:absolute;top:6px;right:16px}
+  .grp-card.wl{border-left:4px solid var(--naranja)} .grp-card.ws{border-left:4px solid var(--acero)}
+  .grp-card h3{margin:0 0 4px;font-size:19px}
+  .grp-card p{color:var(--tenue);font-size:13px;margin:0 0 14px;line-height:1.5}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-family:var(--mono);font-size:12px;font-weight:700;padding:5px 11px;border-radius:6px;background:var(--panel2);border:1px solid var(--borde)}
+  .grp-card.wl .chip{color:var(--naranja2)} .grp-card.ws .chip{color:var(--acero)}
+  .pasos{display:grid;gap:10px}
+  .paso{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:14px 16px}
+  .paso .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--naranja);color:#180a00;font-weight:900;display:grid;place-items:center}
+  .paso .tx b{display:block;margin-bottom:2px}
+  .paso .tx span{color:var(--tenue);font-size:13px}
+  .legend{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .lg{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:14px}
+  .lg .dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:8px}
+  .lg b{font-size:14px}.lg p{margin:6px 0 0;color:var(--tenue);font-size:12px}
+  .guia-cta{display:flex;gap:12px;justify-content:center;margin:38px 0 0;flex-wrap:wrap}
+  @media(max-width:760px){.rol-grid,.legend{grid-template-columns:1fr 1fr}.grp-grid{grid-template-columns:1fr}}
+  @media(max-width:520px){.rol-grid,.legend{grid-template-columns:1fr}.guia-top .btn-cta{padding:12px 20px}}
 
   .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5;flex-wrap:wrap}
   .nav{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;padding:3px}
@@ -46,6 +122,7 @@
   .rol.operador{background:rgba(95,168,211,.18);color:var(--acero)}
   .rol.consulta{background:rgba(154,160,168,.15);color:var(--tenue)}
   .salir{background:transparent;color:var(--tenue);border:1px solid var(--borde);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .salir:hover{border-color:var(--tenue)}
   .filtros{display:flex;align-items:center;gap:12px;padding:14px 18px;flex-wrap:wrap}
   .conteo{color:var(--naranja2);font-weight:700;font-size:14px;margin-left:auto}
   .cargando{color:var(--tenue);font-size:13px}
@@ -118,17 +195,138 @@
 </style>
 </head>
 <body>
-  <!-- LOGIN -->
-  <div id="login">
-    <div class="card">
-      <div class="marca"><b>&#10005;</b> MAXIM <span>PCE</span></div>
-      <p class="lema">Control de herramientas y equipos de presi&oacute;n</p>
-      <form id="formLogin">
-        <label>Correo<input id="correo" type="email" required autocomplete="username"></label>
-        <label>Contrase&ntilde;a<input id="clave" type="password" required autocomplete="current-password"></label>
-        <p class="err hidden" id="loginErr"></p>
-        <button class="btn" id="btnEntrar" type="submit">Entrar</button>
-      </form>
+  <!-- PANTALLA PREVIA -->
+  <div id="landing" class="pantalla-video">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="intro.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="landing-inner">
+      <img src="logo.png" class="logo-grande" alt="Maxim Fishing">
+      <div class="landing-sub">QA / QC &middot; INSUMOS</div>
+      <button class="btn-cta" id="btnLanding">Entrar</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE INGRESO -->
+  <div id="login" class="pantalla-video hidden">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="acceso.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="login-inner">
+      <div class="login-card">
+        <img src="logo.png" class="logo-card" alt="Maxim Fishing">
+        <div class="tabs">
+          <button class="tab on" data-tab="vis" type="button">Visualizar</button>
+          <button class="tab" data-tab="edit" type="button">Editar</button>
+        </div>
+        <h2 class="login-title" id="loginTitle">Solo visualizar</h2>
+        <p class="login-desc" id="loginDesc">Ingresa con tu cuenta para consultar equipos, herramientas, documentos y fichas t&eacute;cnicas.</p>
+        <form id="formLogin">
+          <label class="lbl">Correo<input id="correo" type="email" required autocomplete="username" placeholder="tucorreo@maximfishing.com"></label>
+          <label class="lbl">Contrase&ntilde;a<input id="clave" type="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></label>
+          <p class="err hidden" id="loginErr"></p>
+          <button class="btn-cta full" id="btnEntrar" type="submit">Entrar a consultar</button>
+        </form>
+        <a href="#" class="volver" id="btnVolver">&larr; Volver al inicio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA GUÍA -->
+  <div id="guia" class="hidden">
+    <div class="guia-wrap">
+      <div class="guia-top">
+        <img src="logo.png" alt="Maxim Fishing">
+        <span class="sp"></span>
+        <span class="nombre" id="gNombre"></span>
+        <span class="rol" id="gRol"></span>
+        <button class="btn-cta" id="gIr">Ir al inventario &rarr;</button>
+      </div>
+
+      <div class="guia-hero">
+        <h1>Maxim <b>PCE</b> &middot; Control de presi&oacute;n</h1>
+        <p>Este sistema guarda, administra y controla el mantenimiento de las herramientas y equipos de control de presi&oacute;n: una hoja de vida por cada &iacute;tem, sus documentos, los mantenimientos con alertas de vencimiento, un dashboard con el estado general y un archivo maestro que se refleja autom&aacute;ticamente en Google Drive.</p>
+      </div>
+
+      <div class="guia-sec">Roles &middot; qu&eacute; puede hacer cada uno <span class="hint">(toca una tarjeta para ver el detalle)</span></div>
+      <div class="rol-grid">
+        <div class="rol-card admin" data-rol>
+          <h3><span class="rol-ic">A</span> Administrador</h3>
+          <p class="cargo">Control total del sistema</p>
+          <div class="rol-more">Ver qu&eacute; puede hacer +</div>
+          <ul>
+            <li>Crear y editar la ficha (hoja de vida) de cada &iacute;tem.</li>
+            <li>Registrar mantenimientos y abrir nuevos ciclos.</li>
+            <li>Subir documentos est&aacute;ticos: COC, ficha t&eacute;cnica y manual.</li>
+            <li>Adjuntar los reportes de cada ciclo y el formulario Wireline.</li>
+            <li>Crear unidades nuevas.</li>
+            <li>Ver el dashboard completo.</li>
+          </ul>
+        </div>
+        <div class="rol-card oper" data-rol>
+          <h3><span class="rol-ic">O</span> Operador</h3>
+          <p class="cargo">Mantenimiento y documentos</p>
+          <div class="rol-more">Ver qu&eacute; puede hacer +</div>
+          <ul>
+            <li>Registrar mantenimientos (abre ciclo y calcula el vencimiento).</li>
+            <li>Subir los documentos del ciclo: reportes, NDT y pruebas.</li>
+            <li>Llenar el formulario digital Wireline.</li>
+            <li>Consultar todo el inventario y el dashboard.</li>
+            <li><b>No</b> crea ni edita la ficha del &iacute;tem.</li>
+          </ul>
+        </div>
+        <div class="rol-card cons" data-rol>
+          <h3><span class="rol-ic">C</span> Consulta</h3>
+          <p class="cargo">Solo lectura</p>
+          <div class="rol-more">Ver qu&eacute; puede hacer +</div>
+          <ul>
+            <li>Consultar fichas, documentos e historial de cada &iacute;tem.</li>
+            <li>Abrir y descargar los PDF.</li>
+            <li>Ver el dashboard y las alertas.</li>
+            <li>No modifica nada del sistema.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="guia-sec">Las dos familias de l&iacute;neas</div>
+      <div class="grp-grid">
+        <div class="grp-card wl">
+          <span class="tag">WL</span>
+          <h3>Wireline (WL)</h3>
+          <p>Herramientas y equipos de la operaci&oacute;n de wireline (cable). En los filtros y el dashboard, esta familia re&uacute;ne cuatro l&iacute;neas:</p>
+          <div class="chips"><span class="chip">EL</span><span class="chip">EP</span><span class="chip">SL</span><span class="chip">WL</span></div>
+        </div>
+        <div class="grp-card ws">
+          <span class="tag">WS</span>
+          <h3>Well Services (WS)</h3>
+          <p>Herramientas y equipos de servicios de pozo. Esta familia re&uacute;ne las otras cuatro l&iacute;neas:</p>
+          <div class="chips"><span class="chip">FB</span><span class="chip">SW</span><span class="chip">WT</span><span class="chip">WS</span></div>
+        </div>
+      </div>
+
+      <div class="guia-sec">C&oacute;mo funciona, paso a paso</div>
+      <div class="pasos">
+        <div class="paso"><span class="num">1</span><div class="tx"><b>Busca o filtra el &iacute;tem</b><span>Por familia (WL / WS), categor&iacute;a, tipo de herramienta, estado o texto (c&oacute;digo, S/N, descripci&oacute;n).</span></div></div>
+        <div class="paso"><span class="num">2</span><div class="tx"><b>Abre su ficha</b><span>Datos del &iacute;tem y documentos est&aacute;ticos: COC, ficha t&eacute;cnica y manual O&amp;M.</span></div></div>
+        <div class="paso"><span class="num">3</span><div class="tx"><b>Registra el mantenimiento</b><span>Se abre un ciclo con su fecha de vencimiento y una alerta cuando faltan 10 d&iacute;as o menos.</span></div></div>
+        <div class="paso"><span class="num">4</span><div class="tx"><b>Adjunta los documentos del ciclo</b><span>Reportes, NDT y pruebas; para Wireline puedes llenar el formulario digital.</span></div></div>
+        <div class="paso"><span class="num">5</span><div class="tx"><b>Todo se refleja en Google Drive</b><span>Cada PDF se archiva autom&aacute;ticamente en la ruta Categor&iacute;a &rarr; Tipo &rarr; C&oacute;digo.</span></div></div>
+        <div class="paso"><span class="num">6</span><div class="tx"><b>Controla desde el Dashboard</b><span>Vencidos, por vencer, al d&iacute;a, sin registro, completitud documental y cantidades por tipo.</span></div></div>
+      </div>
+
+      <div class="guia-sec">Sem&aacute;foro de mantenimiento</div>
+      <div class="legend">
+        <div class="lg"><b><span class="dot" style="background:var(--rojo)"></span>Vencido</b><p>Ya pas&oacute; la fecha de vencimiento del ciclo.</p></div>
+        <div class="lg"><b><span class="dot" style="background:var(--ambar)"></span>Por vencer</b><p>Vence en 10 d&iacute;as o menos. Aparece en la campana.</p></div>
+        <div class="lg"><b><span class="dot" style="background:var(--verde)"></span>Al d&iacute;a</b><p>Con mantenimiento vigente y sin urgencia.</p></div>
+        <div class="lg"><b><span class="dot" style="background:var(--tenue)"></span>Sin registro</b><p>A&uacute;n no tiene ning&uacute;n mantenimiento cargado.</p></div>
+      </div>
+
+      <div class="guia-cta">
+        <button class="btn-cta" id="gIr2">Ir al inventario &rarr;</button>
+      </div>
     </div>
   </div>
 
@@ -144,6 +342,7 @@
       <button class="campana" id="campana" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
       <div class="usuario">
         <button class="btn hidden" id="nuevo">+ Nuevo</button>
+        <button class="salir" id="navGuia" title="Ver la gu&iacute;a">Gu&iacute;a</button>
         <span class="nombre" id="nombre"></span>
         <span class="rol" id="rol"></span>
         <button class="salir" id="salir">Salir</button>
@@ -349,10 +548,47 @@
   const puedeMant = () => rolActual === "admin" || rolActual === "operador";
   const hoyISO = () => new Date().toISOString().slice(0,10);
 
+  // ---- Pantallas (previa / ingreso / guia / app) ----
+  function mostrarPantalla(id){
+    ["landing","login","guia","app"].forEach(function(p){
+      var el=document.getElementById(p); if(el) el.classList.toggle("hidden", p!==id);
+    });
+    window.scrollTo(0,0);
+  }
+  const verLanding = () => mostrarPantalla("landing");
+  const verLogin   = () => mostrarPantalla("login");
+  const verGuia    = () => mostrarPantalla("guia");
+  const verAppReal = () => mostrarPantalla("app");
+
+  $("#btnLanding").addEventListener("click", verLogin);
+  $("#btnVolver").addEventListener("click", function(e){ e.preventDefault(); verLanding(); });
+  document.querySelectorAll(".tab").forEach(function(t){
+    t.addEventListener("click", function(){
+      document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("on"); });
+      t.classList.add("on");
+      var edit = t.getAttribute("data-tab")==="edit";
+      $("#loginTitle").textContent = edit ? "Editar" : "Solo visualizar";
+      $("#loginDesc").textContent = edit
+        ? "Ingresa con tu cuenta de administrador u operador para registrar mantenimientos, subir documentos y editar fichas."
+        : "Ingresa con tu cuenta para consultar equipos, herramientas, documentos y fichas técnicas.";
+      $("#btnEntrar").textContent = edit ? "Entrar a editar" : "Entrar a consultar";
+    });
+  });
+  $("#gIr").addEventListener("click", verAppReal);
+  $("#gIr2").addEventListener("click", verAppReal);
+  $("#navGuia").addEventListener("click", verGuia);
+  document.querySelectorAll(".rol-card[data-rol]").forEach(function(c){
+    c.addEventListener("click", function(){
+      c.classList.toggle("open");
+      var m=c.querySelector(".rol-more");
+      if(m) m.textContent = c.classList.contains("open") ? "Ocultar −" : "Ver qué puede hacer +";
+    });
+  });
+
   // ---- Login ----
   $("#formLogin").addEventListener("submit", async e=>{
     e.preventDefault();
-    const btn=$("#btnEntrar"), err=$("#loginErr");
+    const btn=$("#btnEntrar"), err=$("#loginErr"); const lbl=btn.textContent;
     err.classList.add("hidden"); btn.disabled=true; btn.textContent="Entrando…";
     try{
       const r = await fetch(URL_SB+"/auth/v1/token?grant_type=password",{
@@ -368,12 +604,12 @@
     }catch(ex){
       err.textContent = "No pudimos iniciar sesión. Revisa el correo y la contraseña.";
       err.classList.remove("hidden");
-    }finally{ btn.disabled=false; btn.textContent="Entrar"; }
+    }finally{ btn.disabled=false; btn.textContent=lbl; }
   });
   $("#salir").addEventListener("click", ()=>{
     token=null; usuario=null;
     localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user");
-    $("#app").classList.add("hidden"); $("#login").classList.remove("hidden");
+    verLanding();
   });
 
   function codHTML(c){
@@ -389,10 +625,13 @@
       const d = await r.json();
       const p = (d && d[0]) || {nombre: usuario.email, rol:"consulta"};
       rolActual = p.rol || "consulta";
-      $("#nombre").textContent = p.nombre || usuario.email;
+      const nom = p.nombre || usuario.email;
+      $("#nombre").textContent = nom;
+      $("#gNombre").textContent = "Hola, "+nom;
       const el = $("#rol"); el.textContent = rolActual; el.className = "rol "+rolActual;
-      if(esAdmin()) $("#nuevo").classList.remove("hidden");
-    }catch(e){ $("#nombre").textContent = usuario.email; }
+      const gel = $("#gRol"); gel.textContent = rolActual; gel.className = "rol "+rolActual;
+      $("#nuevo").classList.toggle("hidden", !esAdmin());
+    }catch(e){ $("#nombre").textContent = usuario.email; $("#gNombre").textContent = "Hola"; }
   }
   async function cargarLineas(){
     try{
@@ -763,7 +1002,7 @@
   }
   function mostrarMsg(t, ok){ const m=$("#mMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
 
-  // ---- Navegación ----
+  // ---- Navegación interna app ----
   function verInventario(){ $("#navInv").classList.add("on"); $("#navPanel").classList.remove("on"); $("#vInv").classList.remove("hidden"); $("#panel").classList.add("hidden"); }
   function verPanel(){ $("#navPanel").classList.add("on"); $("#navInv").classList.remove("on"); $("#panel").classList.remove("hidden"); $("#vInv").classList.add("hidden"); cargarPanel(); }
   $("#navInv").addEventListener("click", verInventario);
@@ -972,7 +1211,6 @@
   });
 
   async function iniciar(){
-    $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
     pagina=0;
     await cargarPerfil();
     if($("#fLinea").options.length<=1) await cargarLineas();
@@ -980,8 +1218,9 @@
     await cargarTipos();
     await buscar();
     cargarPanel(); // para poblar el contador de alertas
+    verGuia();     // siempre mostramos la guia al entrar
   }
-  if(token && usuario){ iniciar(); }
+  if(token && usuario){ iniciar(); } else { verLanding(); }
 </script>
 </body>
 </html>

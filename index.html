@@ -49,6 +49,7 @@
   .filtros{display:flex;align-items:center;gap:12px;padding:14px 18px;flex-wrap:wrap}
   .conteo{color:var(--naranja2);font-weight:700;font-size:14px;margin-left:auto}
   .cargando{color:var(--tenue);font-size:13px}
+  .fTipo{flex:0 1 230px;min-width:160px}
   .wrap{overflow-x:auto;padding:0 18px}
   table{width:100%;border-collapse:collapse;font-size:14px}
   thead th{text-align:left;color:var(--tenue);font-size:11px;text-transform:uppercase;letter-spacing:.1em;padding:10px 12px;border-bottom:1px solid var(--borde)}
@@ -152,7 +153,11 @@
     <!-- VISTA INVENTARIO -->
     <div id="vInv">
       <div class="filtros">
-        <select id="fLinea"><option value="">Todas las l&iacute;neas</option></select>
+        <select id="fLinea" title="Grupo de l&iacute;neas">
+          <option value="">Todas las l&iacute;neas</option>
+          <option value="WL">Wireline (WL)</option>
+          <option value="WS">Well Services (WS)</option>
+        </select>
         <select id="fCategoria">
           <option value="">Todas las categor&iacute;as</option>
           <option value="equipo">Equipo de Presi&oacute;n</option>
@@ -165,6 +170,7 @@
           <option value="fuera_servicio">Fuera de servicio</option>
           <option value="inactivo">Inactivo</option>
         </select>
+        <input class="buscar fTipo" id="fTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
         <span class="conteo" id="conteo"></span>
         <span class="cargando hidden" id="cargando">buscando&hellip;</span>
       </div>
@@ -184,13 +190,18 @@
     <!-- VISTA PANEL -->
     <div id="panel" class="hidden">
       <div class="filtros">
-        <select id="pLinea"><option value="">Todas las l&iacute;neas</option></select>
+        <select id="pLinea" title="Grupo de l&iacute;neas">
+          <option value="">Todas las l&iacute;neas</option>
+          <option value="WL">Wireline (WL)</option>
+          <option value="WS">Well Services (WS)</option>
+        </select>
         <select id="pCategoria">
           <option value="">Todas las categor&iacute;as</option>
           <option value="equipo">Equipo de Presi&oacute;n</option>
           <option value="herramienta">Herramienta</option>
         </select>
         <select id="pBase"><option value="">Todas las bases</option></select>
+        <input class="buscar fTipo" id="pTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
         <span class="cargando hidden" id="pCargando">calculando&hellip;</span>
       </div>
       <div class="cards">
@@ -316,12 +327,15 @@
   const POR = 50;
   const LINEAS_OK = ["EL","EP","FB","SL","SW","WL","WS","WT"];
   const GRUPO = {EL:"WL",EP:"WL",SL:"WL",WL:"WL",FB:"WS",SW:"WS",WT:"WS",WS:"WS"};
+  // Miembros de cada grupo (para filtrar por linea en Inventario y Dashboard)
+  const GRUPOS = { WL:["EL","EP","SL","WL"], WS:["FB","SW","WT","WS"] };
   function grupoDe(it){ return GRUPO[String((it&&it.linea_codigo)||"").toUpperCase()] || ""; }
   let token = localStorage.getItem("maxim_token") || null;
   let usuario = JSON.parse(localStorage.getItem("maxim_user") || "null");
   let rolActual = "consulta";
   let pagina = 0, total = 0;
   let bases = [], unidades = [], modoNuevo = false, itemActual = null;
+  let tipos = [], tiposPorNombre = {};
   let dashBuckets={venc:[],pv:[],ok:[]}, dashState="aten", dashTotalItems=0;
 
   const $ = s => document.querySelector(s);
@@ -339,7 +353,7 @@
   $("#formLogin").addEventListener("submit", async e=>{
     e.preventDefault();
     const btn=$("#btnEntrar"), err=$("#loginErr");
-    err.classList.add("hidden"); btn.disabled=true; btn.textContent="Entrando\u2026";
+    err.classList.add("hidden"); btn.disabled=true; btn.textContent="Entrando…";
     try{
       const r = await fetch(URL_SB+"/auth/v1/token?grant_type=password",{
         method:"POST", headers:{"apikey":KEY,"Content-Type":"application/json"},
@@ -352,7 +366,7 @@
       localStorage.setItem("maxim_user", JSON.stringify(usuario));
       await iniciar();
     }catch(ex){
-      err.textContent = "No pudimos iniciar sesi\u00f3n. Revisa el correo y la contrase\u00f1a.";
+      err.textContent = "No pudimos iniciar sesión. Revisa el correo y la contraseña.";
       err.classList.remove("hidden");
     }finally{ btn.disabled=false; btn.textContent="Entrar"; }
   });
@@ -366,7 +380,7 @@
     if(!c || c.length<9) return '<span class="cod">'+esc(c)+'</span>';
     return '<span class="cod"><span class="c1">'+c.slice(0,2)+'</span><span class="c2">'+c.slice(2,5)+'</span><span class="c3">'+c.slice(5,8)+'</span><span class="c4">'+c.slice(8)+'</span></span>';
   }
-  const catNombre = c => c==="equipo" ? "Equipo de Presi\u00f3n" : "Herramienta";
+  const catNombre = c => c==="equipo" ? "Equipo de Presión" : "Herramienta";
 
   // ---- Cargas ----
   async function cargarPerfil(){
@@ -385,7 +399,7 @@
       const r = await fetch(URL_SB+"/rest/v1/lineas?select=codigo,nombre&order=codigo",{headers:headers()});
       const d = await r.json();
       (d||[]).filter(l=>LINEAS_OK.includes(l.codigo)).forEach(l=>{
-        const txt=l.codigo+(l.nombre?" \u2014 "+l.nombre:"");
+        const txt=l.codigo+(l.nombre?" — "+l.nombre:"");
         [ "#fLinea", "#pLinea" ].forEach(sid=>{
           const o=document.createElement("option"); o.value=l.codigo; o.textContent=txt; $(sid).appendChild(o);
         });
@@ -401,18 +415,51 @@
       unidades = await ru.json();
     }catch(e){ bases=bases||[]; unidades=unidades||[]; }
   }
+  // Tipos de herramienta (para el filtro con búsqueda al escribir)
+  async function cargarTipos(){
+    try{
+      const r = await fetch(URL_SB+"/rest/v1/tipos_item?select=codigo_tipo,nombre&order=nombre",{headers:headers()});
+      tipos = await r.json() || [];
+    }catch(e){ tipos = []; }
+    tiposPorNombre = {};
+    const dl = document.createElement("datalist"); dl.id = "listaTipos";
+    const vistos = {};
+    tipos.forEach(t=>{
+      const nom = String(t.nombre || t.codigo_tipo);
+      const key = nom.toLowerCase();
+      (tiposPorNombre[key] = tiposPorNombre[key] || []).push(t.codigo_tipo);
+      if(!vistos[key]){ vistos[key]=1; const o=document.createElement("option"); o.value=nom; dl.appendChild(o); }
+    });
+    const old = document.getElementById("listaTipos"); if(old) old.remove();
+    document.body.appendChild(dl);
+  }
+  // Convierte lo escrito en el filtro de tipo a una lista de codigos_tipo.
+  // null = sin filtro ; ["__SINEQ__"] = escribio algo sin coincidencia (resultado vacio)
+  function codigosDeTipo(v){
+    const raw = (v||"").trim(); if(!raw) return null;
+    const low = raw.toLowerCase();
+    if(tiposPorNombre[low]) return tiposPorNombre[low];
+    const up = raw.toUpperCase();
+    let codes = tipos.filter(t=>t.codigo_tipo===up).map(t=>t.codigo_tipo);
+    if(codes.length) return codes;
+    codes = tipos.filter(t=>String(t.nombre||"").toLowerCase().indexOf(low)>=0).map(t=>t.codigo_tipo);
+    return codes.length ? codes : ["__SINEQ__"];
+  }
 
   // ---- Inventario ----
   let timer=null;
   const debounce = fn => { clearTimeout(timer); timer=setTimeout(fn,300); };
   async function buscar(){
     $("#cargando").classList.remove("hidden");
-    const q=$("#q").value.trim(), linea=$("#fLinea").value, estado=$("#fEstado").value, cat=$("#fCategoria").value;
+    const q=$("#q").value.trim(), estado=$("#fEstado").value, cat=$("#fCategoria").value;
+    const grp=GRUPOS[$("#fLinea").value];
+    const tipoCodes=codigosDeTipo($("#fTipo").value);
     let url=URL_SB+"/rest/v1/items?select=id,codigo,codigo_ant,descripcion,estado,linea_codigo,tipo_codigo,categoria_id,sn,fabricante,medida,anio,presion,base_id,unidad_id,lineas(nombre),tipos_item(nombre),bases(nombre),unidades(nombre)&order=codigo";
-    if(linea){ url+="&linea_codigo=eq."+encodeURIComponent(linea); } else { url+="&linea_codigo=in.("+LINEAS_OK.join(",")+")"; }
+    url += grp ? "&linea_codigo=in.("+grp.join(",")+")" : "&linea_codigo=in.("+LINEAS_OK.join(",")+")";
     if(q){ const t=encodeURIComponent("*"+q+"*"); url+="&or=(codigo.ilike."+t+",sn.ilike."+t+",descripcion.ilike."+t+")"; }
     if(cat) url+="&categoria_id=eq."+cat;
     if(estado) url+="&estado=eq."+estado;
+    if(tipoCodes) url+="&tipo_codigo=in.("+tipoCodes.map(encodeURIComponent).join(",")+")";
     url+="&limit="+POR+"&offset="+(pagina*POR);
     try{
       const r=await fetch(url,{headers:headers({"Prefer":"count=exact"})});
@@ -425,7 +472,7 @@
   }
   function pintar(items){
     const tb=$("#filas"); tb.innerHTML="";
-    if(items.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">No hay \u00edtems que coincidan.</td></tr>'; }
+    if(items.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">No hay ítems que coincidan.</td></tr>'; }
     else items.forEach(it=>{
       const linea=(it.lineas&&it.lineas.nombre)||it.linea_codigo||"";
       const est=esc(it.estado); const cat=it.categoria_id||"herramienta";
@@ -437,8 +484,8 @@
       tb.appendChild(tr);
     });
     const paginas=Math.max(Math.ceil(total/POR),1);
-    $("#conteo").textContent = total.toLocaleString("es-CO")+" \u00edtems";
-    $("#paginaTxt").textContent = "P\u00e1gina "+(pagina+1)+" de "+paginas;
+    $("#conteo").textContent = total.toLocaleString("es-CO")+" ítems";
+    $("#paginaTxt").textContent = "Página "+(pagina+1)+" de "+paginas;
     $("#prev").disabled = pagina===0; $("#next").disabled = (pagina+1)>=paginas;
   }
 
@@ -459,7 +506,7 @@
       '<circle r="'+r+'" cx="70" cy="70" fill="none" stroke="var(--panel2)" stroke-width="20"></circle>'+
       seg(venc,"var(--rojo)","venc")+seg(pv,"var(--ambar)","pv")+seg(ok,"var(--verde)","ok")+seg(sr,"#3a3f47","sr")+
       '<text x="70" y="66" text-anchor="middle" fill="var(--texto)" font-size="20" font-weight="800">'+(venc+pv+ok+sr).toLocaleString("es-CO")+'</text>'+
-      '<text x="70" y="84" text-anchor="middle" fill="var(--tenue)" font-size="10">\u00edtems</text></svg>';
+      '<text x="70" y="84" text-anchor="middle" fill="var(--tenue)" font-size="10">ítems</text></svg>';
   }
   function setupDashboard(){
     var panel=$("#panel"); if(!panel) return;
@@ -482,15 +529,15 @@
       if(el) el.classList.toggle("sel", s===state || (state==="aten" && (s==="venc"||s==="pv")));
     });
     var tit=$("#pDetTitulo"); var lista=[];
-    if(state==="aten"){ lista=dashBuckets.venc.concat(dashBuckets.pv); if(tit) tit.textContent="Requieren atenci\u00f3n"; }
+    if(state==="aten"){ lista=dashBuckets.venc.concat(dashBuckets.pv); if(tit) tit.textContent="Requieren atención"; }
     else if(state==="venc"){ lista=dashBuckets.venc; if(tit) tit.textContent="Vencidos"; }
-    else if(state==="pv"){ lista=dashBuckets.pv; if(tit) tit.textContent="Por vencer (\u226410 d\u00edas)"; }
-    else if(state==="ok"){ lista=dashBuckets.ok; if(tit) tit.textContent="Al d\u00eda"; }
+    else if(state==="pv"){ lista=dashBuckets.pv; if(tit) tit.textContent="Por vencer (≤10 días)"; }
+    else if(state==="ok"){ lista=dashBuckets.ok; if(tit) tit.textContent="Al día"; }
     else if(state==="sr"){ if(tit) tit.textContent="Sin registro"; renderSinRegistro(); return; }
     var tb=$("#pFilas"); tb.innerHTML="";
-    if(lista.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">Sin \u00edtems en este estado.</td></tr>'; return; }
+    if(lista.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">Sin ítems en este estado.</td></tr>'; return; }
     lista.forEach(function(a){
-      var it=a.c.items; var baseN=(it.bases&&it.bases.nombre)||"\u2014";
+      var it=a.c.items; var baseN=(it.bases&&it.bases.nombre)||"—";
       var dtxt = a.dias<0 ? ("Vencido hace "+Math.abs(a.dias)+"d") : (a.dias<=10 ? ("Faltan "+a.dias+"d") : ("En "+a.dias+"d"));
       var cls = a.dias<0 ? "rojo" : (a.dias<=10 ? "ambar" : "");
       var tr=document.createElement("tr");
@@ -501,22 +548,27 @@
   }
   function renderSinRegistro(){
     var tb=$("#pFilas");
-    tb.innerHTML='<tr><td colspan="5" class="vacio">Son los \u00edtems sin ning\u00fan mantenimiento registrado (la mayor\u00eda por ahora). <a href="#" id="verInvSR" style="color:var(--naranja2)">Verlos en Inventario</a></td></tr>';
+    tb.innerHTML='<tr><td colspan="5" class="vacio">Son los ítems sin ningún mantenimiento registrado (la mayoría por ahora). <a href="#" id="verInvSR" style="color:var(--naranja2)">Verlos en Inventario</a></td></tr>';
     var a=$("#verInvSR"); if(a) a.addEventListener("click", function(e){ e.preventDefault(); verInventario(); });
   }
 
   async function cargarPanel(){
     $("#pCargando").classList.remove("hidden");
     setupDashboard();
-    const linea=$("#pLinea").value, cat=$("#pCategoria").value, base=$("#pBase").value;
-    let itemFiltro = linea ? "&items.linea_codigo=eq."+linea : "&items.linea_codigo=in.("+LINEAS_OK.join(",")+")";
+    const grupo=$("#pLinea").value, cat=$("#pCategoria").value, base=$("#pBase").value;
+    const grpLineas=GRUPOS[grupo];
+    const tipoCodes=codigosDeTipo($("#pTipo").value);
+    const lineIn = grpLineas ? grpLineas.join(",") : LINEAS_OK.join(",");
+    let itemFiltro = "&items.linea_codigo=in.("+lineIn+")";
     if(cat) itemFiltro+="&items.categoria_id=eq."+cat;
     if(base) itemFiltro+="&items.base_id=eq."+base;
+    if(tipoCodes) itemFiltro+="&items.tipo_codigo=in.("+tipoCodes.join(",")+")";
     // total de items segun filtro (para "sin registro")
     let itemsUrl=URL_SB+"/rest/v1/items?select=id";
-    itemsUrl += linea ? "&linea_codigo=eq."+linea : "&linea_codigo=in.("+LINEAS_OK.join(",")+")";
+    itemsUrl += "&linea_codigo=in.("+lineIn+")";
     if(cat) itemsUrl+="&categoria_id=eq."+cat;
     if(base) itemsUrl+="&base_id=eq."+base;
+    if(tipoCodes) itemsUrl+="&tipo_codigo=in.("+tipoCodes.join(",")+")";
     let totalItems=0;
     try{
       const ri=await fetch(itemsUrl,{method:"HEAD",headers:headers({"Prefer":"count=exact"})});
@@ -545,11 +597,11 @@
     renderDetalle(dashState);
     // Completitud documental y cantidades por tipo (via RPC)
     try{
-      const body={p_linea: linea||null, p_categoria: cat||null, p_base: base?parseInt(base):null};
+      const body={p_linea: grupo||null, p_categoria: cat||null, p_base: base?parseInt(base):null, p_tipo: tipoCodes||null};
       const rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify(body)});
       const R=await rr.json();
       const T=(R&&R.total)||0;
-      $("#docCards").innerHTML = docCard("COC",R&&R.con_coc,T)+docCard("Ficha t\u00e9cnica",R&&R.con_ficha,T)+docCard("Manual O&M",R&&R.con_manual,T);
+      $("#docCards").innerHTML = docCard("COC",R&&R.con_coc,T)+docCard("Ficha técnica",R&&R.con_ficha,T)+docCard("Manual O&M",R&&R.con_manual,T);
       const pt=(R&&R.por_tipo)||[]; const mx=pt.length?pt[0].n:1;
       $("#porTipo").innerHTML = pt.length ? pt.map(x=>barra(x.tipo,x.n,mx)).join("") : '<div class="vacio">Sin datos.</div>';
     }catch(e){ $("#porTipo").innerHTML=""; }
@@ -567,12 +619,12 @@
   function campoInput(id, label, val, tipo){
     return '<label>'+label+(esAdmin()
       ? '<input id="'+id+'" type="'+(tipo||"text")+'" value="'+esc(val)+'">'
-      : '<div class="ro">'+(esc(val)||"\u2014")+'</div>')+'</label>';
+      : '<div class="ro">'+(esc(val)||"—")+'</div>')+'</label>';
   }
   function campoSelect(id, label, val, opciones){
     if(!esAdmin()){
       const t=(opciones.find(o=>o.v===val)||{t:val}).t;
-      return '<label>'+label+'<div class="ro">'+(esc(t)||"\u2014")+'</div></label>';
+      return '<label>'+label+'<div class="ro">'+(esc(t)||"—")+'</div></label>';
     }
     let o=opciones.map(op=>'<option value="'+esc(op.v)+'"'+(op.v===val?" selected":"")+'>'+esc(op.t)+'</option>').join("");
     return '<label>'+label+'<select id="'+id+'">'+o+'</select></label>';
@@ -580,16 +632,16 @@
 
   async function abrirFicha(it){
     modoNuevo=false; itemActual=it;
-    $("#mTitulo").textContent = "Ficha del \u00edtem";
+    $("#mTitulo").textContent = "Ficha del ítem";
     $("#mSub").innerHTML = codHTML(it.codigo)+' &nbsp; '+esc((it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"");
-    const baseOpts=[{v:"",t:"\u2014 Sin base \u2014"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
-    const uniOpts=[{v:"",t:"\u2014 Sin unidad \u2014"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
+    const baseOpts=[{v:"",t:"— Sin base —"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
+    const uniOpts=[{v:"",t:"— Sin unidad —"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
     $("#mCampos").innerHTML =
-      campoInput("f_desc","Descripci\u00f3n", it.descripcion) +
+      campoInput("f_desc","Descripción", it.descripcion) +
       '<div class="row2">'+campoInput("f_sn","S/N", it.sn)+campoInput("f_fab","Fabricante", it.fabricante)+'</div>'+
-      '<div class="row2">'+campoInput("f_med","Medida", it.medida)+campoInput("f_anio","A\u00f1o", it.anio, "number")+'</div>'+
-      '<div class="row2">'+campoInput("f_pres","Presi\u00f3n", it.presion)+
-        campoSelect("f_cat","Categor\u00eda", it.categoria_id||"herramienta",[{v:"herramienta",t:"Herramienta"},{v:"equipo",t:"Equipo de Presi\u00f3n"}])+'</div>'+
+      '<div class="row2">'+campoInput("f_med","Medida", it.medida)+campoInput("f_anio","Año", it.anio, "number")+'</div>'+
+      '<div class="row2">'+campoInput("f_pres","Presión", it.presion)+
+        campoSelect("f_cat","Categoría", it.categoria_id||"herramienta",[{v:"herramienta",t:"Herramienta"},{v:"equipo",t:"Equipo de Presión"}])+'</div>'+
       campoSelect("f_estado","Estado", it.estado||"activo",[{v:"activo",t:"Activo"},{v:"en_mantenimiento",t:"En mantenimiento"},{v:"fuera_servicio",t:"Fuera de servicio"},{v:"inactivo",t:"Inactivo"}])+
       '<div class="row2">'+campoSelect("f_base","Base", it.base_id?String(it.base_id):"", baseOpts)+
         campoSelect("f_uni","Unidad", it.unidad_id?String(it.unidad_id):"", uniOpts)+'</div>'+
@@ -614,7 +666,7 @@
   }
 
   async function cargarEstadoMant(itemId){
-    const el=$("#mMantEstado"); el.textContent="Consultando\u2026";
+    const el=$("#mMantEstado"); el.textContent="Consultando…";
     try{
       const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,fecha_vencimiento,metodo,datos_formulario&item_id=eq."+itemId+"&vigente=eq.true&limit=1",{headers:headers()});
       const d=await r.json();
@@ -623,8 +675,8 @@
         $("#mVerFormWL").classList.toggle("hidden", !(d[0].metodo==="formulario" && grupoDe(itemActual)==="WL"));
         const v=new Date(d[0].fecha_vencimiento); const hoy=new Date(hoyISO());
         const dias=Math.round((v-hoy)/86400000);
-        const est = dias<0 ? ("VENCIDO hace "+Math.abs(dias)+" d\u00edas") : (dias<=10 ? ("Por vencer en "+dias+" d\u00edas") : ("Al d\u00eda ("+dias+" d\u00edas)"));
-        el.innerHTML = "\u00daltimo: "+d[0].fecha_realizado+" &middot; Vence: "+d[0].fecha_vencimiento+" &middot; <b>"+est+"</b>";
+        const est = dias<0 ? ("VENCIDO hace "+Math.abs(dias)+" días") : (dias<=10 ? ("Por vencer en "+dias+" días") : ("Al día ("+dias+" días)"));
+        el.innerHTML = "Último: "+d[0].fecha_realizado+" &middot; Vence: "+d[0].fecha_vencimiento+" &middot; <b>"+est+"</b>";
       } else { cicloVigente=null; cicloDatos=null; $("#mVerFormWL").classList.add("hidden"); el.textContent = "Sin mantenimiento registrado."; $("#mDocsDin").innerHTML=""; }
     }catch(e){ el.textContent=""; }
   }
@@ -648,17 +700,17 @@
 
   function abrirNuevo(){
     modoNuevo=true; itemActual=null;
-    $("#mTitulo").textContent = "Nuevo \u00edtem";
-    $("#mSub").textContent = "El c\u00f3digo define l\u00ednea (2), tipo (3) y medida (3). Ej: SLHPT140X0001";
-    const baseOpts=[{v:"",t:"\u2014 Sin base \u2014"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
-    const uniOpts=[{v:"",t:"\u2014 Sin unidad \u2014"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
+    $("#mTitulo").textContent = "Nuevo ítem";
+    $("#mSub").textContent = "El código define línea (2), tipo (3) y medida (3). Ej: SLHPT140X0001";
+    const baseOpts=[{v:"",t:"— Sin base —"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
+    const uniOpts=[{v:"",t:"— Sin unidad —"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
     $("#mCampos").innerHTML =
-      campoInput("f_codigo","C\u00f3digo (13 caracteres)","") +
-      campoInput("f_desc","Descripci\u00f3n","") +
+      campoInput("f_codigo","Código (13 caracteres)","") +
+      campoInput("f_desc","Descripción","") +
       '<div class="row2">'+campoInput("f_sn","S/N","")+campoInput("f_fab","Fabricante","")+'</div>'+
-      '<div class="row2">'+campoInput("f_med","Medida","")+campoInput("f_anio","A\u00f1o","","number")+'</div>'+
-      '<div class="row2">'+campoInput("f_pres","Presi\u00f3n","")+
-        campoSelect("f_cat","Categor\u00eda","herramienta",[{v:"herramienta",t:"Herramienta"},{v:"equipo",t:"Equipo de Presi\u00f3n"}])+'</div>'+
+      '<div class="row2">'+campoInput("f_med","Medida","")+campoInput("f_anio","Año","","number")+'</div>'+
+      '<div class="row2">'+campoInput("f_pres","Presión","")+
+        campoSelect("f_cat","Categoría","herramienta",[{v:"herramienta",t:"Herramienta"},{v:"equipo",t:"Equipo de Presión"}])+'</div>'+
       campoSelect("f_estado","Estado","activo",[{v:"activo",t:"Activo"},{v:"en_mantenimiento",t:"En mantenimiento"},{v:"fuera_servicio",t:"Fuera de servicio"},{v:"inactivo",t:"Inactivo"}])+
       '<div class="row2">'+campoSelect("f_base","Base","", baseOpts)+campoSelect("f_uni","Unidad","", uniOpts)+'</div>';
     $("#mMsg").className="msg hidden";
@@ -693,9 +745,9 @@
     try{
       if(modoNuevo){
         const codigo=(valOrNull("f_codigo")||"").toUpperCase();
-        if(codigo.length<9){ mostrarMsg("El c\u00f3digo debe tener al menos 9 caracteres.", false); btn.disabled=false; return; }
+        if(codigo.length<9){ mostrarMsg("El código debe tener al menos 9 caracteres.", false); btn.disabled=false; return; }
         const linea=codigo.slice(0,2), tipo=codigo.slice(2,5);
-        if(!LINEAS_OK.includes(linea)){ mostrarMsg("La l\u00ednea "+linea+" no est\u00e1 habilitada.", false); btn.disabled=false; return; }
+        if(!LINEAS_OK.includes(linea)){ mostrarMsg("La línea "+linea+" no está habilitada.", false); btn.disabled=false; return; }
         await fetch(URL_SB+"/rest/v1/tipos_item",{method:"POST",headers:headers({"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({codigo_tipo:tipo,nombre:cuerpo.descripcion||tipo,categoria_id:cuerpo.categoria_id})});
         cuerpo.codigo=codigo; cuerpo.linea_codigo=linea; cuerpo.tipo_codigo=tipo; cuerpo.cvtools="CVTOOLS2";
         const r=await fetch(URL_SB+"/rest/v1/items",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
@@ -706,12 +758,12 @@
       }
       mostrarMsg("Guardado correctamente.", true);
       setTimeout(()=>{ $("#modalBg").classList.add("hidden"); buscar(); }, 700);
-    }catch(e){ mostrarMsg("No se pudo guardar. "+(e.message&&e.message.includes("duplicate")?"Ese c\u00f3digo ya existe.":""), false); }
+    }catch(e){ mostrarMsg("No se pudo guardar. "+(e.message&&e.message.includes("duplicate")?"Ese código ya existe.":""), false); }
     finally{ btn.disabled=false; }
   }
   function mostrarMsg(t, ok){ const m=$("#mMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
 
-  // ---- Navegaci\u00f3n ----
+  // ---- Navegación ----
   function verInventario(){ $("#navInv").classList.add("on"); $("#navPanel").classList.remove("on"); $("#vInv").classList.remove("hidden"); $("#panel").classList.add("hidden"); }
   function verPanel(){ $("#navPanel").classList.add("on"); $("#navInv").classList.remove("on"); $("#panel").classList.remove("hidden"); $("#vInv").classList.add("hidden"); cargarPanel(); }
   $("#navInv").addEventListener("click", verInventario);
@@ -720,6 +772,7 @@
   $("#pLinea").addEventListener("change", cargarPanel);
   $("#pCategoria").addEventListener("change", cargarPanel);
   $("#pBase").addEventListener("change", cargarPanel);
+  $("#pTipo").addEventListener("input", ()=>debounce(cargarPanel));
 
   $("#nuevo").addEventListener("click", abrirNuevo);
   $("#mGuardar").addEventListener("click", guardar);
@@ -729,14 +782,15 @@
   $("#fLinea").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#fCategoria").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#fEstado").addEventListener("change", ()=>{ pagina=0; buscar(); });
+  $("#fTipo").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
   $("#prev").addEventListener("click", ()=>{ if(pagina>0){pagina--; buscar();} });
   $("#next").addEventListener("click", ()=>{ pagina++; buscar(); });
 
 
   // ---- Documentos ----
-  const ESTATICOS = [{k:"coc",t:"COC"},{k:"ficha_tecnica",t:"Ficha t\u00e9cnica"},{k:"manual",t:"Manual O&M"}];
+  const ESTATICOS = [{k:"coc",t:"COC"},{k:"ficha_tecnica",t:"Ficha técnica"},{k:"manual",t:"Manual O&M"}];
   const DIN_BASE = [{k:"reporte_mantenimiento",t:"Reporte de mantenimiento"},{k:"reporte_falla",t:"Reporte de falla"},{k:"ndt",t:"Reporte NDT"}];
-  const DIN_EQUIPO = [{k:"prueba_presion",t:"Prueba de presi\u00f3n"},{k:"espesores",t:"Espesores"},{k:"prueba_dureza",t:"Prueba de dureza"}];
+  const DIN_EQUIPO = [{k:"prueba_presion",t:"Prueba de presión"},{k:"espesores",t:"Espesores"},{k:"prueba_dureza",t:"Prueba de dureza"}];
   let cicloVigente = null;
   let cicloDatos = null;
   let pendiente = null;
@@ -792,7 +846,7 @@
     }));
   }
   async function cargarDocsEstaticos(){
-    const cont=$("#mDocsEst"); cont.innerHTML='<div class="est" style="color:var(--tenue);font-size:13px">Consultando\u2026</div>';
+    const cont=$("#mDocsEst"); cont.innerHTML='<div class="est" style="color:var(--tenue);font-size:13px">Consultando…</div>';
     let docs=[];
     try{ const r=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=id,tipo,archivo_path&item_id=eq."+itemActual.id,{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
     const mapa={}; docs.forEach(d=>mapa[d.tipo]=d);
@@ -814,7 +868,7 @@
   $("#filePicker").addEventListener("change", async function(e){
     const file=e.target.files[0]; if(!file||!pendiente) return;
     const scope=pendiente.scope, tipo=pendiente.tipo; pendiente=null;
-    mostrarMsg("Subiendo\u2026", true);
+    mostrarMsg("Subiendo…", true);
     try{
       if(scope==="est"){
         const path=rutaBase()+"/estatico_"+tipo+".pdf";
@@ -923,6 +977,7 @@
     await cargarPerfil();
     if($("#fLinea").options.length<=1) await cargarLineas();
     await cargarBasesUnidades();
+    await cargarTipos();
     await buscar();
     cargarPanel(); // para poblar el contador de alertas
   }

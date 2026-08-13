@@ -135,6 +135,39 @@
   .mod.soon{cursor:default;opacity:.72}
   .mod .mod-badge{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tenue);background:var(--panel2);border:1px solid var(--borde);padding:4px 10px;border-radius:20px}
   .hub-pend{margin-top:26px;border:1px dashed var(--borde);border-radius:12px;padding:22px;text-align:center;color:var(--tenue);font-size:13.5px}
+  /* ===== Banco de infografias ===== */
+  .hub-info{margin-top:30px;border-top:1px solid var(--borde);padding-top:22px}
+  .hub-info-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hub-info-head h2{margin:0;font-size:17px;letter-spacing:.02em}
+  .info-gear{margin-left:auto;background:var(--panel2);color:var(--texto);border:1px solid var(--borde);padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+  .info-gear:hover{border-color:var(--naranja)}
+  .info-car{position:relative;background:var(--panel);border:1px solid var(--borde);border-radius:14px;overflow:hidden}
+  .info-viewport{position:relative;width:100%;height:min(82vh,940px);min-height:440px;overflow:hidden;touch-action:pan-y;cursor:grab}
+  .info-viewport:active{cursor:grabbing}
+  .info-open{position:absolute;top:12px;right:12px;z-index:4;background:rgba(13,14,16,.78);border:1px solid var(--borde);color:var(--texto);font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .info-open:hover{background:var(--naranja);color:#180a00;border-color:transparent}
+  .info-track{display:flex;height:100%;transition:transform .4s ease}
+  .info-track.nodrag{transition:none}
+  .info-slide{flex:0 0 100%;height:100%;display:grid;place-items:center;background:#0a0b0d}
+  .info-slide img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none}
+  .info-empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--tenue);font-size:14px;text-align:center;padding:20px}
+  .info-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--borde);background:rgba(13,14,16,.72);color:var(--texto);font-size:26px;line-height:1;cursor:pointer;display:grid;place-items:center;z-index:3}
+  .info-nav:hover{background:var(--naranja);color:#180a00;border-color:transparent}
+  .info-nav.prev{left:12px} .info-nav.next{right:12px}
+  .info-cap{min-height:20px;padding:12px 16px 4px;text-align:center;color:var(--texto);font-size:14px;font-weight:600}
+  .info-dots{display:flex;gap:7px;justify-content:center;padding:8px 0 14px;flex-wrap:wrap}
+  .info-dots .dot{width:8px;height:8px;border-radius:50%;background:var(--borde);border:0;padding:0;cursor:pointer;transition:width .2s}
+  .info-dots .dot.on{background:var(--naranja);width:22px;border-radius:5px}
+  .ia-up{display:grid;gap:12px;border-bottom:1px solid var(--borde);padding-bottom:18px;margin-bottom:16px}
+  .ia-msg{font-size:13px;margin:2px 0 0}
+  .ia-msg.ok{color:var(--verde)} .ia-msg.bad{color:var(--rojo)}
+  .ia-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a1d22}
+  .ia-row img{width:60px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--borde);background:#0a0b0d}
+  .ia-row .ia-tt{flex:1;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ia-row button{font-size:13px;padding:5px 10px;border-radius:6px;cursor:pointer;border:1px solid var(--borde);background:var(--panel2);color:var(--texto)}
+  .ia-row .ia-del{color:var(--rojo);border-color:rgba(226,72,63,.4)}
+  .ia-row button:disabled{opacity:.35;cursor:default}
+  @media(max-width:640px){.info-viewport{height:min(78vh,680px);min-height:360px}}
   @media(max-width:640px){.mod-grid{grid-template-columns:1fr}.hub-hero h1{font-size:32px}}
 
   .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5;flex-wrap:wrap}
@@ -319,7 +352,23 @@
           <span class="mod-cta">Ingresar &rarr;</span>
         </a>
       </div>
-      <div class="hub-pend">Banco de infograf&iacute;as &mdash; pr&oacute;ximamente.</div>
+      <section class="hub-info" id="hubInfo">
+        <div class="hub-info-head">
+          <h2>Banco de infograf&iacute;as</h2>
+          <button class="info-gear hidden" id="infoGear" type="button">Gestionar</button>
+        </div>
+        <div class="info-car">
+          <div class="info-viewport" id="infoVp">
+            <div class="info-track" id="infoTrack"></div>
+            <div class="info-empty hidden" id="infoEmpty">A&uacute;n no hay infograf&iacute;as cargadas.</div>
+          </div>
+          <button class="info-open hidden" id="infoOpen" type="button">Ampliar &#8599;</button>
+          <button class="info-nav prev hidden" id="infoPrev" type="button" aria-label="Anterior">&lsaquo;</button>
+          <button class="info-nav next hidden" id="infoNext" type="button" aria-label="Siguiente">&rsaquo;</button>
+          <div class="info-cap" id="infoCap"></div>
+          <div class="info-dots" id="infoDots"></div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -645,6 +694,25 @@
     </div>
   </div>
 
+  <div id="infoAdminBg" class="modal-bg hidden">
+    <div class="modal">
+      <h2>Gestionar infograf&iacute;as</h2>
+      <p class="sub">Sube im&aacute;genes, ord&eacute;nalas con las flechas y borra las que no quieras. Solo el admin ve este panel.</p>
+      <div class="ia-up">
+        <label>Nueva infograf&iacute;a (imagen)
+          <input type="file" id="infoFile" accept="image/*">
+        </label>
+        <label>T&iacute;tulo (opcional)
+          <input type="text" id="infoTitulo" maxlength="120" placeholder="Ej: Procedimiento de armado">
+        </label>
+        <button class="btn" id="infoSubir" type="button">Subir infograf&iacute;a</button>
+        <p class="ia-msg" id="infoMsg"></p>
+      </div>
+      <div id="infoAdminList"></div>
+      <div class="acc"><button class="btn" id="infoAdminX" type="button">Cerrar</button></div>
+    </div>
+  </div>
+
   <input type="file" id="filePicker" accept="application/pdf,.pdf" class="hidden">
 
 <script>
@@ -686,7 +754,7 @@
   }
   const verLanding = () => mostrarPantalla("landing");
   const verLogin   = () => mostrarPantalla("login");
-  const verHub     = () => mostrarPantalla("hub");
+  const verHub     = () => { mostrarPantalla("hub"); cargarInfografias(); };
   const verGuia    = () => mostrarPantalla("guia");
   const verAppReal = () => mostrarPantalla("app");
   function cerrarSesion(){
@@ -1519,6 +1587,191 @@
     cargarPanel(); // para poblar el contador de alertas
     verHub();      // al entrar mostramos el hub de modulos NEXUS TOOLS
   }
+  // ===== Banco de infografias =====
+  const INFO_BUCKET = "infografias";
+  let infoData = [], infoIdx = 0, infoTimer = null;
+  const infoPublicURL = p => URL_SB+"/storage/v1/object/public/"+INFO_BUCKET+"/"+encPath(p);
+
+  async function cargarInfografias(){
+    const g=$("#infoGear"); if(g) g.classList.toggle("hidden", !esAdmin());
+    try{
+      const r = await fetch(URL_SB+"/rest/v1/infografias?select=id,titulo,imagen_path,orden&order=orden.asc,id.asc",{headers:headers()});
+      infoData = r.ok ? await r.json() : [];
+    }catch(e){ infoData = []; }
+    if(infoIdx >= infoData.length) infoIdx = 0;
+    renderInfo();
+  }
+
+  function renderInfo(){
+    const track=$("#infoTrack"), dots=$("#infoDots"); if(!track) return;
+    const hay = infoData.length>0;
+    $("#infoEmpty").classList.toggle("hidden", hay);
+    $("#infoPrev").classList.toggle("hidden", infoData.length<2);
+    $("#infoNext").classList.toggle("hidden", infoData.length<2);
+    $("#infoOpen").classList.toggle("hidden", !hay);
+    if(!hay){ track.innerHTML=""; dots.innerHTML=""; $("#infoCap").textContent=""; detenerAuto(); return; }
+    track.innerHTML = infoData.map(function(gi){
+      return '<div class="info-slide"><img src="'+infoPublicURL(gi.imagen_path)+'" alt="'+esc(gi.titulo||"Infografia")+'"></div>';
+    }).join("");
+    dots.innerHTML = infoData.map(function(_,i){ return '<button class="dot'+(i===infoIdx?" on":"")+'" data-idx="'+i+'"></button>'; }).join("");
+    dots.querySelectorAll(".dot").forEach(function(d){ d.addEventListener("click",function(){ irInfo(parseInt(d.getAttribute("data-idx"),10)); reiniciarAuto(); }); });
+    posicionInfo(true);
+    reiniciarAuto();
+  }
+
+  function posicionInfo(inmediato){
+    const track=$("#infoTrack"); if(!track) return;
+    if(inmediato) track.classList.add("nodrag");
+    track.style.transform = "translateX(-"+(infoIdx*100)+"%)";
+    if(inmediato){ void track.offsetWidth; track.classList.remove("nodrag"); }
+    const gi = infoData[infoIdx];
+    $("#infoCap").textContent = (gi && gi.titulo) ? gi.titulo : "";
+    $("#infoDots").querySelectorAll(".dot").forEach(function(d,i){ d.classList.toggle("on", i===infoIdx); });
+  }
+
+  function irInfo(i){
+    if(!infoData.length) return;
+    infoIdx = ((i % infoData.length) + infoData.length) % infoData.length;
+    posicionInfo(false);
+  }
+
+  function detenerAuto(){ if(infoTimer){ clearInterval(infoTimer); infoTimer=null; } }
+  function reiniciarAuto(){
+    detenerAuto();
+    if(infoData.length<2) return;
+    infoTimer = setInterval(function(){ irInfo(infoIdx+1); }, 6000);
+  }
+
+  function bindInfoCarrusel(){
+    const vp=$("#infoVp"), track=$("#infoTrack");
+    if(!vp || vp.dataset.bound) return; vp.dataset.bound="1";
+    $("#infoPrev").addEventListener("click", function(){ irInfo(infoIdx-1); reiniciarAuto(); });
+    $("#infoNext").addEventListener("click", function(){ irInfo(infoIdx+1); reiniciarAuto(); });
+    let arr=false, x0=0, dx=0;
+    vp.addEventListener("pointerdown", function(e){
+      if(infoData.length<2) return;
+      arr=true; x0=e.clientX; dx=0; detenerAuto();
+      track.classList.add("nodrag");
+      try{ vp.setPointerCapture(e.pointerId); }catch(_e){}
+    });
+    vp.addEventListener("pointermove", function(e){
+      if(!arr) return;
+      dx=e.clientX-x0;
+      const w=vp.clientWidth||1;
+      track.style.transform="translateX("+(-(infoIdx*100)+(dx/w*100))+"%)";
+    });
+    function soltar(){
+      if(!arr) return;
+      arr=false; track.classList.remove("nodrag");
+      const w=vp.clientWidth||1;
+      if(Math.abs(dx) > w*0.15){ irInfo(infoIdx + (dx<0?1:-1)); }
+      else { posicionInfo(false); }
+      reiniciarAuto();
+    }
+    vp.addEventListener("pointerup", soltar);
+    vp.addEventListener("pointercancel", soltar);
+    vp.addEventListener("mouseenter", detenerAuto);
+    vp.addEventListener("mouseleave", reiniciarAuto);
+  }
+
+  // ---- Panel admin de infografias (solo admin) ----
+  function infoMsg(t,ok){ const m=$("#infoMsg"); m.textContent=t; m.className="ia-msg "+(ok?"ok":"bad"); }
+  function abrirInfoAdmin(){
+    if(!esAdmin()) return;
+    $("#infoMsg").textContent=""; $("#infoMsg").className="ia-msg";
+    $("#infoFile").value=""; $("#infoTitulo").value="";
+    renderInfoAdmin();
+    $("#infoAdminBg").classList.remove("hidden");
+  }
+  function renderInfoAdmin(){
+    const cont=$("#infoAdminList");
+    if(!infoData.length){ cont.innerHTML='<div style="color:var(--tenue);font-size:13px">Todavia no hay infografias. Sube la primera arriba.</div>'; return; }
+    cont.innerHTML = infoData.map(function(gi,i){
+      return '<div class="ia-row" data-id="'+gi.id+'">'+
+        '<img src="'+infoPublicURL(gi.imagen_path)+'" alt="">'+
+        '<span class="ia-tt">'+(gi.titulo?esc(gi.titulo):'<span style="color:var(--tenue)">(sin titulo)</span>')+'</span>'+
+        '<button data-mov="up" '+(i===0?"disabled":"")+'>&uarr;</button>'+
+        '<button data-mov="down" '+(i===infoData.length-1?"disabled":"")+'>&darr;</button>'+
+        '<button class="ia-del" data-del="'+gi.id+'">Borrar</button>'+
+      '</div>';
+    }).join("");
+    cont.querySelectorAll("[data-mov]").forEach(function(b){
+      b.addEventListener("click", function(){
+        const fila=b.closest(".ia-row"); const id=parseInt(fila.getAttribute("data-id"),10);
+        moverInfo(id, b.getAttribute("data-mov"));
+      });
+    });
+    cont.querySelectorAll("[data-del]").forEach(function(b){
+      b.addEventListener("click", function(){ borrarInfo(parseInt(b.getAttribute("data-del"),10)); });
+    });
+  }
+
+  async function subirInfoImg(path, file){
+    const r=await fetch(URL_SB+"/storage/v1/object/"+INFO_BUCKET+"/"+encPath(path),{
+      method:"POST",
+      headers:{ "apikey":KEY, "Authorization":"Bearer "+token, "x-upsert":"true", "Content-Type": file.type||"image/jpeg" },
+      body:file });
+    if(!r.ok){ const e=await r.json().catch(function(){return {};}); throw new Error(e.message||"upload"); }
+    return path;
+  }
+
+  async function subirInfografia(){
+    const f=$("#infoFile").files[0];
+    if(!f){ infoMsg("Elige una imagen primero.", false); return; }
+    if(!/^image\//.test(f.type)){ infoMsg("El archivo debe ser una imagen.", false); return; }
+    const btn=$("#infoSubir"); btn.disabled=true;
+    infoMsg("Subiendo la infografia…", true);
+    try{
+      const ext=((f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")) || "jpg";
+      const path="img_"+Date.now()+"."+ext;
+      await subirInfoImg(path, f);
+      const maxOrden = infoData.reduce(function(m,gi){ return Math.max(m, gi.orden||0); }, 0);
+      const body={ titulo: ($("#infoTitulo").value.trim()||null), imagen_path: path, orden: maxOrden+1 };
+      if(usuario && usuario.id) body.creado_por = usuario.id;
+      const r=await fetch(URL_SB+"/rest/v1/infografias",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(body)});
+      if(!r.ok) throw new Error("insert");
+      infoMsg("Infografia cargada.", true);
+      $("#infoFile").value=""; $("#infoTitulo").value="";
+      await cargarInfografias();
+      renderInfoAdmin();
+    }catch(e){ infoMsg("No se pudo subir. Verifica tu rol admin e intenta de nuevo.", false); }
+    finally{ btn.disabled=false; }
+  }
+
+  async function moverInfo(id, dir){
+    const i=infoData.findIndex(function(gi){ return gi.id===id; });
+    const j = dir==="up" ? i-1 : i+1;
+    if(i<0 || j<0 || j>=infoData.length) return;
+    const a=infoData[i], b=infoData[j];
+    const oa=a.orden, ob=b.orden;
+    try{
+      await fetch(URL_SB+"/rest/v1/infografias?id=eq."+a.id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({orden:ob})});
+      await fetch(URL_SB+"/rest/v1/infografias?id=eq."+b.id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({orden:oa})});
+      await cargarInfografias();
+      renderInfoAdmin();
+    }catch(e){ infoMsg("No se pudo reordenar.", false); }
+  }
+
+  async function borrarInfo(id){
+    const gi=infoData.find(function(x){ return x.id===id; });
+    if(!gi) return;
+    if(!window.confirm("Borrar esta infografia? No se puede deshacer.")) return;
+    try{
+      await fetch(URL_SB+"/rest/v1/infografias?id=eq."+id,{method:"DELETE",headers:headers({"Prefer":"return=minimal"})});
+      try{ await fetch(URL_SB+"/storage/v1/object/"+INFO_BUCKET+"/"+encPath(gi.imagen_path),{method:"DELETE",headers:{ "apikey":KEY, "Authorization":"Bearer "+token }}); }catch(_e){}
+      infoMsg("Infografia borrada.", true);
+      await cargarInfografias();
+      renderInfoAdmin();
+    }catch(e){ infoMsg("No se pudo borrar.", false); }
+  }
+
+  bindInfoCarrusel();
+  $("#infoGear").addEventListener("click", abrirInfoAdmin);
+  $("#infoOpen").addEventListener("click", function(){ const gi=infoData[infoIdx]; if(gi) window.open(infoPublicURL(gi.imagen_path), "_blank"); });
+  $("#infoSubir").addEventListener("click", subirInfografia);
+  $("#infoAdminX").addEventListener("click", function(){ $("#infoAdminBg").classList.add("hidden"); });
+  $("#infoAdminBg").addEventListener("click", function(e){ if(e.target===$("#infoAdminBg")) $("#infoAdminBg").classList.add("hidden"); });
+
   if(token && usuario){ iniciar(); } else { verLanding(); }
 </script>
 </body>

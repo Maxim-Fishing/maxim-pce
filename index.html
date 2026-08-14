@@ -385,6 +385,52 @@
     .tb-buscar{flex:1 1 100%}
     .contenido{padding:14px 14px 20px}
   }
+  /* ===== Panel Resumen ===== */
+  #vResumen{display:flex;flex-direction:column;gap:14px}
+  .rs-banda{background:var(--acento);padding:14px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+  .rs-banda.calm{background:var(--surface)}
+  .rs-banda-sobre{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--sobre-acento2)}
+  .rs-banda.calm .rs-banda-sobre{color:var(--txt-mut)}
+  .rs-banda-tit{font-size:23px;font-weight:700;color:#000;margin-top:4px}
+  .rs-banda.calm .rs-banda-tit{color:#fff}
+  .rs-banda-btn{font-family:var(--mono);font-size:11px;font-weight:600;color:#000;background:transparent;border:1px solid #000;padding:6px 10px;cursor:pointer;flex:none}
+  .rs-banda.calm .rs-banda-btn{color:#fff;border-color:var(--borde-ctrl2)}
+  .rs-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--borde);border:1px solid var(--borde)}
+  .rs-kpi{background:var(--surface);padding:14px 16px}
+  .rs-kpi.crit{border-top:3px solid var(--acento)}
+  .rs-kpi-n{font-size:27px;font-weight:700;color:#fff;line-height:1}
+  .rs-kpi-t{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut);margin-top:8px}
+  .rs-fila{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start}
+  .rs-side{display:flex;flex-direction:column;gap:14px}
+  .rs-card{background:var(--surface);border:1px solid var(--borde)}
+  .rs-card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .rs-card-h span{font-size:15px;font-weight:600;color:#fff}
+  .rs-link{background:transparent;border:0;color:var(--acento);font-size:13px;cursor:pointer;font-family:inherit;flex:none}
+  .rs-prox-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .rs-dot{width:7px;height:7px;border-radius:50%;background:var(--gris-ind);flex:none}
+  .rs-dot.crit{background:var(--acento)}
+  .rs-prox-cod{font-family:var(--mono);font-size:12px;color:var(--acento);width:118px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-prox-nom{flex:1;min-width:0;font-size:14px;color:var(--txt-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-prox-pozo{width:96px;flex:none;font-size:12px;color:var(--txt-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-dias{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 7px;flex:none;border:1px solid var(--borde-ctrl);color:var(--txt2)}
+  .rs-dias.crit{background:var(--acento);color:#000;border-color:var(--acento)}
+  .rs-card-f{padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--txt-min)}
+  .rs-acc{display:flex;flex-direction:column;gap:10px;padding:14px}
+  .rs-acc-primary{height:42px;background:var(--acento);color:#000;border:0;font-size:14px;font-weight:700;cursor:pointer}
+  .rs-acc-primary:hover{background:var(--acento-hover)}
+  .rs-acc-sec{height:42px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:14px;cursor:pointer;padding:0 12px;text-align:left;font-family:inherit}
+  .rs-acc-sec:hover{border-color:var(--acento)}
+  .rs-mov-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .rs-mov-dot{width:6px;height:6px;border-radius:50%;background:var(--acento);flex:none}
+  .rs-mov-dest{flex:1;min-width:0;font-size:14px;color:var(--txt-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-mov-cont{font-family:var(--mono);font-size:12px;color:var(--txt-mut);flex:none}
+  .rs-empty{padding:16px;color:var(--txt-mut);font-size:14px}
+  @media(max-width:900px){
+    .rs-kpis{grid-template-columns:repeat(3,1fr)}
+    .rs-kpi:nth-child(4),.rs-kpi:nth-child(5){display:none}
+    .rs-fila{grid-template-columns:1fr}
+    .rs-banda-tit{font-size:19px}
+  }
 </style>
 </head>
 <body>
@@ -627,9 +673,32 @@
         </header>
         <div class="contenido">
           <div id="vResumen">
-            <div class="ph-panel">
-              <div class="ph-t">Resumen</div>
-              <div class="ph-x">Panel de entrada del m&oacute;dulo. Se construye en el siguiente paso.</div>
+            <div class="rs-banda" id="rsBanda">
+              <div>
+                <div class="rs-banda-sobre" id="rsBandaSobre">TURNO &middot; &mdash;</div>
+                <div class="rs-banda-tit" id="rsBandaTit">Cargando&hellip;</div>
+              </div>
+              <button class="rs-banda-btn hidden" id="rsBandaBtn" type="button">VER PENDIENTES</button>
+            </div>
+            <div class="rs-kpis" id="rsKpis"></div>
+            <div class="rs-fila">
+              <div class="rs-card">
+                <div class="rs-card-h"><span>Mantenimientos pr&oacute;ximos</span><button class="rs-link" id="rsVerInv" type="button">Ver en inventario &rarr;</button></div>
+                <div id="rsProx"><div class="rs-empty">Cargando&hellip;</div></div>
+                <div class="rs-card-f" id="rsProxPie"></div>
+              </div>
+              <div class="rs-side">
+                <div class="rs-card rs-acc">
+                  <button class="rs-acc-primary" id="rsRegistrar" type="button">REGISTRAR MANTENIMIENTO</button>
+                  <button class="rs-acc-sec" type="button" data-goto="inventario">Ver inventario</button>
+                  <button class="rs-acc-sec" type="button" data-goto="movilizacion">Movilizar equipo</button>
+                  <button class="rs-acc-sec" type="button" data-goto="dashboard">Ir al Dashboard</button>
+                </div>
+                <div class="rs-card">
+                  <div class="rs-card-h"><span>Movilizaciones recientes</span></div>
+                  <div id="rsMov"><div class="rs-empty">Cargando&hellip;</div></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1381,7 +1450,97 @@
     if(!/mtto-operativo/i.test(location.hash)){ location.hash="#/mtto-operativo/resumen"; }
     renderPanel();
   }
-  function cargarResumen(){ /* Paso 2: contenido del panel Resumen */ }
+  // ===== Panel Resumen (Paso 2) =====
+  let _rsBound=false;
+  function bindResumen(){
+    if(_rsBound) return; _rsBound=true;
+    $("#rsBandaBtn").addEventListener("click", function(){ irPanel("inventario"); });
+    $("#rsVerInv").addEventListener("click", function(){ irPanel("inventario"); });
+    $("#rsRegistrar").addEventListener("click", function(){ irPanel("inventario"); });
+    document.querySelectorAll("#vResumen [data-goto]").forEach(function(b){ b.addEventListener("click", function(){ irPanel(b.getAttribute("data-goto")); }); });
+  }
+  async function contarRest(tabla, filtro){
+    try{
+      var r=await fetch(URL_SB+"/rest/v1/"+tabla+"?select=id"+(filtro?("&"+filtro):""),{method:"HEAD",headers:headers({"Prefer":"count=exact"})});
+      var cr=r.headers.get("content-range")||"";
+      return cr.includes("/") ? (parseInt(cr.split("/")[1],10)||0) : 0;
+    }catch(e){ return 0; }
+  }
+  const LINEAS_IN = "linea_codigo=in.(EL,EP,FB,SL,SW,WL,WS,WT)";
+  async function cargarResumen(){
+    bindResumen();
+    var meses=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    var f=new Date();
+    $("#rsBandaSobre").textContent = "TURNO DIURNO · "+f.getDate()+" "+meses[f.getMonth()]+" · 06:00–18:00";
+    var hoy=new Date(); hoy.setHours(0,0,0,0);
+    var hoyISOs=hoy.toISOString().slice(0,10);
+    var d15=new Date(hoy.getTime()+15*86400000).toISOString().slice(0,10);
+    // conteos reales (ligeros, HEAD)
+    var vencidos = await contarRest("ciclos_mantenimiento","vigente=eq.true&fecha_vencimiento=lt."+hoyISOs);
+    var prox15   = await contarRest("ciclos_mantenimiento","vigente=eq.true&fecha_vencimiento=gte."+hoyISOs+"&fecha_vencimiento=lte."+d15);
+    var enCampo  = await contarRest("items","unidad_id=not.is.null&"+LINEAS_IN);
+    var total    = await contarRest("items",LINEAS_IN);
+    var fuera    = await contarRest("items","estado=eq.fuera_servicio&"+LINEAS_IN);
+    var disp     = total ? Math.round((total-fuera)/total*1000)/10 : 0;
+    // banda de estado segun estado real
+    var banda=$("#rsBanda");
+    if(vencidos>0){
+      banda.classList.remove("calm");
+      $("#rsBandaTit").textContent = vencidos+" equipo"+(vencidos>1?"s":"")+" requiere"+(vencidos>1?"n":"")+" acción hoy";
+      $("#rsBandaBtn").classList.remove("hidden");
+    } else {
+      banda.classList.add("calm");
+      $("#rsBandaTit").textContent = "Sin mantenimientos vencidos hoy";
+      $("#rsBandaBtn").classList.add("hidden");
+    }
+    // KPIs
+    var kpis=[
+      {n:vencidos, t:"MTTO VENCIDO", crit:true},
+      {n:prox15, t:"PRÓXIMOS 15 D"},
+      {n:enCampo, t:"EN CAMPO"},
+      {n:total.toLocaleString("es-CO"), t:"ÍTEMS EN INVENTARIO"},
+      {n:disp.toLocaleString("es-CO")+"%", t:"DISPONIBILIDAD"}
+    ];
+    $("#rsKpis").innerHTML = kpis.map(function(k){
+      return '<div class="rs-kpi'+(k.crit?" crit":"")+'"><div class="rs-kpi-n">'+k.n+'</div><div class="rs-kpi-t">'+k.t+'</div></div>';
+    }).join("");
+    cargarResumenProximos(hoy);
+    cargarResumenMov();
+  }
+  async function cargarResumenProximos(hoy){
+    try{
+      var sel="fecha_vencimiento,items(codigo,descripcion,unidades(nombre),bases(nombre))";
+      var r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select="+encodeURIComponent(sel)+"&vigente=eq.true&order=fecha_vencimiento.asc&limit=6",{headers:headers()});
+      var d=r.ok?await r.json():[];
+      if(!d.length){ $("#rsProx").innerHTML='<div class="rs-empty">Sin mantenimientos programados.</div>'; $("#rsProxPie").textContent=""; return; }
+      $("#rsProx").innerHTML = d.map(function(c){
+        var it=c.items||{};
+        var pozo=(it.unidades&&it.unidades.nombre)||(it.bases&&it.bases.nombre)||"—";
+        var dias=Math.round((new Date(c.fecha_vencimiento)-hoy)/86400000);
+        var crit=dias<=10;
+        var etq=(dias<0?("VENC "+Math.abs(dias)+"D"):(dias+"D"));
+        return '<div class="rs-prox-row">'+
+          '<span class="rs-dot'+(crit?" crit":"")+'"></span>'+
+          '<span class="rs-prox-cod">'+esc(it.codigo||"—")+'</span>'+
+          '<span class="rs-prox-nom">'+esc(it.descripcion||"")+'</span>'+
+          '<span class="rs-prox-pozo">'+esc(pozo)+'</span>'+
+          '<span class="rs-dias'+(crit?" crit":"")+'">'+etq+'</span></div>';
+      }).join("");
+      $("#rsProxPie").textContent = "Los "+d.length+" mantenimientos con vencimiento más próximo.";
+    }catch(e){ $("#rsProx").innerHTML='<div class="rs-empty">No se pudo cargar.</div>'; $("#rsProxPie").textContent=""; }
+  }
+  async function cargarResumenMov(){
+    try{
+      var r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:30})});
+      var d=r.ok?await r.json():[];
+      if(!d.length){ $("#rsMov").innerHTML='<div class="rs-empty">Sin movimientos recientes.</div>'; return; }
+      var mapa={}; d.forEach(function(m){ var dest=(m.destino||"—"); mapa[dest]=(mapa[dest]||0)+1; });
+      var arr=Object.keys(mapa).map(function(k){ return {dest:k,n:mapa[k]}; }).sort(function(a,b){ return b.n-a.n; }).slice(0,5);
+      $("#rsMov").innerHTML = arr.map(function(x){
+        return '<div class="rs-mov-row"><span class="rs-mov-dot"></span><span class="rs-mov-dest">'+esc(x.dest)+'</span><span class="rs-mov-cont">'+x.n+' &iacute;tem'+(x.n>1?"s":"")+'</span></div>';
+      }).join("");
+    }catch(e){ $("#rsMov").innerHTML='<div class="rs-empty">No se pudo cargar.</div>'; }
+  }
   window.addEventListener("hashchange", function(){ if(!$("#app").classList.contains("hidden")) renderPanel(); });
   document.querySelectorAll("[data-panel]").forEach(function(b){ b.addEventListener("click", function(){ irPanel(b.getAttribute("data-panel")); }); });
   $("#campana").addEventListener("click", function(){ irPanel("dashboard"); });

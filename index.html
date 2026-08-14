@@ -3,14 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Maxim PCE — Herramientas y equipos de presión</title>
+<title>NEXUS TOOLS · Maxim Fishing</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23ff6a00'/><path d='M17 47V17h7l16 18V17h7v30h-7L24 29v18z' fill='%230d0e10'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23ff6a00'/><path d='M17 47V17h7l16 18V17h7v30h-7L24 29v18z' fill='%230d0e10'/></svg>">
+<meta name="theme-color" content="#FF6600">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --negro:#0d0e10; --panel:#16181c; --panel2:#1c1f24; --borde:#2a2e35;
-    --texto:#e7e9ec; --tenue:#9aa0a8; --naranja:#ff6a00; --naranja2:#ff8a3d;
-    --acero:#5fa8d3; --verde:#35c26a; --ambar:#f5a623; --rojo:#e2483f;
-    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    /* ===== Design tokens (handoff Mtto Operativo) ===== */
+    --bg-app:#0A0A0B; --bg-panel:#101114; --surface:#14161A; --surface-tabla:#0d0e11; --surface-off:#0F1114;
+    --borde:#23252A; --borde-ctrl:#2a2d33; --borde-ctrl2:#2f3238; --borde-sutil:#1c1e23;
+    --gris-inact:#2f3238; --gris-ind:#4a4e56;
+    --txt1:#FFFFFF; --txt-body:#e6e8ea; --txt2:#c2c5ca; --txt-mut:#8b9099; --txt-tenue:#6b6f78; --txt-min:#5f646c;
+    --acento:#FF6600; --acento-hover:#ff8534; --sobre-acento:#000000; --sobre-acento2:#3d1900;
+    --side-activo:#1d1310; --azul-qaqc:#4d9fe8;
+    /* alias de compatibilidad con el codigo existente */
+    --negro:#0A0A0B; --panel:#101114; --panel2:#14161A; --borde-legacy:#23252A;
+    --texto:#e6e8ea; --tenue:#8b9099; --naranja:#FF6600; --naranja2:#ff8534;
+    --acero:#4d9fe8; --verde:#35c26a; --ambar:#f5a623; --rojo:#e2483f;
+    --mono:'IBM Plex Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:'Barlow',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--negro);color:var(--texto);font-family:var(--sans);font-size:15px;-webkit-font-smoothing:antialiased}
@@ -275,6 +289,102 @@
   .slot .up{background:var(--naranja);color:#180a00;border:0;font-weight:700}
   .slot .rep{background:var(--panel2);color:var(--texto);border:1px solid var(--borde)}
   @media(max-width:640px){.desc{max-width:130px}.modal{max-width:100%}}
+
+  /* ===== Optimizacion movil ===== */
+  html,body{max-width:100%;overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  @media(max-width:640px){
+    input,select,textarea{font-size:16px}
+    .barra{gap:8px;padding:10px 12px}
+    .logo-barra{height:28px}
+    .nav{flex-wrap:wrap;gap:2px;padding:2px}
+    .nav button{padding:8px 11px;font-size:13px}
+    .buscar{flex:1 1 100%;min-width:0}
+    .usuario{gap:6px;flex-wrap:wrap}
+    .filtros{gap:8px;padding:12px}
+    .filtros select,.filtros .fTipo,.fTipo{flex:1 1 100%;min-width:0}
+    .conteo{margin-left:0;flex:1 1 100%}
+    .wrap{padding:0 12px}
+    table{font-size:13px}
+    thead th,tbody td{padding:9px 8px}
+    .desc{max-width:120px}
+    #panel,#vMov{padding:12px}
+    .cards{grid-template-columns:1fr 1fr;gap:10px}
+    .kpi{padding:13px 14px}
+    .kpi .n{font-size:24px}
+    .modal{padding:16px}
+    .modal h2{font-size:17px}
+    .row2{grid-template-columns:1fr}
+    .acc{flex-wrap:wrap}
+    .acc>*{flex:1 1 auto}
+    .slot{flex-wrap:wrap;gap:8px}
+    .slot .sn{flex:1 1 100%}
+    .mov-form{padding:14px}
+    .mov-row{gap:8px}
+    .mov-row input,.mov-row select{min-width:0;flex:1 1 100%}
+    .mov-toolbar{gap:8px}
+  }
+  @media(max-width:390px){
+    .cards{grid-template-columns:1fr}
+  }
+  /* ===== App shell (handoff Mtto Operativo) ===== */
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg-app);color:var(--txt-body)}
+  .shell{flex:1;display:flex;min-height:0}
+  .side{width:224px;flex:none;background:var(--bg-panel);border-right:1px solid var(--borde);display:flex;flex-direction:column;min-height:0}
+  .side-top{display:flex;flex-direction:column;gap:8px;padding:18px 16px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .side-logo{height:26px;width:auto;max-width:130px;object-fit:contain;object-position:left}
+  .side-mod{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut)}
+  .side-grp{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--txt-min);padding:8px 10px 6px}
+  .side-nav{display:flex;flex-direction:column}
+  .snav{display:flex;align-items:center;gap:10px;padding:10px;cursor:pointer;border:0;border-left:2px solid transparent;background:transparent;color:var(--txt2);font-family:inherit;text-align:left;width:100%;transition:background .15s,color .15s}
+  .snav:hover{background:#171615}
+  .snav.on{color:#fff;border-left-color:var(--acento);background:var(--side-activo)}
+  .snav .ind{width:16px;height:16px;flex:none;border:2px solid var(--gris-ind)}
+  .snav.on .ind{background:var(--acento);border-color:var(--acento)}
+  .snav .lbl{flex:1;font-size:14px;font-weight:500}
+  .snav .bdg{font-family:var(--mono);font-size:10px;color:var(--txt-tenue)}
+  .snav.on .bdg{color:var(--acento)}
+  .side-foot{margin-top:auto;border-top:1px solid var(--borde-sutil);padding:14px 12px;display:flex;flex-direction:column;gap:12px}
+  .side-aviso{background:#14161A;border-left:2px solid var(--acento);padding:10px 12px}
+  .side-aviso-t{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut)}
+  .side-aviso-x{font-size:13px;color:#fff;margin-top:3px}
+  .side-user{display:flex;align-items:center;gap:10px}
+  .side-ava{width:32px;height:32px;border-radius:50%;flex:none;background:#1A1C21;border:1px solid var(--borde-ctrl);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--acento)}
+  .side-user-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .side-user-info .nombre{font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .side-user-info .rol{font-family:var(--mono);font-size:9px;color:var(--acento);background:none;padding:0;letter-spacing:.08em;text-transform:uppercase}
+  .side-salir{background:transparent;border:0;color:var(--txt-mut);cursor:pointer;font-size:16px;padding:4px;line-height:1}
+  .side-salir:hover{color:#fff}
+  .side-links{display:flex;flex-direction:column;gap:6px}
+  .side-links .lnk{background:transparent;border:0;color:var(--txt-min);font-family:inherit;font-size:12px;cursor:pointer;text-align:left;padding:0}
+  .side-links .lnk:hover{color:var(--txt2)}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+  .topbar{height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 22px;background:var(--bg-panel);border-bottom:1px solid var(--borde)}
+  .tb-head{display:flex;flex-direction:column;gap:2px}
+  .tb-tit{font-size:17px;font-weight:600;color:#fff;white-space:nowrap}
+  .tb-sub{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--txt-mut)}
+  .tb-r{flex:1;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+  .tb-buscar{flex:0 1 340px;min-width:140px;height:36px;padding:0 12px}
+  .btn-nuevo{flex:none;height:36px;padding:0 14px;background:var(--acento);color:#000;border:0;border-radius:0;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-nuevo:hover{background:var(--acento-hover)}
+  .topbar .campana{flex:none}
+  .contenido{flex:1;overflow:auto;padding:20px 22px 26px}
+  .ph-panel{border:1px dashed var(--borde-ctrl2);border-radius:12px;padding:40px;text-align:center;color:var(--txt-mut)}
+  .ph-panel .ph-t{font-size:18px;color:#fff;margin-bottom:8px}
+  .ph-panel .ph-x{font-size:14px}
+  .bottombar{display:none}
+  .btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 14px;background:transparent;border:0;cursor:pointer;min-height:44px;font-family:inherit}
+  .btab .ind{width:20px;height:20px;border:2px solid var(--gris-ind)}
+  .btab.on .ind{background:var(--acento);border-color:var(--acento)}
+  .btab .lbl{font-size:10.5px;font-weight:600;color:var(--txt-mut)}
+  .btab.on .lbl{color:var(--acento)}
+  @media(max-width:900px){
+    .side{display:none}
+    .bottombar{display:flex;flex:none;background:var(--bg-panel);border-top:1px solid var(--borde)}
+    .topbar{height:auto;min-height:56px;padding:8px 14px;flex-wrap:wrap}
+    .tb-buscar{flex:1 1 100%}
+    .contenido{padding:14px 14px 20px}
+  }
 </style>
 </head>
 <body>
@@ -470,25 +580,58 @@
 
   <!-- APP -->
   <div id="app" class="hidden">
-    <header class="barra">
-      <img src="logo.png" alt="Maxim Fishing" class="logo-barra">
-      <div class="nav">
-        <button id="navInv" class="on">Inventario</button>
-        <button id="navMov">Movilizaci&oacute;n</button>
-        <button id="navPanel">Dashboard</button>
-        <button id="navFab">Fabricantes</button>
-      </div>
-      <input class="buscar" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
-      <button class="campana" id="campana" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
-      <div class="usuario">
-        <button class="btn hidden" id="nuevo">+ Nuevo</button>
-        <button class="salir" id="navHome" title="Volver a los m&oacute;dulos">&larr; Inicio</button>
-        <button class="salir" id="navGuia" title="Ver la gu&iacute;a">Gu&iacute;a</button>
-        <span class="nombre" id="nombre"></span>
-        <span class="rol" id="rol"></span>
-        <button class="salir" id="salir">Salir</button>
-      </div>
-    </header>
+    <div class="shell">
+      <aside class="side">
+        <div class="side-top">
+          <img src="logo.png" alt="Maxim Fishing" class="side-logo">
+          <div class="side-mod">MTTO / OPERATIVO</div>
+        </div>
+        <div class="side-grp">OPERACI&Oacute;N</div>
+        <nav class="side-nav">
+          <button class="snav" type="button" data-panel="resumen"><span class="ind"></span><span class="lbl">Resumen</span><span class="bdg"></span></button>
+          <button class="snav" type="button" data-panel="inventario"><span class="ind"></span><span class="lbl">Inventario</span><span class="bdg">10.4k</span></button>
+          <button class="snav" type="button" data-panel="movilizacion"><span class="ind"></span><span class="lbl">Movilizaci&oacute;n</span><span class="bdg">3</span></button>
+          <button class="snav" type="button" data-panel="dashboard"><span class="ind"></span><span class="lbl">Dashboard</span><span class="bdg"></span></button>
+          <button class="snav" type="button" data-panel="fabricantes"><span class="ind"></span><span class="lbl">Fabricantes</span><span class="bdg">18</span></button>
+        </nav>
+        <div class="side-foot">
+          <div class="side-aviso">
+            <div class="side-aviso-t">ATENCI&Oacute;N HOY</div>
+            <div class="side-aviso-x" id="sideAviso">2 equipos con mtto vencido</div>
+          </div>
+          <div class="side-user">
+            <div class="side-ava" id="sideAva">--</div>
+            <div class="side-user-info">
+              <span class="nombre" id="nombre"></span>
+              <span class="rol" id="rol"></span>
+            </div>
+            <button class="side-salir" id="salir" type="button" title="Cerrar sesi&oacute;n">&#8631;</button>
+          </div>
+          <div class="side-links">
+            <button class="lnk" id="navHome" type="button">&larr; Volver a Nexus Tools</button>
+            <button class="lnk" id="navGuia" type="button">Gu&iacute;a</button>
+          </div>
+        </div>
+      </aside>
+      <div class="main">
+        <header class="topbar">
+          <div class="tb-head">
+            <div class="tb-tit" id="tbTitulo">Resumen</div>
+            <div class="tb-sub" id="tbSub"></div>
+          </div>
+          <div class="tb-r">
+            <input class="buscar tb-buscar hidden" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
+            <button class="campana" id="campana" type="button" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
+            <button class="btn-nuevo hidden" id="nuevo" type="button">+ NUEVO</button>
+          </div>
+        </header>
+        <div class="contenido">
+          <div id="vResumen">
+            <div class="ph-panel">
+              <div class="ph-t">Resumen</div>
+              <div class="ph-x">Panel de entrada del m&oacute;dulo. Se construye en el siguiente paso.</div>
+            </div>
+          </div>
 
     <!-- VISTA INVENTARIO -->
     <div id="vInv">
@@ -599,6 +742,16 @@
       <p class="msg hidden" id="fabMsg"></p>
       <div class="wrap" id="fabTipos"><div class="vacio">Elige un fabricante para ver y cargar sus documentos.</div></div>
     </div>
+        </div>
+      </div>
+    </div>
+    <nav class="bottombar">
+      <button class="btab" type="button" data-panel="resumen"><span class="ind"></span><span class="lbl">Resumen</span></button>
+      <button class="btab" type="button" data-panel="inventario"><span class="ind"></span><span class="lbl">Inventario</span></button>
+      <button class="btab" type="button" data-panel="movilizacion"><span class="ind"></span><span class="lbl">Movil.</span></button>
+      <button class="btab" type="button" data-panel="dashboard"><span class="ind"></span><span class="lbl">Dashboard</span></button>
+      <button class="btab" type="button" data-panel="fabricantes"><span class="ind"></span><span class="lbl">Fabric.</span></button>
+    </nav>
   </div>
 
   <!-- MODAL -->
@@ -765,11 +918,11 @@
 
   $("#btnLanding").addEventListener("click", verLogin);
   $("#btnVolver").addEventListener("click", function(e){ e.preventDefault(); verLanding(); });
-  $("#modMtto").addEventListener("click", verAppReal);   // modulo Mtto Operativo -> app actual
+  $("#modMtto").addEventListener("click", entrarApp);   // modulo Mtto Operativo -> app actual
   $("#navHome").addEventListener("click", verHub);       // volver al hub de modulos
   $("#hubSalir").addEventListener("click", cerrarSesion);
-  $("#gIr").addEventListener("click", verAppReal);
-  $("#gIr2").addEventListener("click", verAppReal);
+  $("#gIr").addEventListener("click", entrarApp);
+  $("#gIr2").addEventListener("click", entrarApp);
   $("#navGuia").addEventListener("click", verGuia);
   document.querySelectorAll(".rol-card[data-rol]").forEach(function(c){
     c.addEventListener("click", function(){
@@ -980,7 +1133,7 @@
   function renderSinRegistro(){
     var tb=$("#pFilas");
     tb.innerHTML='<tr><td colspan="5" class="vacio">Son los ítems sin ningún mantenimiento registrado (la mayoría por ahora). <a href="#" id="verInvSR" style="color:var(--naranja2)">Verlos en Inventario</a></td></tr>';
-    var a=$("#verInvSR"); if(a) a.addEventListener("click", function(e){ e.preventDefault(); verInventario(); });
+    var a=$("#verInvSR"); if(a) a.addEventListener("click", function(e){ e.preventDefault(); irPanel("inventario"); });
   }
 
   async function cargarPanel(){
@@ -1195,19 +1348,43 @@
   function mostrarMsg(t, ok){ const m=$("#mMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
 
   // ---- Navegación interna app ----
-  function mostrarVista(vistaId, navId){
-    ["vInv","vMov","panel","vFab"].forEach(function(v){ $("#"+v).classList.toggle("hidden", v!==vistaId); });
-    ["navInv","navMov","navPanel","navFab"].forEach(function(n){ $("#"+n).classList.toggle("on", n===navId); });
+  // ===== Router del shell (hash: #/mtto-operativo/:panel) =====
+  const PANELES = {
+    resumen:      {el:"vResumen", tit:"Resumen",      sub:"ESTADO DE LA OPERACION",    load:function(){ cargarResumen(); }},
+    inventario:   {el:"vInv",     tit:"Inventario",   sub:"INVENTARIO DE ITEMS",       load:function(){ buscar(); }},
+    movilizacion: {el:"vMov",     tit:"Movilizacion", sub:"DESPACHOS Y RETORNOS",      load:function(){ prepararMov(); cargarHistorial(); }},
+    dashboard:    {el:"panel",    tit:"Dashboard",    sub:"INDICADORES",               load:function(){ cargarPanel(); }},
+    fabricantes:  {el:"vFab",     tit:"Fabricantes",  sub:"DOCUMENTOS POR FABRICANTE", load:function(){ prepararFab(); }}
+  };
+  const ORDEN_PANELES = ["resumen","inventario","movilizacion","dashboard","fabricantes"];
+  function panelDeHash(){ var m=(location.hash||"").match(/mtto-operativo\/([a-z]+)/i); var p=m?m[1].toLowerCase():""; return PANELES[p]?p:"resumen"; }
+  function irPanel(p){ if(!PANELES[p]) p="resumen"; location.hash="#/mtto-operativo/"+p; }
+  function setAvatar(){
+    var n=($("#nombre").textContent||"").trim(); var ini="--";
+    if(n){ var ps=n.split(/\s+/); ini=((ps[0]&&ps[0][0])||"")+((ps[1]&&ps[1][0])||""); ini=ini.toUpperCase()||"--"; }
+    var a=$("#sideAva"); if(a) a.textContent=ini;
   }
-  function verInventario(){ mostrarVista("vInv","navInv"); }
-  function verMov(){ mostrarVista("vMov","navMov"); prepararMov(); cargarHistorial(); }
-  function verPanel(){ mostrarVista("panel","navPanel"); cargarPanel(); }
-  function verFab(){ mostrarVista("vFab","navFab"); prepararFab(); }
-  $("#navInv").addEventListener("click", verInventario);
-  $("#navMov").addEventListener("click", verMov);
-  $("#navPanel").addEventListener("click", verPanel);
-  $("#navFab").addEventListener("click", verFab);
-  $("#campana").addEventListener("click", verPanel);
+  function renderPanel(){
+    var p=panelDeHash();
+    ORDEN_PANELES.forEach(function(k){ var d=$("#"+PANELES[k].el); if(d) d.classList.toggle("hidden", k!==p); });
+    document.querySelectorAll("[data-panel]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-panel")===p); });
+    $("#tbTitulo").textContent = PANELES[p].tit;
+    $("#tbSub").textContent = PANELES[p].sub;
+    var esInv=(p==="inventario");
+    $("#q").classList.toggle("hidden", !esInv);
+    $("#nuevo").classList.toggle("hidden", !(esInv && esAdmin()));
+    setAvatar();
+    try{ PANELES[p].load(); }catch(e){}
+  }
+  function entrarApp(){
+    mostrarPantalla("app");
+    if(!/mtto-operativo/i.test(location.hash)){ location.hash="#/mtto-operativo/resumen"; }
+    renderPanel();
+  }
+  function cargarResumen(){ /* Paso 2: contenido del panel Resumen */ }
+  window.addEventListener("hashchange", function(){ if(!$("#app").classList.contains("hidden")) renderPanel(); });
+  document.querySelectorAll("[data-panel]").forEach(function(b){ b.addEventListener("click", function(){ irPanel(b.getAttribute("data-panel")); }); });
+  $("#campana").addEventListener("click", function(){ irPanel("dashboard"); });
 
   // ---- Movilizacion ----
   let movItem=null, movDestinosCargados=false;

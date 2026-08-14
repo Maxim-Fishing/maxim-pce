@@ -431,6 +431,69 @@
     .rs-fila{grid-template-columns:1fr}
     .rs-banda-tit{font-size:19px}
   }
+  /* ===== Panel Inventario ===== */
+  #vInv{display:flex;flex-direction:column;gap:12px;height:100%}
+  .inv-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .inv-sel{height:34px;padding:0 10px;background:var(--bg-panel);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:13px;border-radius:6px;font-family:inherit}
+  .inv-sel.fTipo{flex:0 1 210px;min-width:150px}
+  .inv-guardar{height:34px;padding:0 12px;background:transparent;border:1px dashed var(--borde-ctrl2);color:var(--txt-mut);font-size:12px;cursor:pointer;border-radius:6px;font-family:inherit}
+  .inv-guardar:hover{color:var(--txt2)}
+  .inv-conteo{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .inv-conteo b{color:#fff;font-weight:600}
+  .inv-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .inv-chip{height:30px;padding:0 12px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;border-radius:0;display:inline-flex;align-items:center;gap:6px}
+  .inv-chip b{font-weight:600}
+  .inv-chip:hover{border-color:var(--borde-ctrl2)}
+  .inv-chip.on{background:var(--acento);color:#000;border-color:var(--acento)}
+  .inv-chip.on b{color:#000}
+  .inv-layout{flex:1;display:flex;gap:14px;min-height:0}
+  .inv-main{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid var(--borde);background:var(--surface-tabla)}
+  .inv-tabla{flex:1;overflow:auto;padding:0}
+  .inv-tabla table{width:100%;border-collapse:collapse;table-layout:fixed}
+  .inv-tabla thead th{position:sticky;top:0;background:var(--bg-panel);text-align:left;padding:10px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);border-bottom:1px solid var(--borde);text-transform:uppercase}
+  .inv-tabla td{padding:12px 16px;border-bottom:1px solid var(--borde-sutil);vertical-align:middle;font-size:13.5px;color:var(--txt-body)}
+  .inv-row{cursor:pointer}
+  .inv-row:hover{background:var(--surface)}
+  .inv-row.sel{background:var(--side-activo);box-shadow:inset 2px 0 0 var(--acento)}
+  .c-chk{width:34px}
+  .inv-chk{display:inline-block;width:14px;height:14px;border:1px solid var(--borde-ctrl2)}
+  .c-cod{width:132px}
+  .c-cod .cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
+  .c-desc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c-lin{width:52px;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .c-ubi{width:118px;font-size:12px;color:var(--txt-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c-est{width:92px}
+  .inv-vacio{text-align:center;color:var(--txt-mut);padding:30px 0}
+  .inv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:var(--bg-panel);border-top:1px solid var(--borde)}
+  .inv-rango{font-family:var(--mono);font-size:11px;color:var(--txt-mut)}
+  .inv-pager{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .inv-pg{min-width:30px;height:28px;padding:0 8px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt2);cursor:pointer;font-family:var(--mono);font-size:12px}
+  .inv-pg.on{background:var(--acento);color:#000;border-color:var(--acento);font-weight:600}
+  .inv-pg:disabled{opacity:.35;cursor:default}
+  .inv-detalle{width:280px;flex:none;background:var(--surface);border:1px solid var(--borde);overflow:auto;position:relative}
+  .inv-det-x{display:none}
+  .inv-det-vacio{padding:24px 18px;color:var(--txt-mut);font-size:13px}
+  .inv-det-body{padding:16px}
+  .inv-det-cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
+  .inv-det-nom{font-size:15px;font-weight:600;color:#fff;margin-top:3px}
+  .inv-det-foto{height:120px;margin:14px 0;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--txt-min);background:repeating-linear-gradient(135deg,#0d0e11 0 8px,#101114 8px 16px);border:1px solid var(--borde)}
+  .inv-pair{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--borde-sutil);font-size:13px}
+  .inv-pair .k{color:var(--txt-mut);font-size:12px;flex:none}
+  .inv-pair .v{color:var(--txt-body);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .inv-det-abrir{width:100%;height:38px;margin-top:14px;background:var(--acento);color:#000;border:0;font-size:13px;font-weight:700;cursor:pointer}
+  .inv-det-abrir:hover{background:var(--acento-hover)}
+  .inv-det-mant{width:100%;height:38px;margin-top:8px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:13px;cursor:pointer;font-family:inherit}
+  .inv-det-mant:hover{border-color:var(--acento)}
+  @media(max-width:1240px){
+    .inv-detalle{position:fixed;top:0;right:0;bottom:0;width:300px;max-width:90vw;z-index:30;transform:translateX(100%);transition:transform .18s;border-left:1px solid var(--borde)}
+    .inv-detalle.open{transform:translateX(0)}
+    .inv-det-x{display:block;position:absolute;top:10px;right:10px;background:transparent;border:0;color:var(--txt-mut);font-size:16px;cursor:pointer;z-index:2}
+  }
+  @media(max-width:900px){
+    .inv-chips{flex-wrap:nowrap;overflow-x:auto}
+    .inv-chip{flex:none}
+    .c-lin,.c-ubi{display:none}
+  }
 </style>
 </head>
 <body>
@@ -704,38 +767,59 @@
 
     <!-- VISTA INVENTARIO -->
     <div id="vInv">
-      <div class="filtros">
-        <select id="fLinea" title="Grupo de l&iacute;neas">
+      <div class="inv-filtros">
+        <select id="fLinea" class="inv-sel" title="Grupo de l&iacute;neas">
           <option value="">Todas las l&iacute;neas</option>
           <option value="WL">Wireline (WL)</option>
           <option value="WS">Well Services (WS)</option>
         </select>
-        <select id="fCategoria">
+        <select id="fCategoria" class="inv-sel">
           <option value="">Todas las categor&iacute;as</option>
           <option value="equipo">Equipo de Presi&oacute;n</option>
           <option value="herramienta">Herramienta</option>
         </select>
-        <select id="fEstado">
+        <select id="fEstado" class="inv-sel">
           <option value="">Todos los estados</option>
           <option value="activo">Activo</option>
           <option value="en_mantenimiento">En mantenimiento</option>
           <option value="fuera_servicio">Fuera de servicio</option>
           <option value="inactivo">Inactivo</option>
         </select>
-        <input class="buscar fTipo" id="fTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
-        <span class="conteo" id="conteo"></span>
+        <input class="inv-sel fTipo" id="fTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
+        <button class="inv-guardar" id="invGuardar" type="button" title="Disponible en el paso de b&uacute;squedas">+ Guardar filtro</button>
+        <span class="inv-conteo"><b id="conteo">0</b> &Iacute;TEMS</span>
         <span class="cargando hidden" id="cargando">buscando&hellip;</span>
       </div>
-      <div class="wrap">
-        <table>
-          <thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>L&iacute;nea</th><th>Categor&iacute;a</th><th>Estado</th></tr></thead>
-          <tbody id="filas"></tbody>
-        </table>
-      </div>
-      <div class="pag">
-        <button id="prev">Anterior</button>
-        <span id="paginaTxt"></span>
-        <button id="next">Siguiente</button>
+      <div class="inv-chips" id="invChips"></div>
+      <div class="inv-layout">
+        <div class="inv-main">
+          <div class="wrap inv-tabla">
+            <table>
+              <thead><tr>
+                <th class="c-chk"></th><th class="c-cod">C&oacute;digo</th><th class="c-desc">Descripci&oacute;n</th><th class="c-lin">L&iacute;nea</th><th class="c-ubi">Ubicaci&oacute;n</th><th class="c-est">Estado</th>
+              </tr></thead>
+              <tbody id="filas"></tbody>
+            </table>
+          </div>
+          <div class="inv-foot">
+            <span class="inv-rango" id="invRango"></span>
+            <div class="inv-pager" id="invPager"></div>
+          </div>
+        </div>
+        <aside class="inv-detalle" id="invDetalle">
+          <button class="inv-det-x" id="invDetX" type="button" aria-label="Cerrar">&#10005;</button>
+          <div class="inv-det-vacio" id="invDetVacio">Selecciona un &iacute;tem para ver su detalle.</div>
+          <div class="inv-det-body hidden" id="invDetBody">
+            <div class="inv-det-head">
+              <div class="inv-det-cod" id="invDetCod"></div>
+              <div class="inv-det-nom" id="invDetNom"></div>
+            </div>
+            <div class="inv-det-foto">FOTO DE LA HERRAMIENTA</div>
+            <div id="invDetPairs"></div>
+            <button class="inv-det-abrir" id="invDetAbrir" type="button">ABRIR HOJA DE VIDA</button>
+            <button class="inv-det-mant" id="invDetMant" type="button">Registrar mantenimiento</button>
+          </div>
+        </aside>
       </div>
     </div>
 
@@ -1113,6 +1197,7 @@
     if(cat) url+="&categoria_id=eq."+cat;
     if(estado) url+="&estado=eq."+estado;
     if(tipoCodes) url+="&tipo_codigo=in.("+tipoCodes.map(encodeURIComponent).join(",")+")";
+    url+=(invExtra||"");
     url+="&limit="+POR+"&offset="+(pagina*POR);
     try{
       const r=await fetch(url,{headers:headers({"Prefer":"count=exact"})});
@@ -1120,26 +1205,107 @@
       const rango=r.headers.get("content-range");
       total = rango && rango.includes("/") ? parseInt(rango.split("/")[1]) : 0;
       pintar(await r.json()||[]);
-    }catch(e){ $("#filas").innerHTML='<tr><td colspan="5" class="vacio">No se pudo cargar.</td></tr>'; }
+    }catch(e){ $("#filas").innerHTML='<tr><td colspan="6" class="inv-vacio">No se pudo cargar.</td></tr>'; }
     finally{ $("#cargando").classList.add("hidden"); }
   }
+  // ===== Inventario: render de filas, paginador, chips y detalle =====
+  let invExtra="", invChip="todos", invSelId=null;
   function pintar(items){
     const tb=$("#filas"); tb.innerHTML="";
-    if(items.length===0){ tb.innerHTML='<tr><td colspan="5" class="vacio">No hay ítems que coincidan.</td></tr>'; }
-    else items.forEach(it=>{
-      const linea=(it.lineas&&it.lineas.nombre)||it.linea_codigo||"";
-      const est=esc(it.estado); const cat=it.categoria_id||"herramienta";
-      const tr=document.createElement("tr");
-      tr.innerHTML='<td>'+codHTML(it.codigo)+'</td><td class="desc">'+esc(it.descripcion)+
-        '</td><td>'+esc(linea)+'</td><td><span class="cat '+cat+'">'+catNombre(cat)+'</span></td>'+
-        '<td><span class="badge '+est+'">'+est.replace("_"," ")+'</span></td>';
-      tr.addEventListener("click", ()=>abrirFicha(it));
+    if(!items.length){ tb.innerHTML='<tr><td colspan="6" class="inv-vacio">No hay ítems que coincidan.</td></tr>'; }
+    else items.forEach(function(it){
+      const ubic=(it.unidades&&it.unidades.nombre)||(it.bases&&it.bases.nombre)||"—";
+      const est=esc(it.estado||"");
+      const tr=document.createElement("tr"); tr.className="inv-row";
+      if(it.id===invSelId) tr.classList.add("sel");
+      tr.innerHTML='<td class="c-chk"><span class="inv-chk"></span></td>'+
+        '<td class="c-cod">'+codHTML(it.codigo)+'</td>'+
+        '<td class="c-desc">'+esc(it.descripcion||"")+'</td>'+
+        '<td class="c-lin">'+esc(it.linea_codigo||"")+'</td>'+
+        '<td class="c-ubi">'+esc(ubic)+'</td>'+
+        '<td class="c-est"><span class="badge '+est+'">'+est.replace(/_/g," ")+'</span></td>';
+      tr.addEventListener("click", function(){ seleccionarItem(it, tr); });
       tb.appendChild(tr);
     });
+    $("#conteo").textContent = total.toLocaleString("es-CO");
+    renderPagerInv();
+  }
+  function renderPagerInv(){
     const paginas=Math.max(Math.ceil(total/POR),1);
-    $("#conteo").textContent = total.toLocaleString("es-CO")+" ítems";
-    $("#paginaTxt").textContent = "Página "+(pagina+1)+" de "+paginas;
-    $("#prev").disabled = pagina===0; $("#next").disabled = (pagina+1)>=paginas;
+    const desde= total? (pagina*POR+1):0, hasta=Math.min((pagina+1)*POR, total);
+    $("#invRango").textContent = total ? (desde+"–"+hasta+" DE "+total.toLocaleString("es-CO")) : "0 ÍTEMS";
+    const cont=$("#invPager"); cont.innerHTML="";
+    function boton(txt,pg,dis,act){
+      const b=document.createElement("button"); b.className="inv-pg"+(act?" on":""); b.textContent=txt; b.type="button";
+      if(dis) b.disabled=true; else b.addEventListener("click", function(){ pagina=pg; buscar(); });
+      cont.appendChild(b);
+    }
+    boton("‹", pagina-1, pagina===0, false);
+    let ini=Math.max(0, pagina-2), fin=Math.min(paginas-1, ini+4); ini=Math.max(0, fin-4);
+    for(let i=ini;i<=fin;i++){ boton(String(i+1), i, false, i===pagina); }
+    boton("›", pagina+1, (pagina+1)>=paginas, false);
+  }
+  function seleccionarItem(it, tr){
+    invSelId=it.id;
+    document.querySelectorAll("#filas tr").forEach(function(r){ r.classList.remove("sel"); });
+    if(tr) tr.classList.add("sel");
+    const ubic=(it.unidades&&it.unidades.nombre)||(it.bases&&it.bases.nombre)||"—";
+    const cat=(it.categoria_id==="equipo")?"Equipo de presión":"Herramienta";
+    const tipo=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"—";
+    $("#invDetVacio").classList.add("hidden");
+    $("#invDetBody").classList.remove("hidden");
+    $("#invDetCod").textContent=it.codigo||"";
+    $("#invDetNom").textContent=it.descripcion||"";
+    const pares=[
+      ["Línea", esc(it.linea_codigo||"—")],
+      ["Tipo", esc(tipo)],
+      ["Categoría", cat],
+      ["Ubicación", esc(ubic)],
+      ["S/N", esc(it.sn||"—")],
+      ["Estado", '<span class="badge '+esc(it.estado||"")+'">'+esc((it.estado||"").replace(/_/g," "))+'</span>']
+    ];
+    $("#invDetPairs").innerHTML=pares.map(function(p){ return '<div class="inv-pair"><span class="k">'+p[0]+'</span><span class="v">'+p[1]+'</span></div>'; }).join("");
+    $("#invDetAbrir").onclick=function(){ abrirFicha(it); };
+    $("#invDetMant").onclick=function(){ abrirFicha(it); };
+    if(window.matchMedia("(max-width:1240px)").matches){ $("#invDetalle").classList.add("open"); }
+  }
+  async function cargarChipsInv(){
+    const hoyISOs=new Date().toISOString().slice(0,10);
+    const base=LINEAS_IN;
+    const cTodos=await contarRest("items",base);
+    const cAct=await contarRest("items","estado=eq.activo&"+base);
+    const cCampo=await contarRest("items","unidad_id=not.is.null&"+base);
+    const cVenc=await contarRest("ciclos_mantenimiento","vigente=eq.true&fecha_vencimiento=lt."+hoyISOs);
+    const cBaja=await contarRest("items","estado=eq.inactivo&"+base);
+    const chips=[
+      {k:"todos",  t:"TODOS",        n:cTodos},
+      {k:"activos",t:"ACTIVOS",      n:cAct},
+      {k:"campo",  t:"EN CAMPO",     n:cCampo},
+      {k:"vencido",t:"MTTO VENCIDO", n:cVenc},
+      {k:"baja",   t:"BAJA",         n:cBaja}
+    ];
+    $("#invChips").innerHTML=chips.map(function(c){
+      return '<button class="inv-chip'+(c.k===invChip?" on":"")+'" type="button" data-chip="'+c.k+'">'+c.t+' <b>'+c.n.toLocaleString("es-CO")+'</b></button>';
+    }).join("");
+    $("#invChips").querySelectorAll("[data-chip]").forEach(function(b){ b.addEventListener("click", function(){ setChipInv(b.getAttribute("data-chip")); }); });
+  }
+  async function idsVencidos(){
+    try{
+      const hoyISOs=new Date().toISOString().slice(0,10);
+      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=item_id&vigente=eq.true&fecha_vencimiento=lt."+hoyISOs+"&limit=500",{headers:headers()});
+      const d=r.ok?await r.json():[];
+      return d.map(function(x){ return x.item_id; }).filter(function(v){ return v!=null; });
+    }catch(e){ return []; }
+  }
+  async function setChipInv(k){
+    invChip=k; const sel=$("#fEstado");
+    if(k==="todos"){ invExtra=""; sel.value=""; }
+    else if(k==="activos"){ invExtra=""; sel.value="activo"; }
+    else if(k==="baja"){ invExtra=""; sel.value="inactivo"; }
+    else if(k==="campo"){ invExtra="&unidad_id=not.is.null"; sel.value=""; }
+    else if(k==="vencido"){ sel.value=""; const ids=await idsVencidos(); invExtra = ids.length ? ("&id=in.("+ids.join(",")+")") : "&id=eq.-1"; }
+    document.querySelectorAll("#invChips [data-chip]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-chip")===k); });
+    pagina=0; buscar();
   }
 
   // ---- Panel de vencimientos ----
@@ -1420,7 +1586,7 @@
   // ===== Router del shell (hash: #/mtto-operativo/:panel) =====
   const PANELES = {
     resumen:      {el:"vResumen", tit:"Resumen",      sub:"ESTADO DE LA OPERACION",    load:function(){ cargarResumen(); }},
-    inventario:   {el:"vInv",     tit:"Inventario",   sub:"INVENTARIO DE ITEMS",       load:function(){ buscar(); }},
+    inventario:   {el:"vInv",     tit:"Inventario",   sub:"INVENTARIO DE ITEMS",       load:function(){ buscar(); cargarChipsInv(); }},
     movilizacion: {el:"vMov",     tit:"Movilizacion", sub:"DESPACHOS Y RETORNOS",      load:function(){ prepararMov(); cargarHistorial(); }},
     dashboard:    {el:"panel",    tit:"Dashboard",    sub:"INDICADORES",               load:function(){ cargarPanel(); }},
     fabricantes:  {el:"vFab",     tit:"Fabricantes",  sub:"DOCUMENTOS POR FABRICANTE", load:function(){ prepararFab(); }}
@@ -1694,10 +1860,11 @@
   $("#q").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
   $("#fLinea").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#fCategoria").addEventListener("change", ()=>{ pagina=0; buscar(); });
-  $("#fEstado").addEventListener("change", ()=>{ pagina=0; buscar(); });
+  $("#fEstado").addEventListener("change", ()=>{ invExtra=""; var v=$("#fEstado").value; invChip=(v==="activo"?"activos":v==="inactivo"?"baja":v===""?"todos":null); document.querySelectorAll("#invChips [data-chip]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-chip")===invChip); }); pagina=0; buscar(); });
   $("#fTipo").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
-  $("#prev").addEventListener("click", ()=>{ if(pagina>0){pagina--; buscar();} });
-  $("#next").addEventListener("click", ()=>{ pagina++; buscar(); });
+  // paginacion dinamica: renderPagerInv()
+  $("#invDetX").addEventListener("click", function(){ $("#invDetalle").classList.remove("open"); });
+  $("#invGuardar").addEventListener("click", function(){ /* Guardar filtro: paso de busquedas */ });
 
 
   // ---- Documentos ----

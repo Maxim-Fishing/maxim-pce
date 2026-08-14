@@ -494,6 +494,85 @@
     .inv-chip{flex:none}
     .c-lin,.c-ubi{display:none}
   }
+  /* ===== Panel Movilizacion ===== */
+  #vMov{display:flex;flex-direction:column;gap:14px}
+  .mv-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--borde);border:1px solid var(--borde)}
+  .mv-kpi{background:var(--surface);padding:14px 16px}
+  .mv-kpi.crit{border-top:3px solid var(--acento)}
+  .mv-kpi-n{font-size:27px;font-weight:700;color:#fff;line-height:1}
+  .mv-kpi-t{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut);margin-top:8px}
+  .mv-form{background:var(--surface);border:1px solid var(--borde);padding:16px 18px}
+  .mv-form-t{font-size:15px;font-weight:600;color:#fff;margin-bottom:12px}
+  .mv-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .mv-inp{flex:1;min-width:190px;height:38px;padding:0 12px;background:var(--bg-app);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:14px;border-radius:6px;font-family:inherit}
+  .mv-btn{flex:none;height:38px;padding:0 16px;background:var(--acento);color:#000;border:0;font-size:14px;font-weight:700;cursor:pointer}
+  .mv-btn:hover{background:var(--acento-hover)}
+  .mv-btn:disabled{opacity:.5;cursor:default}
+  .mv-btn2{flex:none;height:38px;padding:0 14px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:13px;cursor:pointer;font-family:inherit}
+  .mv-btn2:hover{border-color:var(--acento)}
+  .mv-info{color:var(--txt-body);font-size:13px;margin:12px 0 0;min-height:18px}
+  .mv-info .u{color:var(--acento);font-weight:700}
+  .mv-hist-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .mv-hist-t{font-size:15px;font-weight:600;color:#fff}
+  .mv-tabla{border:1px solid var(--borde);background:var(--surface-tabla);overflow:auto}
+  .mv-tabla table{width:100%;border-collapse:collapse}
+  .mv-tabla thead th{position:sticky;top:0;background:var(--bg-panel);text-align:left;padding:10px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);border-bottom:1px solid var(--borde);text-transform:uppercase}
+  .mv-tabla td{padding:14px 16px;border-bottom:1px solid var(--borde-sutil);font-size:13px;color:var(--txt-body)}
+  .mv-tabla td .cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
+  .mv-tabla tbody tr:hover{background:var(--surface)}
+  .mv-tabla .desc{color:var(--txt-mut)}
+  @media(max-width:900px){ .mv-kpis{grid-template-columns:1fr 1fr} }
+  /* ===== Panel Dashboard ===== */
+  #panel{display:flex;flex-direction:column;gap:14px}
+  .db-fila{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;align-items:start}
+  .db-card{background:var(--surface);border:1px solid var(--borde);padding:16px}
+  .db-card-t{font-size:15px;font-weight:600;color:#fff;margin-bottom:16px}
+  .db-bars{display:flex;align-items:flex-end;gap:14px;height:200px}
+  .db-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+  .db-bar-v{font-family:var(--mono);font-size:11px;color:var(--txt-body)}
+  .db-bar-fill{width:100%;background:var(--gris-inact);min-height:2px}
+  .db-bar.max .db-bar-fill{background:var(--acento)}
+  .db-bar-m{font-family:var(--mono);font-size:10px;color:var(--txt-mut)}
+  .db-lineas{display:flex;flex-direction:column;gap:12px}
+  .db-lin{display:flex;flex-direction:column;gap:5px}
+  .db-lin-top{display:flex;justify-content:space-between;align-items:baseline}
+  .db-lin-k{font-size:13px;color:var(--txt-body)}
+  .db-lin-n{font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .db-lin-bar{height:8px;background:var(--bg-app);overflow:hidden}
+  .db-lin-bar span{display:block;height:100%;background:var(--acento)}
+  .db-fila3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .db-metric{background:var(--surface);border:1px solid var(--borde);padding:16px}
+  .db-metric-n{font-size:34px;font-weight:700;color:#fff;line-height:1}
+  .db-metric-n.acc{color:var(--acento)}
+  .db-metric-t{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);margin-top:8px}
+  .db-prog{height:8px;background:var(--bg-app);margin-top:12px;overflow:hidden}
+  .db-prog span{display:block;height:100%;background:var(--acento);width:0}
+  @media(max-width:900px){ .db-fila{grid-template-columns:1fr} .db-fila3{grid-template-columns:1fr} }
+  /* ===== Panel Fabricantes ===== */
+  #vFab{display:flex;flex-direction:column;gap:14px}
+  .fab-top{display:flex;align-items:center;gap:12px}
+  .fab-buscar{height:34px;flex:0 1 320px;min-width:160px;padding:0 12px;background:var(--bg-panel);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:13px;border-radius:6px;font-family:inherit}
+  .fab-conteo{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .fab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .fab-card{background:var(--surface);border:1px solid var(--borde);border-left:3px solid var(--borde-ctrl);padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:border-color .15s}
+  .fab-card:hover{border-left-color:var(--acento)}
+  .fab-card-h{display:flex;align-items:center;gap:12px}
+  .fab-ini{width:40px;height:40px;flex:none;background:var(--bg-app);border:1px solid var(--borde-ctrl);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--txt-mut)}
+  .fab-card-hn{min-width:0}
+  .fab-nom{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fab-pais{font-family:var(--mono);font-size:10px;color:var(--txt-mut)}
+  .fab-metrics{display:flex;gap:24px}
+  .fab-m-n{font-size:19px;font-weight:700;color:#fff}
+  .fab-m-t{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--txt-mut);margin-top:2px}
+  .fab-card-f{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--borde);padding-top:10px;font-size:12px;color:var(--txt-mut)}
+  .fab-ver{color:var(--acento);font-size:13px}
+  .fab-volver{background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:13px;padding:7px 12px;cursor:pointer;font-family:inherit;align-self:flex-start}
+  .fab-volver:hover{border-color:var(--acento)}
+  .fab-cat-h{display:flex;align-items:center;gap:12px}
+  .fab-cat-ini{width:40px;height:40px;flex:none;background:var(--bg-app);border:1px solid var(--borde-ctrl);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--txt-mut)}
+  .fab-cat-nom{font-size:17px;font-weight:600;color:#fff}
+  @media(max-width:1240px){ .fab-grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:760px){ .fab-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -825,60 +904,54 @@
 
     <!-- VISTA PANEL -->
     <div id="panel" class="hidden">
-      <div class="filtros">
-        <select id="pLinea" title="Grupo de l&iacute;neas">
-          <option value="">Todas las l&iacute;neas</option>
-          <option value="WL">Wireline (WL)</option>
-          <option value="WS">Well Services (WS)</option>
-        </select>
-        <select id="pCategoria">
-          <option value="">Todas las categor&iacute;as</option>
-          <option value="equipo">Equipo de Presi&oacute;n</option>
-          <option value="herramienta">Herramienta</option>
-        </select>
-        <select id="pBase"><option value="">Todas las bases</option></select>
-        <input class="buscar fTipo" id="pTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
-        <span class="cargando hidden" id="pCargando">calculando&hellip;</span>
+      <div class="db-fila">
+        <div class="db-card">
+          <div class="db-card-t">Mantenimientos por mes</div>
+          <div class="db-bars" id="dbMeses"><div class="rs-empty">Cargando&hellip;</div></div>
+        </div>
+        <div class="db-card">
+          <div class="db-card-t">Inventario por l&iacute;nea</div>
+          <div class="db-lineas" id="dbLineas"><div class="rs-empty">Cargando&hellip;</div></div>
+        </div>
       </div>
-      <div class="cards">
-        <div class="kpi venc"><div class="n" id="kVenc">0</div><div class="t">Vencidos</div></div>
-        <div class="kpi pv"><div class="n" id="kPv">0</div><div class="t">Por vencer (&le;10 d&iacute;as)</div></div>
-        <div class="kpi ok"><div class="n" id="kOk">0</div><div class="t">Al d&iacute;a</div></div>
-        <div class="kpi sr"><div class="n" id="kSr">0</div><div class="t">Sin registro</div></div>
-      </div>
-      <div class="seccion">Completitud documental</div>
-      <div class="cards" id="docCards"></div>
-      <div class="seccion">Cantidades por tipo</div>
-      <div id="porTipo" class="wrap"></div>
-      <div class="seccion">Requieren atenci&oacute;n</div>
-      <div class="wrap">
-        <table>
-          <thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Base</th><th>Vence</th><th>Estado</th></tr></thead>
-          <tbody id="pFilas"></tbody>
-        </table>
+      <div class="db-fila3">
+        <div class="db-metric">
+          <div class="db-metric-n" id="dbCumpl">&mdash;</div>
+          <div class="db-metric-t">CUMPLIMIENTO DE PLAN</div>
+          <div class="db-prog"><span id="dbCumplBar"></span></div>
+        </div>
+        <div class="db-metric">
+          <div class="db-metric-n" id="dbMes">&mdash;</div>
+          <div class="db-metric-t">MANTENIMIENTOS ESTE MES</div>
+        </div>
+        <div class="db-metric">
+          <div class="db-metric-n acc" id="dbFuera">&mdash;</div>
+          <div class="db-metric-t">HERRAMIENTAS FUERA DE SERVICIO</div>
+        </div>
       </div>
     </div>
 
     <!-- VISTA MOVILIZACIÓN -->
     <div id="vMov" class="hidden">
-      <div class="mov-form" id="movForm">
-        <div class="seccion" style="margin-top:0">Movilizar equipo / herramienta</div>
-        <div class="mov-row">
-          <input id="movCodigo" placeholder="C&oacute;digo del &iacute;tem (ej. EPBMS350X0002)" autocomplete="off">
-          <button class="btn2" id="movBuscar" type="button">Buscar</button>
+      <div class="mv-kpis" id="mvKpis"></div>
+      <div class="mv-form" id="movForm">
+        <div class="mv-form-t">Movilizar equipo / herramienta</div>
+        <div class="mv-row">
+          <input id="movCodigo" class="mv-inp" placeholder="C&oacute;digo del &iacute;tem (ej. EPBMS350X0002)" autocomplete="off">
+          <button class="mv-btn2" id="movBuscar" type="button">Buscar</button>
         </div>
-        <p class="mov-info" id="movInfo"></p>
-        <div class="mov-row">
-          <select id="movDestino"><option value="">Mover a&hellip;</option></select>
-          <button class="btn" id="movGuardar" type="button" disabled>Registrar movimiento</button>
+        <p class="mv-info" id="movInfo"></p>
+        <div class="mv-row">
+          <select id="movDestino" class="mv-inp"><option value="">Mover a&hellip;</option></select>
+          <button class="mv-btn" id="movGuardar" type="button" disabled>Registrar movimiento</button>
         </div>
         <p class="msg hidden" id="movMsg"></p>
       </div>
-      <div class="mov-toolbar">
-        <div class="seccion" style="margin:0">Historial de movimientos</div>
-        <button class="btn2" id="movInforme" type="button">Descargar informe &uacute;ltima semana (CSV)</button>
+      <div class="mv-hist-top">
+        <span class="mv-hist-t">Historial de movimientos</span>
+        <button class="mv-btn2" id="movInforme" type="button">Descargar informe &uacute;ltima semana (CSV)</button>
       </div>
-      <div class="wrap">
+      <div class="wrap mv-tabla">
         <table>
           <thead><tr><th>Fecha</th><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Origen</th><th>Destino</th><th>Usuario</th></tr></thead>
           <tbody id="movFilas"></tbody>
@@ -888,12 +961,20 @@
 
     <!-- VISTA FABRICANTES -->
     <div id="vFab" class="hidden">
-      <div class="filtros">
-        <select id="fabSelect"><option value="">Elige un fabricante&hellip;</option></select>
+      <div id="fabLista">
+        <div class="fab-top">
+          <input class="fab-buscar" id="fabBuscar" placeholder="Buscar fabricante&hellip;" autocomplete="off">
+          <span class="fab-conteo" id="fabConteo"></span>
+        </div>
+        <div class="fab-grid" id="fabGrid"><div class="rs-empty">Cargando&hellip;</div></div>
       </div>
-      <p class="fab-nota">La ficha t&eacute;cnica y el manual O&amp;M que se cargan aqu&iacute; se aplican a <b>todos</b> los c&oacute;digos de ese fabricante y tipo. En la ficha de cada &iacute;tem aparecen autom&aacute;ticamente como "Del fabricante".</p>
-      <p class="msg hidden" id="fabMsg"></p>
-      <div class="wrap" id="fabTipos"><div class="vacio">Elige un fabricante para ver y cargar sus documentos.</div></div>
+      <div id="fabCatalogo" class="hidden">
+        <button class="fab-volver" id="fabVolver" type="button">&larr; Fabricantes</button>
+        <div class="fab-cat-h"><span class="fab-cat-ini" id="fabCatIni"></span><span class="fab-cat-nom" id="fabCatNom"></span></div>
+        <p class="fab-nota">La ficha t&eacute;cnica y el manual O&amp;M que se cargan aqu&iacute; se aplican a <b>todos</b> los c&oacute;digos de ese fabricante y tipo. En la ficha de cada &iacute;tem aparecen autom&aacute;ticamente como "Del fabricante".</p>
+        <p class="msg hidden" id="fabMsg"></p>
+        <div class="wrap" id="fabTipos"></div>
+      </div>
     </div>
         </div>
       </div>
@@ -1137,7 +1218,7 @@
       const d = await r.json();
       (d||[]).filter(l=>LINEAS_OK.includes(l.codigo)).forEach(l=>{
         const txt=l.codigo+(l.nombre?" — "+l.nombre:"");
-        [ "#fLinea", "#pLinea" ].forEach(sid=>{
+        [ "#fLinea" ].forEach(sid=>{
           const o=document.createElement("option"); o.value=l.codigo; o.textContent=txt; $(sid).appendChild(o);
         });
       });
@@ -1147,7 +1228,7 @@
     try{
       const rb = await fetch(URL_SB+"/rest/v1/bases?select=id,nombre&order=nombre",{headers:headers()});
       bases = await rb.json();
-      bases.forEach(b=>{ const o=document.createElement("option"); o.value=String(b.id); o.textContent=b.nombre; $("#pBase").appendChild(o); });
+      bases.forEach(b=>{ if(!$("#pBase")) return; const o=document.createElement("option"); o.value=String(b.id); o.textContent=b.nombre; $("#pBase").appendChild(o); });
       const ru = await fetch(URL_SB+"/rest/v1/unidades?select=id,nombre&order=nombre",{headers:headers()});
       unidades = await ru.json();
     }catch(e){ bases=bases||[]; unidades=unidades||[]; }
@@ -1587,8 +1668,8 @@
   const PANELES = {
     resumen:      {el:"vResumen", tit:"Resumen",      sub:"ESTADO DE LA OPERACION",    load:function(){ cargarResumen(); }},
     inventario:   {el:"vInv",     tit:"Inventario",   sub:"INVENTARIO DE ITEMS",       load:function(){ buscar(); cargarChipsInv(); }},
-    movilizacion: {el:"vMov",     tit:"Movilizacion", sub:"DESPACHOS Y RETORNOS",      load:function(){ prepararMov(); cargarHistorial(); }},
-    dashboard:    {el:"panel",    tit:"Dashboard",    sub:"INDICADORES",               load:function(){ cargarPanel(); }},
+    movilizacion: {el:"vMov",     tit:"Movilizacion", sub:"DESPACHOS Y RETORNOS",      load:function(){ prepararMov(); cargarHistorial(); cargarMovKpis(); }},
+    dashboard:    {el:"panel",    tit:"Dashboard",    sub:"INDICADORES",               load:function(){ cargarDashboard(); }},
     fabricantes:  {el:"vFab",     tit:"Fabricantes",  sub:"DOCUMENTOS POR FABRICANTE", load:function(){ prepararFab(); }}
   };
   const ORDEN_PANELES = ["resumen","inventario","movilizacion","dashboard","fabricantes"];
@@ -1760,6 +1841,79 @@
       tb.innerHTML=d.map(function(m){ return '<tr><td>'+esc(String(m.fecha||"").slice(0,16).replace("T"," "))+'</td><td>'+codHTML(m.codigo)+'</td><td class="desc">'+esc(m.descripcion)+'</td><td>'+esc(m.origen)+'</td><td>'+esc(m.destino)+'</td><td>'+esc(m.usuario)+'</td></tr>'; }).join("");
     }catch(e){ tb.innerHTML='<tr><td colspan="6" class="vacio">No se pudo cargar el historial.</td></tr>'; }
   }
+  // ===== Panel Dashboard (Paso 5) =====
+  async function actualizarAlertas(){
+    var hoyISOs=new Date().toISOString().slice(0,10);
+    var d10=new Date(Date.now()+10*86400000).toISOString().slice(0,10);
+    var venc=await contarRest("ciclos_mantenimiento","vigente=eq.true&fecha_vencimiento=lt."+hoyISOs);
+    var pv=await contarRest("ciclos_mantenimiento","vigente=eq.true&fecha_vencimiento=gte."+hoyISOs+"&fecha_vencimiento=lte."+d10);
+    var n=venc+pv; var pt=$("#ptAlerta"); if(pt){ pt.textContent=n; pt.classList.toggle("hidden", n===0); }
+  }
+  async function cargarDashboard(){ cargarDbMeses(); cargarDbLineas(); cargarDbMetricas(); }
+  async function cargarDbMeses(){
+    var cont=$("#dbMeses");
+    try{
+      var base=new Date(); base.setDate(1);
+      var desde=new Date(base.getFullYear(), base.getMonth()-7, 1).toISOString().slice(0,10);
+      var r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=fecha_realizado&fecha_realizado=gte."+desde+"&limit=5000",{headers:headers()});
+      var d=r.ok?await r.json():[];
+      var nom=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+      var meses=[];
+      for(var i=7;i>=0;i--){ var dt=new Date(base.getFullYear(), base.getMonth()-i, 1); meses.push({y:dt.getFullYear(), m:dt.getMonth(), n:0, lbl:nom[dt.getMonth()]}); }
+      d.forEach(function(c){ if(!c.fecha_realizado) return; var dt=new Date(c.fecha_realizado); meses.forEach(function(mm){ if(mm.y===dt.getFullYear() && mm.m===dt.getMonth()) mm.n++; }); });
+      var max=Math.max.apply(null, meses.map(function(m){return m.n;}).concat([1]));
+      cont.innerHTML=meses.map(function(m){
+        var h=Math.max(Math.round(m.n/max*150),2);
+        return '<div class="db-bar'+(m.n===max&&max>0?" max":"")+'"><div class="db-bar-v">'+m.n+'</div><div class="db-bar-fill" style="height:'+h+'px"></div><div class="db-bar-m">'+m.lbl+'</div></div>';
+      }).join("");
+    }catch(e){ cont.innerHTML='<div class="rs-empty">No se pudo cargar.</div>'; }
+  }
+  async function cargarDbLineas(){
+    var cont=$("#dbLineas");
+    var arr=[];
+    for(var i=0;i<LINEAS_OK.length;i++){ var lc=LINEAS_OK[i]; var n=await contarRest("items","linea_codigo=eq."+lc); arr.push({k:lc, n:n}); }
+    arr.sort(function(a,b){ return b.n-a.n; });
+    var max=Math.max.apply(null, arr.map(function(x){return x.n;}).concat([1]));
+    cont.innerHTML=arr.map(function(x){
+      var w=Math.max(Math.round(x.n/max*100),2);
+      return '<div class="db-lin"><div class="db-lin-top"><span class="db-lin-k">'+x.k+'</span><span class="db-lin-n">'+x.n.toLocaleString("es-CO")+'</span></div><div class="db-lin-bar"><span style="width:'+w+'%"></span></div></div>';
+    }).join("");
+  }
+  async function cargarDbMetricas(){
+    var R={};
+    try{ var rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify({p_linea:null,p_categoria:null,p_base:null,p_tipo:null})}); if(rr.ok) R=await rr.json(); }catch(e){}
+    var alDia=(R.al_dia)||0, venc=(R.vencidos)||0, pv=(R.por_vencer)||0;
+    var conReg=alDia+venc+pv;
+    var cumpl= conReg ? Math.round(alDia/conReg*100) : 0;
+    $("#dbCumpl").textContent=cumpl+"%";
+    $("#dbCumplBar").style.width=cumpl+"%";
+    var ini=new Date(); ini.setDate(1); var iniISO=ini.toISOString().slice(0,10);
+    var mesN=await contarRest("ciclos_mantenimiento","fecha_realizado=gte."+iniISO);
+    $("#dbMes").textContent=mesN.toLocaleString("es-CO");
+    var fuera=await contarRest("items","estado=eq.fuera_servicio&"+LINEAS_IN);
+    $("#dbFuera").textContent=fuera.toLocaleString("es-CO");
+  }
+  async function cargarMovKpis(){
+    var enCampo=await contarRest("items","unidad_id=not.is.null&"+LINEAS_IN);
+    var total=0, hoyN=0, destinos=0;
+    try{
+      var r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:30})});
+      var d=r.ok?await r.json():[];
+      total=d.length;
+      var hoyStr=new Date().toISOString().slice(0,10); var setD={};
+      d.forEach(function(m){ if(String(m.fecha||"").slice(0,10)===hoyStr) hoyN++; if(m.destino) setD[m.destino]=1; });
+      destinos=Object.keys(setD).length;
+    }catch(e){}
+    var kpis=[
+      {n:enCampo, t:"ÍTEMS EN CAMPO", crit:true},
+      {n:total, t:"MOVIMIENTOS 30 D"},
+      {n:destinos, t:"DESTINOS ACTIVOS"},
+      {n:hoyN, t:"MOVIMIENTOS HOY"}
+    ];
+    $("#mvKpis").innerHTML=kpis.map(function(k){
+      return '<div class="mv-kpi'+(k.crit?" crit":"")+'"><div class="mv-kpi-n">'+k.n.toLocaleString("es-CO")+'</div><div class="mv-kpi-t">'+k.t+'</div></div>';
+    }).join("");
+  }
   async function movInforme(){
     try{
       const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:7})});
@@ -1797,14 +1951,47 @@
       Object.keys(fabTree).forEach(function(f){ fabTree[f].sort(function(a,b){ return String(a.nombre).localeCompare(String(b.nombre)); }); });
     }catch(e){ fabTree={}; }
   }
+  let fabKeys=[], _fabBound=false;
+  function inicialesFab(f){ var p=String(f||"").trim().split(/\s+/); return (((p[0]&&p[0][0])||"")+((p[1]&&p[1][0])||(p[0]&&p[0][1])||"")).toUpperCase(); }
   async function prepararFab(){
     await cargarFabricantes();
-    const sel=$("#fabSelect");
-    if(sel.options.length<=1){
-      const keys=Object.keys(fabTree).sort();
-      keys.forEach(function(f){ const o=document.createElement("option"); o.value=f; o.textContent=f; sel.appendChild(o); });
-      if(!keys.length){ sel.insertAdjacentHTML("beforeend", '<option value="" disabled>(aun no hay fabricantes registrados)</option>'); }
+    fabKeys=Object.keys(fabTree).sort(function(a,b){ return a.localeCompare(b); });
+    $("#fabConteo").textContent=fabKeys.length+" FABRICANTES";
+    $("#fabLista").classList.remove("hidden");
+    $("#fabCatalogo").classList.add("hidden");
+    if(!_fabBound){
+      _fabBound=true;
+      $("#fabVolver").addEventListener("click", function(){ $("#fabCatalogo").classList.add("hidden"); $("#fabLista").classList.remove("hidden"); });
+      $("#fabBuscar").addEventListener("input", function(){ var q=this.value.trim().toLowerCase(); renderFabGrid(fabKeys.filter(function(f){ return f.toLowerCase().indexOf(q)>=0; })); });
     }
+    renderFabGrid(fabKeys);
+  }
+  function renderFabGrid(keys){
+    var grid=$("#fabGrid");
+    if(!keys.length){ grid.innerHTML='<div class="rs-empty">No hay fabricantes que coincidan.</div>'; return; }
+    grid.innerHTML=keys.map(function(f,i){
+      var tipos=(fabTree[f]||[]).length;
+      return '<div class="fab-card" data-i="'+i+'">'+
+        '<div class="fab-card-h"><span class="fab-ini">'+esc(inicialesFab(f))+'</span>'+
+          '<div class="fab-card-hn"><div class="fab-nom">'+esc(f)+'</div><div class="fab-pais">&mdash;</div></div></div>'+
+        '<div class="fab-metrics">'+
+          '<div class="fab-m"><div class="fab-m-n" id="fabItems'+i+'">&hellip;</div><div class="fab-m-t">ÍTEMS</div></div>'+
+          '<div class="fab-m"><div class="fab-m-n">'+tipos+'</div><div class="fab-m-t">TIPOS</div></div>'+
+        '</div>'+
+        '<div class="fab-card-f"><span>Documentos</span><span class="fab-ver">Ver cat&aacute;logo &rarr;</span></div>'+
+      '</div>';
+    }).join("");
+    grid.querySelectorAll(".fab-card").forEach(function(c){ c.addEventListener("click", function(){ verCatalogoFab(keys[parseInt(c.getAttribute("data-i"),10)]); }); });
+    keys.forEach(function(f,i){ contarRest("items","fabricante=eq."+encodeURIComponent(f)).then(function(n){ var el=document.getElementById("fabItems"+i); if(el) el.textContent=n.toLocaleString("es-CO"); }); });
+  }
+  function verCatalogoFab(fab){
+    if(!fab) return;
+    $("#fabLista").classList.add("hidden");
+    $("#fabCatalogo").classList.remove("hidden");
+    $("#fabCatIni").textContent=inicialesFab(fab);
+    $("#fabCatNom").textContent=fab;
+    $("#fabMsg").className="msg hidden";
+    renderFabTipos(fab);
   }
   function fabSlot(fab,tc,tipo,label,doc){
     const tiene=!!doc; let acc="";
@@ -1833,7 +2020,7 @@
       $("#filePicker").value=""; $("#filePicker").click();
     }); });
   }
-  $("#fabSelect").addEventListener("change", function(){ $("#fabMsg").className="msg hidden"; renderFabTipos($("#fabSelect").value); });
+  // seleccion de fabricante via tarjetas (verCatalogoFab)
 
   async function subirFab(pend, file){
     fabMsg("Subiendo el documento\u2026", true);
@@ -1848,10 +2035,7 @@
       renderFabTipos(pend.fabricante);
     }catch(e){ fabMsg("No se pudo subir el archivo.", false); }
   }
-  $("#pLinea").addEventListener("change", cargarPanel);
-  $("#pCategoria").addEventListener("change", cargarPanel);
-  $("#pBase").addEventListener("change", cargarPanel);
-  $("#pTipo").addEventListener("input", ()=>debounce(cargarPanel));
+  // (filtros del dashboard anterior retirados; el panel ahora usa cargarDashboard)
 
   $("#nuevo").addEventListener("click", abrirNuevo);
   $("#mGuardar").addEventListener("click", guardar);
@@ -2087,7 +2271,7 @@
     await cargarBasesUnidades();
     await cargarTipos();
     await buscar();
-    cargarPanel(); // para poblar el contador de alertas
+    actualizarAlertas(); // contador de la campana
     verHub();      // al entrar mostramos el hub de modulos NEXUS TOOLS
   }
   // ===== Banco de infografias =====

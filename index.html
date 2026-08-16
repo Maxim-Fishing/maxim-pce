@@ -2088,6 +2088,7 @@
     return path;
   }
   async function verArchivo(path){
+    if(/^https?:\/\//i.test(path)){ window.open(path,"_blank","noopener"); return; }
     try{
       const r=await fetch(URL_SB+"/storage/v1/object/sign/documentos/"+encPath(path),{
         method:"POST", headers:headers(), body:JSON.stringify({expiresIn:3600})});
@@ -2148,7 +2149,7 @@
     const NOMBRES={reporte_mantenimiento:"Reporte de mantenimiento", ndt:"Reporte NDT", prueba_presion:"Prueba de presión", prueba_dureza:"Prueba de dureza"};
     let req=["ndt"];
     if(itemActual.categoria_id==="equipo") req=req.concat(["prueba_presion","prueba_dureza"]);
-    if(!(cicloVigente && cicloVigente.metodo==="formulario")) req.push("reporte_mantenimiento");
+    if(!(cicloVigente && (cicloVigente.metodo==="formulario" || cicloVigente.metodo==="ndt"))) req.push("reporte_mantenimiento");
     const faltan=req.filter(k=>!mapa[k]);
     if(faltan.length===0) return '<p style="margin:8px 0 6px"><span class="mant-chip ok">Mantenimiento completo</span></p>';
     return '<p style="margin:8px 0 6px"><span class="mant-chip bad">Mantenimiento incompleto</span>'+

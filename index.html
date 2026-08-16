@@ -858,12 +858,8 @@
           <option value="equipo">Equipo de Presi&oacute;n</option>
           <option value="herramienta">Herramienta</option>
         </select>
-        <select id="fEstado" class="inv-sel">
-          <option value="">Todos los estados</option>
-          <option value="activo">Activo</option>
-          <option value="en_mantenimiento">En mantenimiento</option>
-          <option value="fuera_servicio">Fuera de servicio</option>
-          <option value="inactivo">Inactivo</option>
+        <select id="fUbi" class="inv-sel" title="Ubicaci&oacute;n (base o unidad)">
+          <option value="">Todas las ubicaciones</option>
         </select>
         <input class="inv-sel fTipo" id="fTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
         <button class="inv-guardar" id="invGuardar" type="button" title="Disponible en el paso de b&uacute;squedas">+ Guardar filtro</button>
@@ -1232,6 +1228,19 @@
       bases.forEach(b=>{ if(!$("#pBase")) return; const o=document.createElement("option"); o.value=String(b.id); o.textContent=b.nombre; $("#pBase").appendChild(o); });
       const ru = await fetch(URL_SB+"/rest/v1/unidades?select=id,nombre&order=nombre",{headers:headers()});
       unidades = await ru.json();
+      const selU=$("#fUbi");
+      if(selU){
+        if(bases && bases.length){
+          const g=document.createElement("optgroup"); g.label="Bases";
+          bases.forEach(function(b){ const o=document.createElement("option"); o.value="b:"+b.id; o.textContent=b.nombre; g.appendChild(o); });
+          selU.appendChild(g);
+        }
+        if(unidades && unidades.length){
+          const g2=document.createElement("optgroup"); g2.label="Unidades";
+          unidades.forEach(function(u){ const o=document.createElement("option"); o.value="u:"+u.id; o.textContent=u.nombre; g2.appendChild(o); });
+          selU.appendChild(g2);
+        }
+      }
     }catch(e){ bases=bases||[]; unidades=unidades||[]; }
   }
   // Tipos de herramienta (para el filtro con búsqueda al escribir)
@@ -1270,7 +1279,8 @@
   const debounce = fn => { clearTimeout(timer); timer=setTimeout(fn,300); };
   async function buscar(){
     $("#cargando").classList.remove("hidden");
-    const q=$("#q").value.trim(), estado=$("#fEstado").value, cat=$("#fCategoria").value;
+    const q=$("#q").value.trim(), estado=invEstado, cat=$("#fCategoria").value;
+    const ubi=$("#fUbi").value;
     const grp=GRUPOS[$("#fLinea").value];
     const tipoCodes=codigosDeTipo($("#fTipo").value);
     let url=URL_SB+"/rest/v1/items?select=id,codigo,codigo_ant,descripcion,estado,linea_codigo,tipo_codigo,categoria_id,sn,fabricante,medida,anio,presion,base_id,unidad_id,lineas(nombre),tipos_item(nombre),bases(nombre),unidades(nombre)&order=codigo";
@@ -1278,6 +1288,7 @@
     if(q){ const t=encodeURIComponent("*"+q+"*"); url+="&or=(codigo.ilike."+t+",sn.ilike."+t+",descripcion.ilike."+t+")"; }
     if(cat) url+="&categoria_id=eq."+cat;
     if(estado) url+="&estado=eq."+estado;
+    if(ubi){ const pref=ubi.slice(0,2), id=ubi.slice(2); if(pref==="b:") url+="&base_id=eq."+id; else if(pref==="u:") url+="&unidad_id=eq."+id; }
     if(tipoCodes) url+="&tipo_codigo=in.("+tipoCodes.map(encodeURIComponent).join(",")+")";
     url+=(invExtra||"");
     url+="&limit="+POR+"&offset="+(pagina*POR);
@@ -1291,7 +1302,7 @@
     finally{ $("#cargando").classList.add("hidden"); }
   }
   // ===== Inventario: render de filas, paginador, chips y detalle =====
-  let invExtra="", invChip="todos", invSelId=null;
+  let invExtra="", invChip="todos", invSelId=null, invEstado="";
   function pintar(items){
     const tb=$("#filas"); tb.innerHTML="";
     if(!items.length){ tb.innerHTML='<tr><td colspan="6" class="inv-vacio">No hay ítems que coincidan.</td></tr>'; }
@@ -1380,12 +1391,12 @@
     }catch(e){ return []; }
   }
   async function setChipInv(k){
-    invChip=k; const sel=$("#fEstado");
-    if(k==="todos"){ invExtra=""; sel.value=""; }
-    else if(k==="activos"){ invExtra=""; sel.value="activo"; }
-    else if(k==="baja"){ invExtra=""; sel.value="inactivo"; }
-    else if(k==="campo"){ invExtra="&unidad_id=not.is.null"; sel.value=""; }
-    else if(k==="vencido"){ sel.value=""; const ids=await idsVencidos(); invExtra = ids.length ? ("&id=in.("+ids.join(",")+")") : "&id=eq.-1"; }
+    invChip=k;
+    if(k==="todos"){ invExtra=""; invEstado=""; }
+    else if(k==="activos"){ invExtra=""; invEstado="activo"; }
+    else if(k==="baja"){ invExtra=""; invEstado="inactivo"; }
+    else if(k==="campo"){ invExtra="&unidad_id=not.is.null"; invEstado=""; }
+    else if(k==="vencido"){ invEstado=""; const ids=await idsVencidos(); invExtra = ids.length ? ("&id=in.("+ids.join(",")+")") : "&id=eq.-1"; }
     document.querySelectorAll("#invChips [data-chip]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-chip")===k); });
     pagina=0; buscar();
   }
@@ -2047,7 +2058,7 @@
   $("#q").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
   $("#fLinea").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#fCategoria").addEventListener("change", ()=>{ pagina=0; buscar(); });
-  $("#fEstado").addEventListener("change", ()=>{ invExtra=""; var v=$("#fEstado").value; invChip=(v==="activo"?"activos":v==="inactivo"?"baja":v===""?"todos":null); document.querySelectorAll("#invChips [data-chip]").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-chip")===invChip); }); pagina=0; buscar(); });
+  $("#fUbi").addEventListener("change", ()=>{ pagina=0; buscar(); });
   $("#fTipo").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
   // paginacion dinamica: renderPagerInv()
   $("#invDetX").addEventListener("click", function(){ $("#invDetalle").classList.remove("open"); });

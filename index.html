@@ -810,6 +810,7 @@
           <div class="tb-r">
             <input class="buscar tb-buscar hidden" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
             <button class="campana" id="campana" type="button" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
+            <button class="btn-nuevo hidden" id="btnSincNdt" type="button" title="Enlazar certificados NDT desde Drive">SINCRONIZAR NDT</button>
             <button class="btn-nuevo hidden" id="nuevo" type="button">+ NUEVO</button>
           </div>
         </header>
@@ -1689,6 +1690,7 @@
     var esInv=(p==="inventario");
     $("#q").classList.toggle("hidden", !esInv);
     $("#nuevo").classList.toggle("hidden", !(esInv && esAdmin()));
+    $("#btnSincNdt").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
     setAvatar();
     try{ PANELES[p].load(); }catch(e){}
   }
@@ -1791,6 +1793,7 @@
   window.addEventListener("hashchange", function(){ if(!$("#app").classList.contains("hidden")) renderPanel(); });
   document.querySelectorAll("[data-panel]").forEach(function(b){ b.addEventListener("click", function(){ irPanel(b.getAttribute("data-panel")); }); });
   $("#campana").addEventListener("click", function(){ irPanel("dashboard"); });
+  $("#btnSincNdt").addEventListener("click", sincronizarNdt);
 
   // ---- Movilizacion ----
   let movItem=null, movDestinosCargados=false;
@@ -2078,6 +2081,84 @@
         headers:{"Content-Type":"text/plain;charset=utf-8"},
         body: JSON.stringify(cuerpo) });
     }catch(e){ /* el reflejo a Drive nunca debe romper la carga principal */ }
+  }
+  // ===== Sincronizar certificados NDT desde Drive (solo admin) =====
+  var RX_NDT_COD=/(EL|EP|FB|SL|SW|WL|WS|WT)[A-Z][A-Z0-9]{2}\d{3}[A-Z]\d{3,4}/;
+  function parseNdtName(name){
+    var up=String(name).toUpperCase();
+    var mc=up.match(RX_NDT_COD); if(!mc) return null;
+    var mf=String(name).match(/\.(\d{2})(\d{2})(\d{2})/);
+    var fecha = mf ? ("20"+mf[1]+"-"+mf[2]+"-"+mf[3]) : null;
+    var mm=up.match(/-(PM|LP|UT|VT|MT|PT)-/);
+    return { codigo:mc[0], fecha:fecha, metodo: mm?mm[1]:null };
+  }
+  function driveListNdt(since){
+    return new Promise(function(resolve,reject){
+      var cb="__ndtcb"+Date.now()+Math.floor(Math.random()*1000);
+      var s=document.createElement("script");
+      var to=setTimeout(function(){ limpiar(); reject(new Error("Tiempo agotado consultando Drive")); }, 180000);
+      function limpiar(){ try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(s.parentNode) s.parentNode.removeChild(s); clearTimeout(to); }
+      window[cb]=function(data){ limpiar(); resolve(data); };
+      s.onerror=function(){ limpiar(); reject(new Error("No se pudo contactar Drive")); };
+      s.src=DRIVE_URL+"?action=list_ndt&token="+encodeURIComponent(DRIVE_TOKEN)+(since?("&since="+encodeURIComponent(since)):"")+"&callback="+cb;
+      document.body.appendChild(s);
+    });
+  }
+  function ndtToast(msg){
+    var d=document.getElementById("ndtToast");
+    if(!d){ d=document.createElement("div"); d.id="ndtToast";
+      d.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:var(--bg-panel,#141414);border:1px solid var(--acento,#FF6600);color:var(--txt-1,#fff);padding:12px 18px;border-radius:10px;max-width:92%;font-size:14px;line-height:1.35;box-shadow:0 8px 28px rgba(0,0,0,.55)";
+      document.body.appendChild(d); }
+    d.textContent=msg;
+    return { set:function(m,ok){ d.textContent=m; d.style.borderColor = ok===true?"#35c26a":(ok===false?"#e2483f":"var(--acento,#FF6600)"); if(ok!==undefined){ setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 9000); } } };
+  }
+  async function sincronizarNdt(){
+    if(!esAdmin()) return;
+    if(!confirm("¿Buscar certificados NDT nuevos en Drive y enlazarlos como mantenimiento?")) return;
+    var t=ndtToast("Consultando Drive…");
+    try{
+      var resp=await driveListNdt("");
+      if(!resp || !resp.ok) throw new Error((resp&&resp.error)||"respuesta inválida de Drive");
+      var archivos=resp.archivos||[];
+      var filas=[];
+      archivos.forEach(function(a){
+        var p=parseNdtName(a.n); if(!p) return;
+        filas.push({ codigo_item:p.codigo, metodo:p.metodo, fecha:p.fecha, nombre_archivo:a.n, drive_file_id:a.i, drive_url:"https://drive.google.com/file/d/"+a.i+"/view" });
+      });
+      if(!filas.length){ t.set("No se encontraron archivos con código NDT en Drive.", false); return; }
+      t.set("Drive: "+archivos.length+" archivos. Guardando nuevos…");
+      var nuevos=[];
+      for(var i=0;i<filas.length;i+=500){
+        var lote=filas.slice(i,i+500);
+        var r=await fetch(URL_SB+"/rest/v1/certificados_ndt?on_conflict=nombre_archivo",{ method:"POST", headers:headers({"Prefer":"resolution=ignore-duplicates,return=representation"}), body:JSON.stringify(lote) });
+        if(r.ok){ var d=await r.json(); if(Array.isArray(d)) nuevos=nuevos.concat(d); }
+      }
+      if(!nuevos.length){ t.set("Todo al día: no hay certificados NDT nuevos.", true); return; }
+      t.set(nuevos.length+" certificados nuevos. Enlazando mantenimiento…");
+      var porCod={};
+      nuevos.forEach(function(n){ var k=n.codigo_item; if(!porCod[k] || (n.fecha||"")>(porCod[k].fecha||"")) porCod[k]=n; });
+      var codigos=Object.keys(porCod), mapaItem={};
+      for(var j=0;j<codigos.length;j+=150){
+        var sub=codigos.slice(j,j+150);
+        var inlist="("+sub.join(",")+")";
+        var ri=await fetch(URL_SB+"/rest/v1/items?select=id,codigo,linea_codigo&codigo=in."+encodeURIComponent(inlist),{headers:headers()});
+        if(ri.ok){ (await ri.json()||[]).forEach(function(it){ mapaItem[it.codigo]=it; }); }
+      }
+      var enlazados=0, sinItem=0;
+      for(var ci=0;ci<codigos.length;ci++){
+        var it=mapaItem[codigos[ci]];
+        if(!it){ sinItem++; continue; }
+        var reg=porCod[codigos[ci]];
+        if(!reg.fecha) continue;
+        var rr=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{ method:"POST", headers:headers(), body:JSON.stringify({ p_item_id:it.id, p_linea_codigo:it.linea_codigo, p_fecha_realizado:reg.fecha, p_metodo:"ndt", p_datos:{origen:"ndt_sync", archivo:reg.nombre_archivo} }) });
+        if(!rr.ok) continue;
+        var ciclo=await rr.json();
+        await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{ method:"POST", headers:headers({"Prefer":"return=minimal"}), body:JSON.stringify({ ciclo_id:ciclo, tipo:"ndt", archivo_path:reg.drive_url }) });
+        enlazados++;
+      }
+      t.set("Listo · "+nuevos.length+" certificados nuevos · "+enlazados+" herramientas actualizadas · "+sinItem+" sin ítem en inventario.", true);
+      try{ actualizarAlertas(); }catch(e){}
+    }catch(e){ t.set("Error: "+(e.message||e), false); }
   }
   async function subirArchivo(path, file){
     const r = await fetch(URL_SB+"/storage/v1/object/documentos/"+encPath(path),{

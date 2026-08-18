@@ -455,9 +455,8 @@
   .inv-row{cursor:pointer}
   .inv-row:hover{background:var(--surface)}
   .inv-row.sel{background:var(--side-activo);box-shadow:inset 2px 0 0 var(--acento)}
-  .c-chk{width:34px}
-  .inv-chk{display:inline-block;width:14px;height:14px;border:1px solid var(--borde-ctrl2)}
-  .c-cod{width:132px}
+    .inv-chk{display:inline-block;width:14px;height:14px;border:1px solid var(--borde-ctrl2)}
+  .c-cod{width:180px}
   .c-cod .cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
   .c-desc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .c-lin{width:52px;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
@@ -492,7 +491,6 @@
   @media(max-width:900px){
     .inv-chips{flex-wrap:nowrap;overflow-x:auto}
     .inv-chip{flex:none}
-    .c-lin,.c-ubi{display:none}
   }
   /* ===== Panel Movilizacion ===== */
   #vMov{display:flex;flex-direction:column;gap:14px}
@@ -522,6 +520,17 @@
   .mv-tabla tbody tr:hover{background:var(--surface)}
   .mv-tabla .desc{color:var(--txt-mut)}
   @media(max-width:900px){ .mv-kpis{grid-template-columns:1fr 1fr} }
+  /* ===== Alertas PRO ===== */
+  .db-alertas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .db-alerta{display:flex;align-items:center;gap:12px;min-height:72px;padding:12px 14px;background:var(--surface);border:1px solid var(--borde);color:var(--txt-body);text-align:left;cursor:pointer;font-family:inherit}
+  .db-alerta:hover{border-color:var(--acento);transform:translateY(-1px)}
+  .db-alerta-ic{width:34px;height:34px;display:grid;place-items:center;border:1px solid currentColor;font-family:var(--mono);font-weight:800;flex:none}
+  .db-alerta b{display:block;font-size:22px;color:#fff;line-height:1}
+  .db-alerta small{display:block;margin-top:5px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut)}
+  .db-alerta.crit{color:var(--rojo)} .db-alerta.warn{color:var(--ambar)} .db-alerta.doc{color:var(--acento)} .db-alerta.off{color:var(--txt-mut)}
+  @media(max-width:900px){.db-alertas{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.db-alertas{grid-template-columns:1fr 1fr}.db-alerta{justify-content:center;text-align:center;flex-direction:column;gap:7px;padding:10px 6px}.db-alerta b{font-size:20px}}
+
   /* ===== Panel Dashboard ===== */
   #panel{display:flex;flex-direction:column;gap:14px}
   .db-fila{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;align-items:start}
@@ -573,6 +582,28 @@
   .fab-cat-nom{font-size:17px;font-weight:600;color:#fff}
   @media(max-width:1240px){ .fab-grid{grid-template-columns:repeat(2,1fr)} }
   @media(max-width:760px){ .fab-grid{grid-template-columns:1fr} }
+
+  @media(max-width:640px){
+    .topbar{justify-content:center;text-align:center}
+    .tb-head{width:100%;text-align:center}
+    .tb-r{width:100%;justify-content:center}
+    .contenido{display:flex;flex-direction:column;align-items:center;width:100%;box-sizing:border-box}
+    #vResumen,#vInv,#panel,#vMov,#vFab{width:100%;max-width:760px;align-self:center}
+    .inv-filtros{justify-content:center}
+    .inv-conteo{margin-left:0}
+    .inv-layout{width:100%}
+    .inv-main{width:100%}
+    .inv-tabla{overflow-x:auto}
+    .inv-tabla table{min-width:520px}
+    .inv-detalle{width:min(320px,92vw);right:50%;transform:translateX(50%) translateX(110vw)}
+    .inv-detalle.open{transform:translateX(50%)}
+    .rs-banda{justify-content:center;text-align:center;align-items:center;flex-direction:column}
+    .rs-kpis,.rs-fila,.db-fila,.db-fila3,.mv-kpis{width:100%;margin-left:auto;margin-right:auto}
+    .mv-form{width:100%;box-sizing:border-box;text-align:center}
+    .mv-row{justify-content:center}
+    .fab-top{justify-content:center;flex-wrap:wrap}
+    .fab-grid{width:100%}
+  }
 </style>
 </head>
 <body>
@@ -872,7 +903,7 @@
           <div class="wrap inv-tabla">
             <table>
               <thead><tr>
-                <th class="c-chk"></th><th class="c-cod">C&oacute;digo</th><th class="c-desc">Descripci&oacute;n</th><th class="c-lin">L&iacute;nea</th><th class="c-ubi">Ubicaci&oacute;n</th><th class="c-est">Estado</th>
+                <th class="c-cod">Cod</th><th class="c-tipo">Tipo</th><th class="c-ubi">Ubicaci&oacute;n</th><th class="c-doc">Doc %</th>
               </tr></thead>
               <tbody id="filas"></tbody>
             </table>
@@ -901,6 +932,12 @@
 
     <!-- VISTA PANEL -->
     <div id="panel" class="hidden">
+      <div class="db-alertas" id="dbAlertas">
+        <button class="db-alerta crit" data-alert="venc"><span class="db-alerta-ic">!</span><span><b id="dbAlVenc">0</b><small>VENCIDOS</small></span></button>
+        <button class="db-alerta warn" data-alert="pv"><span class="db-alerta-ic">!</span><span><b id="dbAlPv">0</b><small>POR VENCER</small></span></button>
+        <button class="db-alerta doc" data-alert="doc"><span class="db-alerta-ic">%</span><span><b id="dbAlDoc">0%</b><small>DOCUMENTACI&Oacute;N</small></span></button>
+        <button class="db-alerta off" data-alert="off"><span class="db-alerta-ic">×</span><span><b id="dbAlOff">0</b><small>FUERA DE SERVICIO</small></span></button>
+      </div>
       <div class="db-fila">
         <div class="db-card">
           <div class="db-card-t">Mantenimientos por mes</div>
@@ -1004,12 +1041,58 @@
         <div class="grid hidden" id="mMantForm" style="margin-top:8px">
           <div class="row2">
             <label>Fecha realizado<input id="mFecha" type="date"></label>
-            <label>M&eacute;todo<select id="mMetodo"><option value="formulario">Formulario interno</option><option value="anexo">Anexo (reporte)</option></select></label>
+            <label>Tipo de mantenimiento<select id="mTipoMant"><option value="">Seleccione…</option><option value="correctivo">Correctivo</option><option value="preventivo">Preventivo</option></select></label>
+          </div>
+          <div id="mPrevBox" class="hidden">
+            <label>Tipo preventivo<select id="mTipoPrev"><option value="">Seleccione…</option><option value="C2">C2: cada 3 meses</option><option value="C4">C4: Cada 6 meses</option><option value="C6">C6: cada 12 meses</option></select></label>
+            <p id="mPrevRegla" class="sub" style="margin-top:6px"></p>
+          </div>
+          <div id="mCorrectivoBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Correctivo</div>
+            <p class="sub">Obligatorio: Reporte de mantenimiento + Reporte de falla.</p>
+          </div>
+          <div id="mPreventivoBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Preventivo</div>
+            <p class="sub" id="mPreventivoReq"></p>
+          </div>
+          <div id="mRepMantBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Reporte de mantenimiento</div>
+            <p class="sub">Elige <b>una sola</b> opción. Una vez guardado no podrás cargar una segunda.</p>
+            <div class="row2">
+              <button class="btn2" type="button" id="mRepFormBtn">Formulario en línea</button>
+              <button class="btn2" type="button" id="mRepFileBtn">Anexar archivo</button>
+            </div>
+            <button class="btn2" type="button" id="mRepPhotoBtn" style="width:100%;margin-top:8px">Tomar / cargar foto directa</button>
+            <input type="file" id="mRepFile" class="hidden" accept="application/pdf,image/*">
+            <input type="file" id="mRepPhoto" class="hidden" accept="image/*" capture="environment">
+            <div id="mRepStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <div id="mFallaBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Reporte de falla</div>
+            <button class="btn2" type="button" id="mFallaBtn">Anexar reporte de falla</button>
+            <input type="file" id="mFallaFile" class="hidden" accept="application/pdf,image/*">
+            <div id="mFallaStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <div id="mNdtBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Reporte NDT</div>
+            <button class="btn2" type="button" id="mNdtBtn">Anexar Reporte NDT</button>
+            <input type="file" id="mNdtFile" class="hidden" accept="application/pdf,image/*">
+            <div id="mNdtStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <div id="mPhBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">PH</div>
+            <button class="btn2" type="button" id="mPhBtn">Anexar PH</button>
+            <input type="file" id="mPhFile" class="hidden" accept="application/pdf,image/*">
+            <div id="mPhStatus" class="sub" style="margin-top:8px"></div>
           </div>
           <label>Observaciones<textarea id="mObs" rows="2" placeholder="Notas del mantenimiento"></textarea></label>
           <button class="btn" id="mMantGuardar" type="button">Guardar mantenimiento</button>
         </div>
         <div id="mDocsDin" style="margin-top:14px"></div>
+        <div id="mHistBox" class="mant-box" style="margin-top:14px">
+          <div class="seccion" style="margin-top:0">Historial de mantenimiento</div>
+          <div id="mHistorial"><div class="rs-empty">Consultando historial…</div></div>
+        </div>
       </div>
       <p class="msg hidden" id="mMsg"></p>
       <div class="acc">
@@ -1097,7 +1180,7 @@
     </div>
   </div>
 
-  <input type="file" id="filePicker" accept="application/pdf,.pdf" class="hidden">
+  <input type="file" id="filePicker" accept="application/pdf,.pdf,image/*" class="hidden">
 
 <script>
   const URL_SB = "https://ryfhzlbvcqnxaptltslo.supabase.co";
@@ -1297,26 +1380,35 @@
       if(r.status===401){ $("#salir").click(); return; }
       const rango=r.headers.get("content-range");
       total = rango && rango.includes("/") ? parseInt(rango.split("/")[1]) : 0;
-      pintar(await r.json()||[]);
-    }catch(e){ $("#filas").innerHTML='<tr><td colspan="6" class="inv-vacio">No se pudo cargar.</td></tr>'; }
+      const items=await r.json()||[];
+      window.invDocs={};
+      if(items.length){
+        const ids=items.map(x=>x.id).join(",");
+        try{ const rd=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=item_id,tipo&item_id=in.("+ids+")",{headers:headers()});
+          if(rd.ok){ (await rd.json()).forEach(function(d){ if(!window.invDocs[d.item_id]) window.invDocs[d.item_id]={n:0}; if(["coc","ficha_tecnica","manual"].indexOf(d.tipo)>=0) window.invDocs[d.item_id].n++; }); }
+        }catch(e){}
+      }
+      pintar(items);
+    }catch(e){ $("#filas").innerHTML='<tr><td colspan="4" class="inv-vacio">No se pudo cargar.</td></tr>'; }
     finally{ $("#cargando").classList.add("hidden"); }
   }
   // ===== Inventario: render de filas, paginador, chips y detalle =====
   let invExtra="", invChip="todos", invSelId=null, invEstado="";
   function pintar(items){
     const tb=$("#filas"); tb.innerHTML="";
-    if(!items.length){ tb.innerHTML='<tr><td colspan="6" class="inv-vacio">No hay ítems que coincidan.</td></tr>'; }
+    if(!items.length){ tb.innerHTML='<tr><td colspan="4" class="inv-vacio">No hay &iacute;tems que coincidan.</td></tr>'; }
     else items.forEach(function(it){
       const ubic=(it.unidades&&it.unidades.nombre)||(it.bases&&it.bases.nombre)||"—";
-      const est=esc(it.estado||"");
+      const tipo=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"—";
+      const docs=(window.invDocs&&window.invDocs[it.id])||{n:0};
+      const pct=Math.round((docs.n/3)*100);
+      const cls=pct>=100?'good':(pct>=67?'mid':'low');
       const tr=document.createElement("tr"); tr.className="inv-row";
       if(it.id===invSelId) tr.classList.add("sel");
-      tr.innerHTML='<td class="c-chk"><span class="inv-chk"></span></td>'+
-        '<td class="c-cod">'+codHTML(it.codigo)+'</td>'+
-        '<td class="c-desc">'+esc(it.descripcion||"")+'</td>'+
-        '<td class="c-lin">'+esc(it.linea_codigo||"")+'</td>'+
+      tr.innerHTML='<td class="c-cod">'+codHTML(it.codigo)+'</td>'+
+        '<td class="c-tipo">'+esc(tipo)+'</td>'+
         '<td class="c-ubi">'+esc(ubic)+'</td>'+
-        '<td class="c-est"><span class="badge '+est+'">'+est.replace(/_/g," ")+'</span></td>';
+        '<td class="c-doc"><span class="doc-pct '+cls+'">'+pct+'%</span></td>';
       tr.addEventListener("click", function(){ seleccionarItem(it, tr); });
       tb.appendChild(tr);
     });
@@ -1422,6 +1514,7 @@
   }
   function setupDashboard(){
     var panel=$("#panel"); if(!panel) return;
+    document.querySelectorAll("#dbAlertas [data-alert]").forEach(function(b){ if(!b.getAttribute("data-bound")){ b.setAttribute("data-bound","1"); b.addEventListener("click",function(){ var a=b.getAttribute("data-alert"); if(a==="venc") renderDetalle("venc"); else if(a==="pv") renderDetalle("pv"); else if(a==="off") irPanel("inventario"); else if(a==="doc") irPanel("inventario"); }); }});
     if(!$("#donut")){
       var cardsFirst=panel.querySelector(".cards");
       var d=document.createElement("div"); d.id="donut"; d.style.cssText="display:flex;justify-content:center;margin:6px 0 14px";
@@ -1574,7 +1667,23 @@
     cargarDocsEstaticos();
     $("#mDocsDin").innerHTML="";
     cargarEstadoMant(it.id);
+    cargarHistorialItem(it.id);
     $("#modalBg").classList.remove("hidden");
+  }
+
+  async function cargarHistorialItem(itemId){
+    const box=$("#mHistorial"); if(!box) return;
+    box.innerHTML='<div class="rs-empty">Consultando historial…</div>';
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,fecha_vencimiento,metodo,vigente&item_id=eq."+itemId+"&order=fecha_realizado.desc&limit=50",{headers:headers()});
+      const d=r.ok?await r.json():[];
+      if(!d.length){ box.innerHTML='<div class="rs-empty">Sin historial registrado.</div>'; return; }
+      box.innerHTML=d.map(function(x){
+        const f=x.fecha_realizado||"Sin fecha";
+        const estado=x.vigente?'<span class="badge activo">VIGENTE</span>':'<span class="badge inactivo">CERRADO</span>';
+        return '<div class="inv-pair"><span class="k">'+esc(f)+'</span><span class="v">'+esc(x.metodo||"—")+' &nbsp; '+estado+'</span></div>';
+      }).join("");
+    }catch(e){ box.innerHTML='<div class="rs-empty">No se pudo cargar el historial.</div>'; }
   }
 
   async function cargarEstadoMant(itemId){
@@ -1593,21 +1702,116 @@
     }catch(e){ el.textContent=""; }
   }
 
-  $("#mMantAbrir").addEventListener("click", ()=> $("#mMantForm").classList.toggle("hidden"));
-  $("#mMantGuardar").addEventListener("click", async ()=>{
+  function resetMttoDraft(){
+    mttoDraft={tipo:null,preventivo:null,reportMethod:null,reportFile:null,fallaFile:null,ndtFile:null,phFile:null,online:false,cycleCreated:false};
+    ["mRepStatus","mFallaStatus","mNdtStatus","mPhStatus","mPrevRegla","mPreventivoReq"].forEach(function(id){var e=$("#"+id);if(e)e.textContent="";});
+    ["mRepFormBtn","mRepFileBtn","mRepPhotoBtn","mFallaBtn","mNdtBtn","mPhBtn"].forEach(function(id){var e=$("#"+id);if(e)e.disabled=false;});
+    ["mRepFile","mRepPhoto","mFallaFile","mNdtFile","mPhFile"].forEach(function(id){var e=$("#"+id);if(e)e.value="";});
+  }
+  function categoriaItem(){ return String(itemActual&&itemActual.categoria_id||"herramienta").toLowerCase(); }
+  function reglaPreventiva(){
+    var c=categoriaItem(), p=mttoDraft.preventivo;
+    if(p==="C2") return {ok:true, req:["reporte_mantenimiento"], txt:"C2 · aplica a herramientas y equipos de presión. Obligatorio: Reporte de mantenimiento."};
+    if(p==="C4") return {ok:c==="herramienta", req:["reporte_mantenimiento","ndt"], txt:"C4 · aplica únicamente a herramientas. Obligatorios: Reporte de mantenimiento + Reporte NDT."};
+    if(p==="C6") return {ok:c==="equipo", req:["reporte_mantenimiento","ndt","prueba_presion"], txt:"C6 · aplica únicamente a equipos de presión. Obligatorios: Reporte de mantenimiento + Reporte NDT + PH."};
+    return {ok:false,req:[],txt:""};
+  }
+  function actualizarFlujoMtto(){
+    var tipo=$("#mTipoMant").value, prev=$("#mTipoPrev").value;
+    mttoDraft.tipo=tipo; mttoDraft.preventivo=prev;
+    $("#mPrevBox").classList.toggle("hidden",tipo!=="preventivo");
+    $("#mCorrectivoBox").classList.toggle("hidden",tipo!=="correctivo");
+    $("#mPreventivoBox").classList.toggle("hidden",tipo!=="preventivo");
+    $("#mFallaBox").classList.toggle("hidden",tipo!=="correctivo");
+    $("#mNdtBox").classList.add("hidden"); $("#mPhBox").classList.add("hidden");
+    $("#mRepMantBox").classList.toggle("hidden",!tipo || (tipo==="preventivo"&&!prev));
+    if(tipo==="preventivo"&&prev){
+      var r=reglaPreventiva();
+      $("#mPrevRegla").textContent=r.ok?r.txt:"Este tipo no aplica a la categoría seleccionada.";
+      $("#mPreventivoReq").textContent=r.txt;
+      $("#mNdtBox").classList.toggle("hidden",!(r.ok&&r.req.indexOf("ndt")>=0));
+      $("#mPhBox").classList.toggle("hidden",!(r.ok&&r.req.indexOf("prueba_presion")>=0));
+    }
+  }
+  function elegirReporte(method){
+    if(mttoDraft.reportMethod) return;
+    mttoDraft.reportMethod=method;
+    $("#mRepStatus").textContent=method==="formulario"?"Seleccionado: Formulario en línea":"Seleccionado: "+(method==="foto"?"Foto directa":"Archivo adjunto");
+    ["mRepFormBtn","mRepFileBtn","mRepPhotoBtn"].forEach(function(id){$("#"+id).disabled=true;});
+    if(method==="archivo") $("#mRepFile").click();
+    if(method==="foto") $("#mRepPhoto").click();
+    if(method==="formulario"){
+      mttoDraft.online=true;
+      if(grupoDe(itemActual)==="WL") abrirFormWL(null,false); else $("#mObs").focus();
+    }
+  }
+  function validarArchivo(file, label){
+    if(!file) return false;
+    var ok=/^(application\/pdf|image\/)/i.test(file.type||"");
+    if(!ok){ mostrarMsg(label+" debe ser PDF o imagen.",false); return false; }
+    return true;
+  }
+  async function subirDocCiclo(tipo,file){
+    if(!cicloVigente||!file) throw new Error("No hay ciclo");
+    var ext=(file.name.split(".").pop()||((file.type||"").split("/")[1]||"bin")).toLowerCase().replace(/[^a-z0-9]/g,"")||"bin";
+    var path=rutaBase()+"/ciclo_"+cicloVigente.id+"/dinamico_"+tipo+"_"+Date.now()+"."+ext;
+    await subirArchivo(path,file);
+    var rq=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id&ciclo_id=eq."+cicloVigente.id+"&tipo=eq."+tipo,{headers:headers()});
+    var ex=await rq.json();
+    if(ex&&ex[0]) await fetch(URL_SB+"/rest/v1/documentos_dinamicos?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({archivo_path:path})});
+    else await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({ciclo_id:cicloVigente.id,tipo:tipo,archivo_path:path})});
+    reflejarDrive({categoria:itemActual.categoria_id||"herramienta",tipo_codigo:itemActual.tipo_codigo||"SINTIPO",codigo:itemActual.codigo,ciclo:cicloVigente.id,filename:"dinamico_"+tipo+"."+ext},file);
+  }
+  async function procesarArchivoDraft(tipo,file,statusId){
+    if(!validarArchivo(file,"El documento")) return;
+    mttoDraft[tipo+"File"]=file;
+    $("#"+statusId).textContent="Seleccionado: "+file.name;
+    // Si ya existe ciclo, se guarda inmediatamente; si no, queda preparado para después de crear el ciclo.
+    if(cicloVigente){ try{ await subirDocCiclo(tipo,file); cargarDocsDinamicos(); }catch(e){ mostrarMsg("No se pudo cargar el documento.",false); } }
+  }
+  $("#mMantAbrir").addEventListener("click", function(){ resetMttoDraft(); $("#mMantForm").classList.toggle("hidden"); actualizarFlujoMtto(); });
+  $("#mTipoMant").addEventListener("change", actualizarFlujoMtto);
+  $("#mTipoPrev").addEventListener("change", actualizarFlujoMtto);
+  $("#mRepFormBtn").addEventListener("click",function(){elegirReporte("formulario");});
+  $("#mRepFileBtn").addEventListener("click",function(){elegirReporte("archivo");});
+  $("#mRepPhotoBtn").addEventListener("click",function(){elegirReporte("foto");});
+  $("#mRepFile").addEventListener("change",function(e){procesarArchivoDraft("report",e.target.files[0],"mRepStatus");});
+  $("#mRepPhoto").addEventListener("change",function(e){procesarArchivoDraft("report",e.target.files[0],"mRepStatus");});
+  $("#mFallaBtn").addEventListener("click",function(){$("#mFallaFile").click();});
+  $("#mNdtBtn").addEventListener("click",function(){$("#mNdtFile").click();});
+  $("#mPhBtn").addEventListener("click",function(){$("#mPhFile").click();});
+  $("#mFallaFile").addEventListener("change",function(e){procesarArchivoDraft("falla",e.target.files[0],"mFallaStatus");});
+  $("#mNdtFile").addEventListener("change",function(e){procesarArchivoDraft("ndt",e.target.files[0],"mNdtStatus");});
+  $("#mPhFile").addEventListener("change",function(e){procesarArchivoDraft("ph",e.target.files[0],"mPhStatus");});
+  $("#mMantGuardar").addEventListener("click", async function(){
     if(!itemActual) return;
-    const btn=$("#mMantGuardar"); btn.disabled=true;
+    if(mttoDraft.cycleCreated){ mostrarMsg("Este mantenimiento ya fue guardado.",true); return; }
+    var btn=$("#mMantGuardar"), tipo=$("#mTipoMant").value, prev=$("#mTipoPrev").value;
+    if(!tipo){mostrarMsg("Selecciona Correctivo o Preventivo.",false);return;}
+    if(tipo==="preventivo"&&!prev){mostrarMsg("Selecciona el tipo preventivo.",false);return;}
+    if(tipo==="preventivo"&&!reglaPreventiva().ok){mostrarMsg("El tipo preventivo seleccionado no aplica a esta categoría.",false);return;}
+    if(!mttoDraft.reportMethod){mostrarMsg("Debes seleccionar una sola opción para Reporte de mantenimiento.",false);return;}
+    if(tipo==="correctivo"&&!mttoDraft.fallaFile){mostrarMsg("En correctivo es obligatorio el Reporte de falla.",false);return;}
+    var regla=tipo==="preventivo"?reglaPreventiva():{req:["reporte_mantenimiento","reporte_falla"]};
+    if(tipo==="preventivo"&&regla.req.indexOf("ndt")>=0&&!mttoDraft.ndtFile){mostrarMsg("Este preventivo requiere Reporte NDT.",false);return;}
+    if(tipo==="preventivo"&&regla.req.indexOf("prueba_presion")>=0&&!mttoDraft.phFile){mostrarMsg("C6 requiere PH.",false);return;}
+    btn.disabled=true;
     try{
-      const body={ p_item_id:itemActual.id, p_linea_codigo:itemActual.linea_codigo,
-        p_fecha_realizado: $("#mFecha").value || hoyISO(),
-        p_metodo: $("#mMetodo").value, p_datos: {observaciones: ($("#mObs").value||"").trim()} };
-      const r=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{method:"POST",headers:headers(),body:JSON.stringify(body)});
-      if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
-      mostrarMsg("Mantenimiento registrado.", true);
+      var metodo=mttoDraft.reportMethod==="formulario"?"formulario":(mttoDraft.reportMethod==="foto"?"foto":"anexo");
+      var datos={observaciones:( $("#mObs").value||"").trim(),tipo_mantenimiento:tipo,ciclo_preventivo:prev||null,metodo_reporte:metodo};
+      var body={p_item_id:itemActual.id,p_linea_codigo:itemActual.linea_codigo,p_fecha_realizado:$("#mFecha").value||hoyISO(),p_metodo:metodo,p_datos:datos};
+      var r=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{method:"POST",headers:headers(),body:JSON.stringify(body)});
+      if(!r.ok){var e=await r.json().catch(function(){return{};});throw new Error(e.message||"error");}
+      var ciclo=await r.json(); cicloVigente={id:ciclo,fecha_realizado:body.p_fecha_realizado,metodo:metodo};
+      // Guardar reportes anexos obligatorios asociados al ciclo recién creado.
+      if(mttoDraft.reportMethod!=="formulario"&&mttoDraft.reportFile) await subirDocCiclo("reporte_mantenimiento",mttoDraft.reportFile);
+      if(mttoDraft.fallaFile) await subirDocCiclo("reporte_falla",mttoDraft.fallaFile);
+      if(mttoDraft.ndtFile) await subirDocCiclo("ndt",mttoDraft.ndtFile);
+      if(mttoDraft.phFile) await subirDocCiclo("prueba_presion",mttoDraft.phFile);
+      mostrarMsg("Mantenimiento registrado y documentación validada.",true);
       $("#mMantForm").classList.add("hidden");
-      cargarEstadoMant(itemActual.id);
-    }catch(e){ mostrarMsg("No se pudo registrar el mantenimiento.", false); }
-    finally{ btn.disabled=false; }
+      cargarEstadoMant(itemActual.id); cargarHistorialItem(itemActual.id);
+    }catch(e){mostrarMsg("No se pudo registrar el mantenimiento. "+(e.message||""),false);}finally{btn.disabled=false;}
   });
 
   function abrirNuevo(){
@@ -1906,6 +2110,11 @@
     $("#dbMes").textContent=mesN.toLocaleString("es-CO");
     var fuera=await contarRest("items","estado=eq.fuera_servicio&"+LINEAS_IN);
     $("#dbFuera").textContent=fuera.toLocaleString("es-CO");
+    const av=$("#dbAlVenc"), ap=$("#dbAlPv"), ao=$("#dbAlOff");
+    if(av) av.textContent=venc.toLocaleString("es-CO");
+    if(ap) ap.textContent=pv.toLocaleString("es-CO");
+    if(ao) ao.textContent=fuera.toLocaleString("es-CO");
+    const dc=$("#dbAlDoc"); if(dc) dc.textContent=((R.total)?Math.round((R.con_coc+R.con_ficha+R.con_manual)/(R.total*3)*100):0)+"%";
   }
   async function cargarMovKpis(){
     var enCampo=await contarRest("items","unidad_id=not.is.null&"+LINEAS_IN);
@@ -2072,6 +2281,7 @@
   let cicloVigente = null;
   let cicloDatos = null;
   let pendiente = null;
+  let mttoDraft = { tipo:null, preventivo:null, reportMethod:null, reportFile:null, fallaFile:null, ndtFile:null, phFile:null, online:false };
 
   function rutaBase(){ const it=itemActual; return (it.categoria_id||"herramienta")+"/"+(it.tipo_codigo||"SINTIPO")+"/"+it.codigo; }
   function encPath(p){ return p.split("/").map(encodeURIComponent).join("/"); }
@@ -2229,23 +2439,37 @@
     let docs=[];
     try{ const r=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,tipo,archivo_path&ciclo_id=eq."+cicloVigente.id,{headers:headers()}); if(r.ok) docs=await r.json(); }catch(e){}
     const mapa={}; docs.forEach(d=>mapa[d.tipo]=d);
-    const lista = (itemActual.categoria_id==="equipo") ? DIN_BASE.concat(DIN_EQUIPO) : DIN_BASE;
+    const t=(cicloDatos||{}).tipo_mantenimiento, p=(cicloDatos||{}).ciclo_preventivo;
+    let keys=[];
+    if(t==="correctivo") keys=["reporte_mantenimiento","reporte_falla"];
+    else if(t==="preventivo"&&p==="C2") keys=["reporte_mantenimiento"];
+    else if(t==="preventivo"&&p==="C4") keys=["reporte_mantenimiento","ndt"];
+    else if(t==="preventivo"&&p==="C6") keys=["reporte_mantenimiento","ndt","prueba_presion"];
+    else keys=["reporte_mantenimiento"];
+    const catalogo={}; DIN_BASE.concat(DIN_EQUIPO).forEach(function(x){catalogo[x.k]=x;});
+    const lista=keys.map(function(k){return catalogo[k];}).filter(Boolean);
     cont.innerHTML='<div class="seccion" style="margin-top:4px">Documentos del ciclo actual</div>'+
       estadoCompletitud(mapa)+
       lista.map(x=>slotHTML("din",x,mapa[x.k],puedeMant())).join("");
     enlazarSlots(cont);
   }
-  // Completitud del ciclo: obligatorios todos MENOS reporte_falla y espesores.
-  // Si el mantenimiento se registro por formulario (Wireline), el reporte de mantenimiento ya cuenta.
+  // Completitud según tipo de mantenimiento seleccionado.
   function estadoCompletitud(mapa){
-    const NOMBRES={reporte_mantenimiento:"Reporte de mantenimiento", ndt:"Reporte NDT", prueba_presion:"Prueba de presión", prueba_dureza:"Prueba de dureza"};
-    let req=["ndt"];
-    if(itemActual.categoria_id==="equipo") req=req.concat(["prueba_presion","prueba_dureza"]);
-    if(!(cicloVigente && (cicloVigente.metodo==="formulario" || cicloVigente.metodo==="ndt"))) req.push("reporte_mantenimiento");
+    const NOMBRES={reporte_mantenimiento:"Reporte de mantenimiento",reporte_falla:"Reporte de falla",ndt:"Reporte NDT",prueba_presion:"PH"};
+    const datos=(cicloDatos||{});
+    const tipo=datos.tipo_mantenimiento;
+    const prev=datos.ciclo_preventivo;
+    let req=[];
+    if(tipo==="correctivo") req=["reporte_mantenimiento","reporte_falla"];
+    else if(tipo==="preventivo"&&prev==="C2") req=["reporte_mantenimiento"];
+    else if(tipo==="preventivo"&&prev==="C4") req=["reporte_mantenimiento","ndt"];
+    else if(tipo==="preventivo"&&prev==="C6") req=["reporte_mantenimiento","ndt","prueba_presion"];
+    else req=["reporte_mantenimiento"];
+    // El formulario en línea cuenta como reporte de mantenimiento.
+    if(cicloVigente && cicloVigente.metodo==="formulario") mapa.reporte_mantenimiento=mapa.reporte_mantenimiento||{archivo_path:"formulario"};
     const faltan=req.filter(k=>!mapa[k]);
     if(faltan.length===0) return '<p style="margin:8px 0 6px"><span class="mant-chip ok">Mantenimiento completo</span></p>';
-    return '<p style="margin:8px 0 6px"><span class="mant-chip bad">Mantenimiento incompleto</span>'+
-      '<span class="mant-falta">Falta: '+faltan.map(k=>NOMBRES[k]||k).join(", ")+'</span></p>';
+    return '<p style="margin:8px 0 6px"><span class="mant-chip bad">Mantenimiento incompleto</span><span class="mant-falta">Falta: '+faltan.map(k=>NOMBRES[k]||k).join(", ")+'</span></p>';
   }
 
 
@@ -2294,6 +2518,7 @@
   function wlSet(id,v){ var el=$("#"+id); if(el) el.value=(v==null?"":v); }
   function abrirFormWL(datos, soloLectura){
     if(!itemActual) return;
+    if(!soloLectura){ mttoDraft.online=true; $("#mMantForm").classList.remove("hidden"); }
     var d=datos||{};
     $("#wlSub").innerHTML = codHTML(itemActual.codigo)+" &nbsp; "+esc(itemActual.descripcion||"");
     wlSet("wl_fecha", (soloLectura && cicloVigente && cicloVigente.fecha_realizado) ? cicloVigente.fecha_realizado : hoyISO());
@@ -2347,13 +2572,26 @@
     if(!itemActual) return;
     var btn=$("#wlGuardar"); btn.disabled=true;
     try{
+      if(!mttoDraft.tipo){ throw new Error("Selecciona Correctivo o Preventivo en la ficha del equipo."); }
+      if(mttoDraft.tipo==="preventivo"&&!mttoDraft.preventivo){ throw new Error("Selecciona el tipo preventivo."); }
+      if(mttoDraft.tipo==="preventivo"&&!reglaPreventiva().ok){ throw new Error("El tipo preventivo no aplica a esta categoría."); }
+      var regla=mttoDraft.tipo==="preventivo"?reglaPreventiva():{req:["reporte_mantenimiento","reporte_falla"]};
+      if(mttoDraft.tipo==="correctivo"&&!mttoDraft.fallaFile) throw new Error("Correctivo requiere Reporte de falla.");
+      if(regla.req.indexOf("ndt")>=0&&!mttoDraft.ndtFile) throw new Error("Este mantenimiento requiere Reporte NDT.");
+      if(regla.req.indexOf("prueba_presion")>=0&&!mttoDraft.phFile) throw new Error("C6 requiere PH.");
       var datos=recolectarWL();
+      datos.tipo_mantenimiento=mttoDraft.tipo; datos.ciclo_preventivo=mttoDraft.preventivo||null; datos.metodo_reporte="formulario";
       var body={ p_item_id:itemActual.id, p_linea_codigo:itemActual.linea_codigo, p_fecha_realizado:($("#wl_fecha").value||hoyISO()), p_metodo:"formulario", p_datos:datos };
       var r=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{method:"POST",headers:headers(),body:JSON.stringify(body)});
       if(!r.ok){ var e=await r.json().catch(function(){return{};}); throw new Error(e.message||"error"); }
+      var ciclo=await r.json(); cicloVigente={id:ciclo,fecha_realizado:body.p_fecha_realizado,metodo:"formulario"}; cicloDatos=datos;
+      if(mttoDraft.fallaFile) await subirDocCiclo("reporte_falla",mttoDraft.fallaFile);
+      if(mttoDraft.ndtFile) await subirDocCiclo("ndt",mttoDraft.ndtFile);
+      if(mttoDraft.phFile) await subirDocCiclo("prueba_presion",mttoDraft.phFile);
+      mttoDraft.cycleCreated=true;
       wlMsg("Mantenimiento guardado.", true);
-      setTimeout(function(){ $("#formWLbg").classList.add("hidden"); if(itemActual) cargarEstadoMant(itemActual.id); }, 700);
-    }catch(e){ wlMsg("No se pudo guardar el mantenimiento.", false); }
+      setTimeout(function(){ $("#formWLbg").classList.add("hidden"); $("#mMantForm").classList.add("hidden"); if(itemActual){ cargarEstadoMant(itemActual.id); cargarHistorialItem(itemActual.id); } }, 700);
+    }catch(e){ wlMsg(e.message||"No se pudo guardar el mantenimiento.", false); }
     finally{ btn.disabled=false; }
   });
 

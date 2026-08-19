@@ -846,6 +846,7 @@
             <input class="buscar tb-buscar hidden" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
             <button class="campana" id="campana" type="button" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
             <button class="btn-nuevo hidden" id="btnSincNdt" type="button" title="Enlazar certificados NDT desde Drive">SINCRONIZAR NDT</button>
+            <button class="btn-nuevo hidden" id="btnSincPh" type="button" title="Enlazar pruebas hidrostáticas desde Drive">SINCRONIZAR PH</button>
             <button class="btn-nuevo hidden" id="nuevo" type="button">+ NUEVO</button>
           </div>
         </header>
@@ -1931,6 +1932,7 @@
     $("#q").classList.toggle("hidden", !esInv);
     $("#nuevo").classList.toggle("hidden", !(esInv && esAdmin()));
     $("#btnSincNdt").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
+    $("#btnSincPh").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
     setAvatar();
     try{ PANELES[p].load(); }catch(e){}
   }
@@ -2034,6 +2036,7 @@
   document.querySelectorAll("[data-panel]").forEach(function(b){ b.addEventListener("click", function(){ irPanel(b.getAttribute("data-panel")); }); });
   $("#campana").addEventListener("click", function(){ irPanel("dashboard"); });
   $("#btnSincNdt").addEventListener("click", sincronizarNdt);
+  $("#btnSincPh").addEventListener("click", sincronizarPh);
 
   // ---- Movilizacion ----
   let movItem=null, movDestinosCargados=false;
@@ -2347,28 +2350,66 @@
         body: JSON.stringify(cuerpo) });
     }catch(e){ /* el reflejo a Drive nunca debe romper la carga principal */ }
   }
-  // ===== Sincronizar certificados NDT desde Drive (solo admin) =====
-  var RX_NDT_COD=/(EL|EP|FB|SL|SW|WL|WS|WT)[A-Z][A-Z0-9]{2}\d{3}[A-Z]\d{3,4}/;
-  function parseNdtName(name){
-    var up=String(name).toUpperCase();
-    var mc=up.match(RX_NDT_COD); if(!mc) return null;
-    var mf=String(name).match(/\.(\d{2})(\d{2})(\d{2})/);
-    var fecha = mf ? ("20"+mf[1]+"-"+mf[2]+"-"+mf[3]) : null;
-    var mm=up.match(/-(PM|LP|UT|VT|MT|PT)-/);
-    return { codigo:mc[0], fecha:fecha, metodo: mm?mm[1]:null };
+  // ===== Sincronizar NDT y PH desde Google Drive (solo admin) =====
+  // Los nombres pueden contener uno o varios códigos. Ejemplo PH:
+  // 0003-260611-PH-EPLST312F0058_EPLST312F0059_EPLST312F0063...
+  var RX_SYNC_COD=/(EL|EP|FB|SL|SW|WL|WS|WT)[A-Z][A-Z0-9]{2}\d{3}[A-Z]\d{3,4}/g;
+
+  function extraerCodigosNombre(name){
+    var up=String(name||"").toUpperCase(), out=[], m;
+    RX_SYNC_COD.lastIndex=0;
+    while((m=RX_SYNC_COD.exec(up))!==null){
+      if(out.indexOf(m[0])<0) out.push(m[0]);
+    }
+    return out;
   }
-  function driveListNdt(since){
+
+  function fechaSyncNombre(name){
+    var n=String(name||"");
+    // Formato actual: 0003-260611-PH-...
+    var m=n.match(/(?:^|[-_.])(\d{6})(?=[-_.]|$)/);
+    if(m){
+      var yy=Number(m[1].slice(0,2)), mm=Number(m[1].slice(2,4)), dd=Number(m[1].slice(4,6));
+      if(mm>=1&&mm<=12&&dd>=1&&dd<=31) return "20"+String(yy).padStart(2,"0")+"-"+String(mm).padStart(2,"0")+"-"+String(dd).padStart(2,"0");
+    }
+    // Compatibilidad: fecha compacta pegada a extensión .YYMMDD
+    m=n.match(/\.(\d{2})(\d{2})(\d{2})(?:\D|$)/);
+    if(m) return "20"+m[1]+"-"+m[2]+"-"+m[3];
+    // YYYY-MM-DD
+    m=n.match(/(?:^|[-_.])((?:19|20)\d{2})[-_.](\d{2})[-_.](\d{2})(?:[-_.]|$)/);
+    if(m) return m[1]+"-"+m[2]+"-"+m[3];
+    return null;
+  }
+
+  function parseNdtName(name){
+    var codigos=extraerCodigosNombre(name);
+    if(!codigos.length) return null;
+    var up=String(name||"").toUpperCase();
+    var mm=up.match(/-(PM|LP|UT|VT|MT|PT)-/);
+    return { codigos:codigos, fecha:fechaSyncNombre(name), metodo:mm?mm[1]:null };
+  }
+
+  function parsePhName(name){
+    var codigos=extraerCodigosNombre(name);
+    if(!codigos.length) return null;
+    return { codigos:codigos, fecha:fechaSyncNombre(name) };
+  }
+
+  function driveListSync(action, since){
     return new Promise(function(resolve,reject){
-      var cb="__ndtcb"+Date.now()+Math.floor(Math.random()*1000);
+      var cb="__sync"+action+Date.now()+Math.floor(Math.random()*1000);
       var s=document.createElement("script");
       var to=setTimeout(function(){ limpiar(); reject(new Error("Tiempo agotado consultando Drive")); }, 180000);
       function limpiar(){ try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(s.parentNode) s.parentNode.removeChild(s); clearTimeout(to); }
       window[cb]=function(data){ limpiar(); resolve(data); };
       s.onerror=function(){ limpiar(); reject(new Error("No se pudo contactar Drive")); };
-      s.src=DRIVE_URL+"?action=list_ndt&token="+encodeURIComponent(DRIVE_TOKEN)+(since?("&since="+encodeURIComponent(since)):"")+"&callback="+cb;
+      s.src=DRIVE_URL+"?action="+encodeURIComponent(action)+"&token="+encodeURIComponent(DRIVE_TOKEN)+(since?("&since="+encodeURIComponent(since)):"")+"&callback="+cb;
       document.body.appendChild(s);
     });
   }
+  function driveListNdt(since){ return driveListSync("list_ndt",since); }
+  function driveListPh(since){ return driveListSync("list_ph",since); }
+
   function ndtToast(msg){
     var d=document.getElementById("ndtToast");
     if(!d){ d=document.createElement("div"); d.id="ndtToast";
@@ -2377,6 +2418,83 @@
     d.textContent=msg;
     return { set:function(m,ok){ d.textContent=m; d.style.borderColor = ok===true?"#35c26a":(ok===false?"#e2483f":"var(--acento,#FF6600)"); if(ok!==undefined){ setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 9000); } } };
   }
+
+  async function cargarItemsPorCodigos(codigos){
+    var mapa={};
+    for(var j=0;j<codigos.length;j+=150){
+      var sub=codigos.slice(j,j+150);
+      if(!sub.length) continue;
+      var inlist="("+sub.join(",")+")";
+      var ri=await fetch(URL_SB+"/rest/v1/items?select=id,codigo,linea_codigo&codigo=in."+encodeURIComponent(inlist),{headers:headers()});
+      if(ri.ok){ (await ri.json()||[]).forEach(function(it){ mapa[String(it.codigo).toUpperCase()]=it; }); }
+    }
+    return mapa;
+  }
+
+  // Reutiliza un ciclo vigente que ya contenga NDT o PH.
+  // Si llega el otro documento después, ambos quedan en el MISMO ciclo.
+  // La fecha del ciclo queda en la más antigua entre los documentos.
+  async function obtenerOCrearCicloInspeccion(it, fecha, tipoDoc, archivo){
+    var ciclos=[];
+    var r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_realizado,metodo,datos_formulario&item_id=eq."+encodeURIComponent(it.id)+"&vigente=eq.true&order=fecha_realizado.desc&limit=20",{headers:headers()});
+    if(r.ok) ciclos=await r.json();
+
+    var elegido=null;
+    if(ciclos.length){
+      var ids=ciclos.map(function(c){return c.id;}).filter(Boolean);
+      var docs=[];
+      if(ids.length){
+        var dr=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,ciclo_id,tipo&ciclo_id=in.("+ids.join(",")+")&tipo=in.(ndt,prueba_presion)",{headers:headers()});
+        if(dr.ok) docs=await dr.json();
+      }
+      var conInspeccion={}; docs.forEach(function(d){conInspeccion[d.ciclo_id]=true;});
+      elegido=ciclos.find(function(c){ return conInspeccion[c.id] || ((c.datos_formulario||{}).origen==="ndt_sync") || ((c.datos_formulario||{}).origen==="ph_sync") || ((c.datos_formulario||{}).origen==="inspeccion_sync"); }) || null;
+    }
+
+    if(elegido){
+      var actual=elegido.fecha_realizado||fecha;
+      var fechaFinal=(fecha && actual && fecha<actual)?fecha:actual;
+      var datos=Object.assign({},elegido.datos_formulario||{});
+      datos.origen="inspeccion_sync";
+      datos.archivo=archivo||datos.archivo||null;
+      var pr=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?id=eq."+encodeURIComponent(elegido.id),{
+        method:"PATCH",headers:headers({"Prefer":"return=minimal"}),
+        body:JSON.stringify({fecha_realizado:fechaFinal,datos_formulario:datos})
+      });
+      if(!pr.ok) throw new Error("No se pudo actualizar el ciclo de mantenimiento.");
+      return elegido.id;
+    }
+
+    var origen=tipoDoc==="ndt"?"ndt_sync":"ph_sync";
+    var rr=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{
+      method:"POST",headers:headers(),
+      body:JSON.stringify({
+        p_item_id:it.id,
+        p_linea_codigo:it.linea_codigo,
+        p_fecha_realizado:fecha,
+        p_metodo:tipoDoc==="ndt"?"ndt":"ph",
+        p_datos:{origen:origen,archivo:archivo}
+      })
+    });
+    if(!rr.ok){ var er=await rr.json().catch(function(){return{};}); throw new Error(er.message||"No se pudo crear el ciclo."); }
+    return await rr.json();
+  }
+
+  async function enlazarDocumentoInspeccion(it, fecha, tipoDoc, archivo, driveUrl){
+    var ciclo=await obtenerOCrearCicloInspeccion(it,fecha,tipoDoc,archivo);
+    // La tabla de sincronización evita reprocesar el mismo archivo por equipo.
+    var ex=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id&ciclo_id=eq."+encodeURIComponent(ciclo)+"&tipo=eq."+encodeURIComponent(tipoDoc)+"&archivo_path=eq."+encodeURIComponent(driveUrl)+"&limit=1",{headers:headers()});
+    var existe=ex.ok && (await ex.json()||[]).length>0;
+    if(!existe){
+      var ir=await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{
+        method:"POST",headers:headers({"Prefer":"return=minimal"}),
+        body:JSON.stringify({ciclo_id:ciclo,tipo:tipoDoc,archivo_path:driveUrl})
+      });
+      if(!ir.ok) throw new Error("No se pudo guardar el documento en el ciclo.");
+    }
+    return ciclo;
+  }
+
   async function sincronizarNdt(){
     if(!esAdmin()) return;
     if(!confirm("¿Buscar certificados NDT nuevos en Drive y enlazarlos como mantenimiento?")) return;
@@ -2384,46 +2502,67 @@
     try{
       var resp=await driveListNdt("");
       if(!resp || !resp.ok) throw new Error((resp&&resp.error)||"respuesta inválida de Drive");
-      var archivos=resp.archivos||[];
-      var filas=[];
+      var archivos=resp.archivos||[], filas=[];
       archivos.forEach(function(a){
-        var p=parseNdtName(a.n); if(!p) return;
-        filas.push({ codigo_item:p.codigo, metodo:p.metodo, fecha:p.fecha, nombre_archivo:a.n, drive_file_id:a.i, drive_url:"https://drive.google.com/file/d/"+a.i+"/view" });
+        var p=parseNdtName(a.n); if(!p || !p.fecha || !p.codigos.length) return;
+        // Se conserva el comportamiento histórico de NDT: un código principal por archivo.
+        filas.push({codigo_item:p.codigos[0],metodo:p.metodo,fecha:p.fecha,nombre_archivo:a.n,drive_file_id:a.i,drive_url:"https://drive.google.com/file/d/"+a.i+"/view"});
       });
-      if(!filas.length){ t.set("No se encontraron archivos con código NDT en Drive.", false); return; }
+      if(!filas.length){ t.set("No se encontraron archivos NDT con código y fecha válidos.", false); return; }
       t.set("Drive: "+archivos.length+" archivos. Guardando nuevos…");
       var nuevos=[];
       for(var i=0;i<filas.length;i+=500){
         var lote=filas.slice(i,i+500);
-        var r=await fetch(URL_SB+"/rest/v1/certificados_ndt?on_conflict=nombre_archivo",{ method:"POST", headers:headers({"Prefer":"resolution=ignore-duplicates,return=representation"}), body:JSON.stringify(lote) });
-        if(r.ok){ var d=await r.json(); if(Array.isArray(d)) nuevos=nuevos.concat(d); }
+        var rr=await fetch(URL_SB+"/rest/v1/certificados_ndt?on_conflict=nombre_archivo",{method:"POST",headers:headers({"Prefer":"resolution=ignore-duplicates,return=representation"}),body:JSON.stringify(lote)});
+        if(rr.ok){var d=await rr.json();if(Array.isArray(d))nuevos=nuevos.concat(d);}
       }
       if(!nuevos.length){ t.set("Todo al día: no hay certificados NDT nuevos.", true); return; }
-      t.set(nuevos.length+" certificados nuevos. Enlazando mantenimiento…");
-      var porCod={};
-      nuevos.forEach(function(n){ var k=n.codigo_item; if(!porCod[k] || (n.fecha||"")>(porCod[k].fecha||"")) porCod[k]=n; });
-      var codigos=Object.keys(porCod), mapaItem={};
-      for(var j=0;j<codigos.length;j+=150){
-        var sub=codigos.slice(j,j+150);
-        var inlist="("+sub.join(",")+")";
-        var ri=await fetch(URL_SB+"/rest/v1/items?select=id,codigo,linea_codigo&codigo=in."+encodeURIComponent(inlist),{headers:headers()});
-        if(ri.ok){ (await ri.json()||[]).forEach(function(it){ mapaItem[it.codigo]=it; }); }
-      }
-      var enlazados=0, sinItem=0;
-      for(var ci=0;ci<codigos.length;ci++){
-        var it=mapaItem[codigos[ci]];
-        if(!it){ sinItem++; continue; }
-        var reg=porCod[codigos[ci]];
-        if(!reg.fecha) continue;
-        var rr=await fetch(URL_SB+"/rest/v1/rpc/renovar_mantenimiento",{ method:"POST", headers:headers(), body:JSON.stringify({ p_item_id:it.id, p_linea_codigo:it.linea_codigo, p_fecha_realizado:reg.fecha, p_metodo:"ndt", p_datos:{origen:"ndt_sync", archivo:reg.nombre_archivo} }) });
-        if(!rr.ok) continue;
-        var ciclo=await rr.json();
-        await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{ method:"POST", headers:headers({"Prefer":"return=minimal"}), body:JSON.stringify({ ciclo_id:ciclo, tipo:"ndt", archivo_path:reg.drive_url }) });
+      var codigos=[...new Set(nuevos.map(function(x){return String(x.codigo_item).toUpperCase();}))];
+      var mapaItem=await cargarItemsPorCodigos(codigos), enlazados=0, sinItem=0;
+      for(var k=0;k<nuevos.length;k++){
+        var reg=nuevos[k], it=mapaItem[String(reg.codigo_item).toUpperCase()];
+        if(!it){sinItem++;continue;}
+        await enlazarDocumentoInspeccion(it,reg.fecha,"ndt",reg.nombre_archivo,reg.drive_url);
         enlazados++;
       }
-      t.set("Listo · "+nuevos.length+" certificados nuevos · "+enlazados+" herramientas actualizadas · "+sinItem+" sin ítem en inventario.", true);
-      try{ actualizarAlertas(); }catch(e){}
-    }catch(e){ t.set("Error: "+(e.message||e), false); }
+      t.set("Listo · "+nuevos.length+" NDT nuevos · "+enlazados+" enlaces creados · "+sinItem+" sin ítem en inventario.", true);
+      try{actualizarAlertas();}catch(e){}
+    }catch(e){t.set("Error NDT: "+(e.message||e),false);}
+  }
+
+  async function sincronizarPh(){
+    if(!esAdmin()) return;
+    if(!confirm("¿Buscar pruebas hidrostáticas nuevas en Drive y enlazarlas a todos los equipos indicados en cada archivo?")) return;
+    var t=ndtToast("Consultando carpeta de PH…");
+    try{
+      var resp=await driveListPh("");
+      if(!resp || !resp.ok) throw new Error((resp&&resp.error)||"respuesta inválida de Drive");
+      var archivos=resp.archivos||[], filas=[];
+      archivos.forEach(function(a){
+        var p=parsePhName(a.n); if(!p || !p.fecha) return;
+        p.codigos.forEach(function(c){ filas.push({codigo_item:c,fecha:p.fecha,nombre_archivo:a.n,drive_file_id:a.i,drive_url:"https://drive.google.com/file/d/"+a.i+"/view"}); });
+      });
+      if(!filas.length){ t.set("No se encontraron PH con códigos y fecha válidos en el nombre.", false); return; }
+      t.set("Drive: "+archivos.length+" archivos · "+filas.length+" relaciones archivo/equipo. Guardando nuevos…");
+      var nuevos=[];
+      for(var i=0;i<filas.length;i+=500){
+        var lote=filas.slice(i,i+500);
+        var rr=await fetch(URL_SB+"/rest/v1/certificados_ph?on_conflict=drive_file_id,codigo_item",{method:"POST",headers:headers({"Prefer":"resolution=ignore-duplicates,return=representation"}),body:JSON.stringify(lote)});
+        if(!rr.ok){var ee=await rr.json().catch(function(){return{};});throw new Error(ee.message||"No se pudo registrar PH en Supabase.");}
+        var d=await rr.json();if(Array.isArray(d))nuevos=nuevos.concat(d);
+      }
+      if(!nuevos.length){ t.set("Todo al día: no hay PH nuevas.", true); return; }
+      var codigos=[...new Set(nuevos.map(function(x){return String(x.codigo_item).toUpperCase();}))];
+      var mapaItem=await cargarItemsPorCodigos(codigos), enlazados=0, sinItem=0;
+      for(var k=0;k<nuevos.length;k++){
+        var reg=nuevos[k], it=mapaItem[String(reg.codigo_item).toUpperCase()];
+        if(!it){sinItem++;continue;}
+        await enlazarDocumentoInspeccion(it,reg.fecha,"prueba_presion",reg.nombre_archivo,reg.drive_url);
+        enlazados++;
+      }
+      t.set("Listo · "+nuevos.length+" PH nuevas · "+enlazados+" equipos enlazados · "+sinItem+" códigos sin ítem en inventario.", true);
+      try{actualizarAlertas();}catch(e){}
+    }catch(e){t.set("Error PH: "+(e.message||e),false);}
   }
   async function subirArchivo(path, file){
     const r = await fetch(URL_SB+"/storage/v1/object/documentos/"+encPath(path),{

@@ -2576,6 +2576,40 @@
     if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"upload"); }
     return path;
   }
+
+  // ===== Generación del PDF corporativo MF-F-MTO-025 =====
+  // Se envía el formulario al Apps Script por no-cors y luego se consulta
+  // el PDF generado mediante JSONP. Así no se expone ninguna credencial de Drive.
+  function generarPdfMantenimiento(datos, ciclo){
+    return new Promise(async function(resolve,reject){
+      try{
+        if(!DRIVE_URL) throw new Error("Drive no está configurado.");
+        var nombre="MF-F-MTO-025_"+String(datos.n_reporte||ciclo)+".pdf";
+        var payload={
+          action:"generate_report", token:DRIVE_TOKEN,
+          categoria:itemActual.categoria_id||"herramienta",
+          tipo_codigo:itemActual.tipo_codigo||"SINTIPO",
+          codigo:itemActual.codigo||"",
+          ciclo:String(ciclo), filename:nombre,
+          datos:Object.assign({},datos,{fecha_reporte:datos.fecha_reporte||$("#wl_fecha").value||hoyISO()}),
+          item:{codigo:itemActual.codigo||"",descripcion:itemActual.descripcion||"",nombre:itemActual.descripcion||"",categoria_id:itemActual.categoria_id||"herramienta",tipo_codigo:itemActual.tipo_codigo||"SINTIPO"}
+        };
+        await fetch(DRIVE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+        var inicio=Date.now();
+        function buscar(){
+          var cb="__findReport"+Date.now()+Math.floor(Math.random()*1000);
+          var script=document.createElement("script"), terminado=false;
+          function limpiar(){ try{delete window[cb];}catch(e){window[cb]=undefined;} if(script.parentNode)script.parentNode.removeChild(script); }
+          window[cb]=function(r){ limpiar(); if(r&&r.found&&r.url) resolve(r); else if(Date.now()-inicio>60000) reject(new Error("El PDF tardó demasiado en generarse.")); else setTimeout(buscar,1200); };
+          script.onerror=function(){ limpiar(); if(Date.now()-inicio>60000) reject(new Error("No se pudo consultar el PDF generado.")); else setTimeout(buscar,1500); };
+          script.src=DRIVE_URL+"?action=find_report&token="+encodeURIComponent(DRIVE_TOKEN)+"&callback="+cb+
+            "&categoria="+encodeURIComponent(payload.categoria)+"&tipo_codigo="+encodeURIComponent(payload.tipo_codigo)+"&codigo="+encodeURIComponent(payload.codigo)+"&ciclo="+encodeURIComponent(payload.ciclo)+"&filename="+encodeURIComponent(nombre);
+          document.body.appendChild(script);
+        }
+        buscar();
+      }catch(e){ reject(e); }
+    });
+  }
   async function verArchivo(path){
     if(/^https?:\/\//i.test(path)){ window.open(path,"_blank","noopener"); return; }
     try{
@@ -2805,8 +2839,22 @@
       if(mttoDraft.ndtFile) await subirDocCiclo("ndt",mttoDraft.ndtFile);
       if(mttoDraft.phFile) await subirDocCiclo("prueba_presion",mttoDraft.phFile);
       mttoDraft.cycleCreated=true;
-      wlMsg("Mantenimiento guardado.", true);
-      setTimeout(function(){ $("#formWLbg").classList.add("hidden"); $("#mMantForm").classList.add("hidden"); if(itemActual){ cargarEstadoMant(itemActual.id); cargarHistorialItem(itemActual.id); } }, 700);
+
+      // El formulario en línea se convierte automáticamente al formato corporativo.
+      // Si la generación falla, el mantenimiento ya guardado NO se revierte.
+      wlMsg("Mantenimiento guardado. Generando PDF MF-F-MTO-025…", true);
+      try{
+        var pdf=await generarPdfMantenimiento(datos,ciclo);
+        // Intento de apertura automática; si el navegador bloquea la ventana,
+        // dejamos un enlace visible para que el usuario pueda abrirlo manualmente.
+        var abierta=false;
+        try{ var w=window.open(pdf.url,"_blank","noopener"); abierta=!!w; }catch(_e){}
+        wlMsg("Mantenimiento guardado. "+(abierta?"PDF abierto en una nueva pestaña.":"PDF generado correctamente."), true);
+        var a=document.createElement("a"); a.href=pdf.url; a.target="_blank"; a.rel="noopener"; a.textContent=" Ver PDF MF-F-MTO-025"; a.style.cssText="display:inline-block;margin-left:8px;color:var(--acento);font-weight:700;text-decoration:underline"; $("#wlMsg").appendChild(a);
+      }catch(pdfErr){
+        wlMsg("Mantenimiento guardado, pero no se pudo generar el PDF corporativo: "+(pdfErr.message||pdfErr), false);
+      }
+      setTimeout(function(){ $("#formWLbg").classList.add("hidden"); $("#mMantForm").classList.add("hidden"); if(itemActual){ cargarEstadoMant(itemActual.id); cargarHistorialItem(itemActual.id); } }, 1200);
     }catch(e){ wlMsg(e.message||"No se pudo guardar el mantenimiento.", false); }
     finally{ btn.disabled=false; }
   });

@@ -261,8 +261,8 @@
   .fab-tipo-h .cod{color:var(--naranja2);font-weight:700;margin-right:6px}
 
   /* Modal */
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:flex-end;z-index:20}
-  .modal{width:100%;max-width:440px;height:100%;background:var(--panel);border-left:1px solid var(--borde);overflow-y:auto;padding:22px}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;z-index:20}
+  .modal{width:min(760px,96vw);max-width:760px;max-height:calc(100vh - 40px);height:auto;background:var(--panel);border:1px solid var(--borde);border-radius:12px;overflow-y:auto;padding:22px;box-sizing:border-box}
   .modal h2{margin:0 0 4px;font-size:18px}
   .modal .sub{color:var(--tenue);font-size:13px;margin:0 0 18px}
   .grid{display:grid;gap:13px}
@@ -288,7 +288,7 @@
   .slot a{background:var(--panel2);color:var(--acero);border:1px solid var(--borde)}
   .slot .up{background:var(--naranja);color:#180a00;border:0;font-weight:700}
   .slot .rep{background:var(--panel2);color:var(--texto);border:1px solid var(--borde)}
-  @media(max-width:640px){.desc{max-width:130px}.modal{max-width:100%}}
+  @media(max-width:640px){.desc{max-width:130px}.modal-bg{padding:8px}.modal{width:100%;max-width:100%;max-height:calc(100vh - 16px);border-radius:10px}}
 
   /* ===== Optimizacion movil ===== */
   html,body{max-width:100%;overflow-x:hidden}
@@ -1703,8 +1703,12 @@
         const docs=docsPor[x.id]||[];
         const links=docs.length?'<div class="hist-docs">'+docs.map(function(q){return '<a href="#" data-ver="'+esc(q.archivo_path)+'">'+esc(nombres[q.tipo]||q.tipo)+'</a>';}).join(' · ')+'</div>':'';
         const datos=x.datos_formulario||{};
-        const tipo=(datos.tipo_mantenimiento||'').toUpperCase(); const prev=datos.ciclo_preventivo?(' · '+datos.ciclo_preventivo):'';
-        return '<div class="inv-pair"><span class="k">'+esc(x.fecha_realizado||'Sin fecha')+'</span><span class="v">'+esc(tipo+prev)+' &nbsp; '+estado+links+'</span></div>';
+        const tipoRaw=String(datos.tipo_mantenimiento||'').toLowerCase();
+        const prevRaw=String(datos.ciclo_preventivo||'').toUpperCase();
+        let tipoLabel='Mantenimiento';
+        if(tipoRaw==='correctivo') tipoLabel='Correctivo';
+        else if(tipoRaw==='preventivo') tipoLabel='Preventivo'+(prevRaw?' '+prevRaw:'');
+        return '<div class="inv-pair"><span class="k">'+esc(x.fecha_realizado||'Sin fecha')+'</span><span class="v"><b>'+esc(tipoLabel)+'</b> &nbsp; '+estado+links+'</span></div>';
       }).join("");
       enlazarSlots(box);
     }catch(e){ box.innerHTML='<div class="rs-empty">No se pudo cargar el historial.</div>'; }
@@ -1754,8 +1758,11 @@
       var r=reglaPreventiva();
       $("#mPrevRegla").textContent=r.ok?r.txt:"Este tipo no aplica a la categoría seleccionada.";
       $("#mPreventivoReq").textContent=r.txt;
-      $("#mNdtBox").classList.toggle("hidden",!(r.ok&&r.req.indexOf("ndt")>=0));
-      $("#mPhBox").classList.toggle("hidden",!(r.ok&&r.req.indexOf("prueba_presion")>=0));
+      // Mostrar siempre los espacios de carga correspondientes a C4/C6.
+      // Si la categoría no aplica, el selector ya bloquea el guardado, pero
+      // el usuario sigue viendo claramente qué documentos corresponden al ciclo.
+      $("#mNdtBox").classList.toggle("hidden",!(prev==="C4"||prev==="C6"));
+      $("#mPhBox").classList.toggle("hidden",prev!=="C6");
     }
   }
   function elegirReporte(method){

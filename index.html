@@ -32,6 +32,13 @@
   .marca b{color:var(--naranja);font-weight:900}
   .marca span{color:var(--negro);background:var(--naranja);padding:1px 7px;border-radius:3px;font-size:11px;letter-spacing:.14em}
   .hidden{display:none!important}
+  .tipo-ayuda{font-size:11px;color:var(--txt-tenue);font-weight:400;margin-left:4px}
+  .admin-acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--borde)}
+  .btn-danger{background:transparent;color:var(--rojo);border:1px solid rgba(226,72,63,.45);padding:10px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700}
+  .btn-danger:hover{border-color:var(--rojo);background:rgba(226,72,63,.08)}
+  .loc-list{display:grid;gap:8px;margin-top:12px}.loc-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;padding:10px 12px}.loc-name{font-weight:700}.loc-count{font-family:var(--mono);font-size:12px;color:var(--tenue)}
+  .loc-empty{color:var(--tenue);font-size:13px;padding:10px 0}.loc-danger{color:var(--rojo);border-color:rgba(226,72,63,.45)}
+  @media(max-width:760px){.admin-acciones{display:grid;grid-template-columns:1fr}.admin-acciones .btn,.admin-acciones .btn2,.admin-acciones .btn-danger{width:100%;min-height:44px}.loc-row{grid-template-columns:1fr;gap:6px}.loc-row button{width:100%;min-height:42px}}
 
   input,select,textarea{background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:10px 12px;border-radius:6px;font-size:15px;font-family:inherit}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--naranja);border-color:transparent}
@@ -339,8 +346,9 @@
   .snav{display:flex;align-items:center;gap:10px;padding:10px;cursor:pointer;border:0;border-left:2px solid transparent;background:transparent;color:var(--txt2);font-family:inherit;text-align:left;width:100%;transition:background .15s,color .15s}
   .snav:hover{background:#171615}
   .snav.on{color:#fff;border-left-color:var(--acento);background:var(--side-activo)}
-  .snav .ind{width:16px;height:16px;flex:none;border:2px solid var(--gris-ind)}
-  .snav.on .ind{background:var(--acento);border-color:var(--acento)}
+  .snav .ind{display:none}
+  .snav .nav-ico{width:20px;flex:none;text-align:center;font-size:17px;line-height:1;color:var(--txt-mut);font-family:var(--sans)}
+  .snav.on .nav-ico{color:var(--acento)}
   .snav .lbl{flex:1;font-size:14px;font-weight:500}
   .snav .bdg{font-family:var(--mono);font-size:10px;color:var(--txt-tenue)}
   .snav.on .bdg{color:var(--acento)}
@@ -374,8 +382,9 @@
   .ph-panel .ph-x{font-size:14px}
   .bottombar{display:none}
   .btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 14px;background:transparent;border:0;cursor:pointer;min-height:44px;font-family:inherit}
-  .btab .ind{width:20px;height:20px;border:2px solid var(--gris-ind)}
-  .btab.on .ind{background:var(--acento);border-color:var(--acento)}
+  .btab .ind{display:none}
+  .btab .nav-ico{height:20px;font-size:18px;line-height:20px;color:var(--txt-mut);font-family:var(--sans)}
+  .btab.on .nav-ico{color:var(--acento)}
   .btab .lbl{font-size:10.5px;font-weight:600;color:var(--txt-mut)}
   .btab.on .lbl{color:var(--acento)}
   @media(max-width:900px){
@@ -433,7 +442,19 @@
   }
   /* ===== Panel Inventario ===== */
   #vInv{display:flex;flex-direction:column;gap:12px;height:100%}
-  .inv-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .inv-search{display:flex;align-items:center;gap:10px;width:100%;padding:2px 0}
+  .inv-search-input{flex:1;min-width:0;height:44px;padding:0 14px;background:var(--bg-panel);border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:15px;border-radius:7px;font-family:inherit;box-sizing:border-box;outline:none}
+  .inv-search-input:focus{border-color:var(--acento);box-shadow:0 0 0 2px rgba(255,106,0,.12)}
+  .inv-search-input::placeholder{color:var(--txt-mut)}
+  .inv-search-btn{height:44px;flex:none;padding:0 18px;background:var(--acento);color:#000;border:0;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
+  .inv-search-btn:hover{background:var(--acento-hover)}
+  .inv-search-clear{height:44px;min-width:44px;padding:0 10px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt2);border-radius:7px;cursor:pointer;font-size:16px}
+  .inv-search-clear:hover{border-color:var(--acento);color:var(--txt-body)}
+  .inv-filtro-bar{display:flex;align-items:center;gap:12px;min-height:34px}
+.inv-filtrar-btn{height:34px;padding:0 14px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt-body);font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer}
+.inv-filtrar-btn:hover,.inv-filtrar-btn.on{border-color:var(--acento);color:var(--acento)}
+.inv-filtro-resumen{font-family:var(--mono);font-size:10px;color:var(--txt-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .inv-sel{height:34px;padding:0 10px;background:var(--bg-panel);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:13px;border-radius:6px;font-family:inherit}
   .inv-sel.fTipo{flex:0 1 210px;min-width:150px}
   .inv-guardar{height:34px;padding:0 12px;background:transparent;border:1px dashed var(--borde-ctrl2);color:var(--txt-mut);font-size:12px;cursor:pointer;border-radius:6px;font-family:inherit}
@@ -452,6 +473,8 @@
   .inv-tabla table{width:100%;border-collapse:collapse;table-layout:fixed}
   .inv-tabla thead th{position:sticky;top:0;background:var(--bg-panel);text-align:left;padding:10px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);border-bottom:1px solid var(--borde);text-transform:uppercase}
   .inv-tabla td{padding:12px 16px;border-bottom:1px solid var(--borde-sutil);vertical-align:middle;font-size:13.5px;color:var(--txt-body)}
+  .inv-tipo{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .inv-desc{font-size:11px;color:var(--txt-mut);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
   .inv-row{cursor:pointer}
   .inv-row:hover{background:var(--surface)}
   .inv-row.sel{background:var(--side-activo);box-shadow:inset 2px 0 0 var(--acento)}
@@ -520,6 +543,34 @@
   .mv-tabla tbody tr:hover{background:var(--surface)}
   .mv-tabla .desc{color:var(--txt-mut)}
   @media(max-width:900px){ .mv-kpis{grid-template-columns:1fr 1fr} }
+  /* ===== Movilizacion masiva ===== */
+  .mv-masiva-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .mv-masiva-btn{height:38px;padding:0 16px;background:transparent;border:1px solid var(--acento);color:var(--acento);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border-radius:6px}
+  .mv-masiva-btn:hover{background:rgba(245,166,35,.08)}
+  .mv-bulk-list{margin-top:14px;border:1px solid var(--borde);background:var(--surface);max-height:310px;overflow:auto}
+  .mv-bulk-row{display:grid;grid-template-columns:1.1fr 1.4fr 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--borde-sutil);font-size:12px}
+  .mv-bulk-row:last-child{border-bottom:0}
+  .mv-bulk-cod{font-family:var(--mono);color:var(--acento);font-size:11px}
+  .mv-bulk-ubi{color:var(--txt-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mv-bulk-remove{width:30px;height:30px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-mut);cursor:pointer;border-radius:5px}
+  .mv-bulk-remove:hover{border-color:var(--rojo);color:var(--rojo)}
+  .mv-bulk-empty{padding:22px;text-align:center;color:var(--txt-mut);font-size:13px}
+  .mv-bulk-dest{margin-top:14px}
+  .mv-bulk-summary{margin-top:10px;color:var(--txt-mut);font-size:12px}
+  .mv-bulk-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .mv-bulk-actions .mv-btn{min-width:150px}
+  @media(max-width:700px){
+    .mv-masiva-head{align-items:stretch}
+    .mv-masiva-btn{width:100%}
+    .mv-bulk-row{grid-template-columns:1fr auto;gap:5px 10px}
+    .mv-bulk-row .mv-bulk-desc{grid-column:1/2}
+    .mv-bulk-row .mv-bulk-ubi{grid-column:1/2}
+    .mv-bulk-row .mv-bulk-remove{grid-column:2;grid-row:1 / span 3;align-self:center}
+    .mv-bulk-actions{flex-direction:column}
+    .mv-bulk-actions button{width:100%}
+  }
+  .mv-bulk-confirm{padding:4px 0;color:var(--txt-body);font-size:13px;line-height:1.5}
+  .mv-bulk-confirm strong{color:var(--acento)}
   /* ===== Alertas PRO ===== */
   .db-alertas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .db-alerta{display:flex;align-items:center;gap:12px;min-height:72px;padding:12px 14px;background:var(--surface);border:1px solid var(--borde);color:var(--txt-body);text-align:left;cursor:pointer;font-family:inherit}
@@ -562,7 +613,7 @@
   .mant-menu .mant-menu-btn.btn{background:var(--naranja);color:#180a00}
   .mant-menu .mant-menu-btn.btn:hover{background:var(--naranja2)}
   .mant-incomplete{margin:10px 0;padding:10px 12px;border:1px solid rgba(245,166,35,.45);background:rgba(245,166,35,.08);border-radius:10px}.mant-chip{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.mant-chip.ok{background:rgba(53,194,106,.14);color:#35c26a}.mant-chip.bad{background:rgba(226,72,63,.14);color:#ff6b61}.mant-falta{display:block;margin-top:6px;color:var(--txt-2,#bbb);font-size:12px}.hist-docs{margin-top:7px;display:flex;flex-wrap:wrap;gap:6px}.hist-docs a{font-size:12px}.db-docs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.db-doc-card{padding:16px;border:1px solid var(--line,#2b2b2b);border-radius:12px;background:var(--bg-panel,#141414);text-align:center}.db-doc-card .n{font-size:26px;font-weight:800}.db-doc-card .t{font-size:11px;color:var(--txt-2,#aaa);text-transform:uppercase;margin-top:4px}.db-doc-card .p{font-size:12px;margin-top:6px}.db-incomplete{margin-top:14px}.db-incomplete button{width:100%;text-align:left}
-  @media(max-width:700px){.mant-menu{grid-template-columns:1fr}.db-docs-grid{grid-template-columns:1fr}.modal{width:min(96vw,760px)}}
+  @media(max-width:700px){.mant-menu{grid-template-columns:1fr}.db-docs-grid{grid-template-columns:1fr}.modal{width:min(96vw,760px)}.mv-bulk-modal{max-height:92dvh;overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom))}}
 
   /* ===== Panel Fabricantes ===== */
   #vFab{display:flex;flex-direction:column;gap:14px}
@@ -608,10 +659,369 @@
     .rs-kpis,.rs-fila,.db-fila,.db-fila3,.mv-kpis{width:100%;margin-left:auto;margin-right:auto}
     .mv-form{width:100%;box-sizing:border-box;text-align:center}
     .mv-row{justify-content:center}
-    .fab-top{justify-content:center;flex-wrap:wrap}
-    .fab-grid{width:100%}
+    .fab-top{justify-content:center;flex-wrap:wrap;width:100%}
+    .fab-buscar{width:100%;min-width:0;height:44px;box-sizing:border-box}
+    .fab-conteo{width:100%;margin-left:0;text-align:center}
+    .fab-grid{width:100%;grid-template-columns:1fr;gap:10px}
+    .fab-card{width:100%;box-sizing:border-box;min-height:108px}
   }
-.btn-del-doc{margin-left:6px;border:0;background:none;color:#d9534f;cursor:pointer;font:inherit;padding:0}.btn-del-doc:hover{text-decoration:underline}</style>
+.btn-del-doc{margin-left:6px;border:0;background:none;color:#d9534f;cursor:pointer;font:inherit;padding:0}.btn-del-doc:hover{text-decoration:underline}
+/* ===== NEXUS MOBILE AUDIT v5 ===== */
+@media (max-width: 900px){
+  :root{--mobile-bar-h:68px}
+  #app{min-height:100dvh;height:100dvh}
+  .shell{min-height:0}
+  .main{min-height:0}
+  .contenido{
+    padding:12px 12px calc(var(--mobile-bar-h) + env(safe-area-inset-bottom) + 14px);
+    overscroll-behavior-y:contain;
+  }
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:10;
+    padding:10px 12px;
+    gap:8px;
+    background:var(--bg-panel);
+  }
+  .tb-head{min-width:0;flex:1}
+  .tb-tit{font-size:15px;overflow:hidden;text-overflow:ellipsis}
+  .tb-sub{font-size:9px}
+  .tb-r{flex:0 0 auto;width:auto;justify-content:flex-end}
+  .tb-buscar{display:none}
+  .bottombar{
+    position:relative;
+    min-height:68px;
+    padding:6px 2px calc(6px + env(safe-area-inset-bottom));
+    box-sizing:border-box;
+    z-index:50;
+    width:100%;
+    overflow:hidden;
+  }
+  .btab{
+    min-height:52px;
+    min-width:0;
+    flex:1 1 0;
+    width:20%;
+    padding:6px 1px 4px;
+    gap:3px;
+    box-sizing:border-box;
+  }
+  .btab .ind{width:18px;height:18px;flex:none}
+  .btab .lbl{font-size:9.5px;white-space:nowrap;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  /* Resumen móvil: 3 KPIs principales, mismo tamaño y una sola fila */
+  .rs-kpis{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:82px;gap:1px;width:100%;box-sizing:border-box}
+  .rs-kpi:nth-child(4),.rs-kpi:nth-child(5){display:none}
+  .rs-kpi{padding:10px 8px;min-width:0;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;overflow:hidden}
+  .rs-kpi-n{font-size:21px;line-height:1}
+  .rs-kpi-t{font-size:8px;line-height:1.25;text-align:center;white-space:normal}
+  .rs-fila{grid-template-columns:1fr}
+  .rs-banda{padding:13px 14px}
+  .rs-banda-tit{font-size:18px}
+  .rs-prox-row{padding:12px}
+  .rs-prox-cod{width:92px}
+  .rs-prox-pozo{display:none}
+
+  /* Inventory: prominent search on mobile */
+  .inv-search{gap:7px}
+  .inv-search-input{height:46px;font-size:16px}
+  .inv-search-btn{height:46px;padding:0 15px}
+  .inv-search-clear{height:46px;min-width:46px}
+
+  /* Inventory: keep the table usable without squeezing columns */
+  #vInv{height:auto;min-height:0}
+  .inv-filtros{align-items:stretch;justify-content:stretch}
+  .inv-sel,.inv-sel.fTipo,.inv-guardar{
+    width:100%;
+    min-width:0;
+    flex:1 1 100%;
+    height:42px;
+    font-size:14px;
+  }
+  .inv-conteo{width:100%;text-align:center;margin:0}
+  .inv-chips{
+    padding-bottom:4px;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+  }
+  .inv-chip{height:36px;padding:0 13px}
+  .inv-layout{display:block}
+  .inv-main{min-height:0}
+  .inv-tabla{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .inv-tabla table{min-width:560px}
+  .inv-tabla thead th,.inv-tabla td{padding:11px 10px}
+  .inv-foot{padding:10px 12px;flex-wrap:wrap}
+  .inv-rango{width:100%;text-align:center}
+  .inv-pager{width:100%;justify-content:center}
+
+  /* Hoja de vida: centered modal, never a clipped right drawer */
+  .inv-detalle{
+    position:fixed;
+    left:50%;
+    right:auto;
+    top:50%;
+    bottom:auto;
+    width:min(94vw,520px);
+    max-width:520px;
+    max-height:min(88dvh,760px);
+    height:auto;
+    transform:translate(-50%,-50%) scale(.98);
+    opacity:0;
+    visibility:hidden;
+    transition:transform .18s ease,opacity .18s ease,visibility .18s;
+    border:1px solid var(--borde);
+    border-radius:14px;
+    box-shadow:0 24px 80px rgba(0,0,0,.65);
+    z-index:60;
+  }
+  .inv-detalle.open{
+    transform:translate(-50%,-50%) scale(1);
+    opacity:1;
+    visibility:visible;
+  }
+  .inv-det-x{
+    top:8px;
+    right:8px;
+    width:40px;
+    height:40px;
+    font-size:18px;
+    background:rgba(0,0,0,.35);
+    border-radius:10px;
+  }
+  .inv-det-body{padding:18px 16px 20px}
+  .inv-det-foto{height:150px}
+  .inv-det-abrir,.inv-det-mant{height:44px;font-size:14px}
+
+  /* Dashboard / mobilization / manufacturers */
+  .db-alertas{grid-template-columns:repeat(2,1fr)}
+  .db-alerta{min-height:86px}
+  .db-bars{height:170px;gap:7px}
+  .db-bar-m{font-size:9px}
+  .mv-kpis{grid-template-columns:repeat(2,1fr)}
+  .mv-row{flex-direction:column}
+  .mv-inp,.mv-btn,.mv-btn2{width:100%;min-width:0;height:44px}
+  .mv-tabla{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .mv-tabla table{min-width:760px}
+  .fab-top{align-items:stretch}
+  .fab-buscar{height:42px;flex:1 1 100%;min-width:0;font-size:14px}
+  .fab-conteo{width:100%;text-align:center;margin:0}
+
+  /* Forms and dialogs */
+  .modal-bg{
+    padding:10px;
+    align-items:center;
+    overflow:hidden;
+    overscroll-behavior:contain;
+  }
+  .modal,
+  #formWLbg .modal,
+  #infoAdminBg .modal{
+    width:100%;
+    max-width:760px;
+    max-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding:16px;
+    border-radius:14px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+  .modal h2{font-size:17px;line-height:1.25;padding-right:36px}
+  .modal .sub{line-height:1.45}
+  .row2{grid-template-columns:1fr}
+  .modal input,.modal select,.modal textarea{min-height:44px;font-size:16px}
+  .modal textarea{min-height:96px}
+  .acc{
+    position:sticky;
+    bottom:-16px;
+    margin:14px -16px -16px;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--panel) 78%,rgba(20,20,20,.94));
+    border-top:1px solid var(--borde);
+    z-index:5;
+  }
+  .acc>*{min-height:44px}
+  .mant-menu{grid-template-columns:1fr}
+  .mant-menu .mant-menu-btn{min-height:48px}
+  #mRepMantBox .row2{gap:8px}
+  #mRepMantBox .btn2,
+  #mFallaBox .btn2,
+  #mNdtBox .btn2,
+  #mPhBox .btn2,
+  #mVerFormWL{width:100%;min-height:44px}
+
+  /* Wireline form: touch-friendly, compact and scrollable */
+  #formWLbg .modal{max-width:680px}
+  #formWLbg .grid{gap:11px}
+  #formWLbg .seccion{margin-top:7px}
+  #formWLbg .acc{margin-top:14px}
+
+  /* Landing/login/hub/guide */
+  .landing-inner{padding:20px 16px;gap:18px}
+  .logo-grande{width:min(330px,78vw)}
+  .landing-sub{font-size:11px;letter-spacing:.25em}
+  .landing-nombre{font-size:22px}
+  .btn-cta{min-height:46px;padding:12px 30px}
+  .login-inner{max-width:100%;padding:14px}
+  .login-card{padding:20px 18px}
+  .logo-card{width:170px}
+  .hub-wrap,.guia-wrap{padding:18px 14px calc(30px + env(safe-area-inset-bottom))}
+  .hub-top,.guia-top{gap:10px}
+  .hub-top img,.guia-top img{height:32px}
+  .hub-hero{margin:20px 0 16px}
+  .hub-hero h1{font-size:29px}
+  .hub-hero p,.guia-hero p{font-size:14px}
+  .mod-grid{grid-template-columns:1fr;gap:12px}
+  .mod{padding:18px}
+  .rol-grid,.legend{grid-template-columns:1fr}
+  .grp-grid{grid-template-columns:1fr}
+  .paso{padding:12px}
+}
+
+@media (max-width:430px){
+  .contenido{padding-left:10px;padding-right:10px}
+  .btab .lbl{font-size:9px}
+  .btab .ind{width:16px;height:16px}
+  .db-alerta{min-height:78px;padding:9px 5px}
+  .db-alerta b{font-size:19px}
+  .rs-kpi-n{font-size:21px}
+  .inv-tabla table{min-width:540px}
+}
+
+@media (max-width:360px){
+  .btab .lbl{font-size:8px}
+  .btab{padding-left:0;padding-right:0}
+  .hub-hero h1{font-size:25px}
+}
+
+
+/* ===== NEXUS MOBILE v7 — FORMULARIO MTTO 100% RESPONSIVE ===== */
+@media (max-width: 900px){
+  /* Evita cualquier ancho mínimo heredado que empuje el formulario hacia la derecha */
+  #formWLbg,
+  #formWLbg .modal,
+  #formWLbg .grid,
+  #formWLbg .row2,
+  #formWLbg label,
+  #formWLbg input,
+  #formWLbg select,
+  #formWLbg textarea,
+  #formWLbg button{
+    min-width:0;
+    max-width:100%;
+  }
+
+  #formWLbg{
+    width:100vw;
+    padding:6px;
+    align-items:center;
+    justify-content:center;
+  }
+
+  #formWLbg .modal{
+    width:calc(100vw - 12px) !important;
+    max-width:none !important;
+    height:auto;
+    max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    margin:0;
+    padding:14px 12px;
+    border-radius:12px;
+    overflow-x:hidden !important;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #formWLbg .modal > .grid{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:10px;
+  }
+
+  #formWLbg .row2{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:10px;
+  }
+
+  #formWLbg label{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    overflow:hidden;
+  }
+
+  #formWLbg input,
+  #formWLbg select,
+  #formWLbg textarea{
+    width:100% !important;
+    box-sizing:border-box;
+  }
+
+  /* Dimensiones: una fila vertical por registro en teléfono */
+  #formWLbg #wl_dims > .row2{
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px;
+  }
+
+  /* Partes reemplazadas: la grilla 2fr/1fr/1fr anterior causaba desborde */
+  #formWLbg #wl_partes > div{
+    width:100%;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+
+  #formWLbg .seccion{
+    width:100%;
+    margin-top:5px;
+  }
+
+  #formWLbg .sub{
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+
+  #formWLbg .acc{
+    position:sticky;
+    bottom:-14px;
+    width:calc(100% + 24px);
+    margin:12px -12px -14px;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  #formWLbg .acc > *{
+    width:100%;
+    min-height:46px;
+  }
+}
+
+@media (max-width:430px){
+  #formWLbg{padding:4px}
+  #formWLbg .modal{
+    width:calc(100vw - 8px) !important;
+    padding:12px 10px;
+    border-radius:10px;
+  }
+  #formWLbg .modal h2{font-size:16px}
+  #formWLbg .modal .sub{font-size:12px}
+  #formWLbg .grid{gap:9px !important}
+  #formWLbg .row2{gap:8px !important}
+}
+
+/* ===== Ajuste final móvil: navegación inferior uniforme ===== */
+@media (max-width: 390px){
+  .btab .lbl{font-size:9px;letter-spacing:-.1px}
+}
+
+/* NEXUS v14 - Inventario: encabezado de filtros */
+.inv-filtro-titulo{margin:12px 0 6px;font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--txt-mut);text-transform:uppercase}
+.inv-filtros{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media(max-width:640px){.inv-filtro-bar{width:100%;justify-content:flex-start}.inv-filtro-resumen{flex:1;min-width:0}.inv-filtros{width:100%;display:grid;grid-template-columns:1fr;gap:7px}.inv-sel{width:100%;min-width:0;box-sizing:border-box}.inv-conteo{justify-self:center;margin-left:0}}
+</style>
 </head>
 <body>
   <!-- PANTALLA PREVIA -->
@@ -814,11 +1224,11 @@
         </div>
         <div class="side-grp">OPERACI&Oacute;N</div>
         <nav class="side-nav">
-          <button class="snav" type="button" data-panel="resumen"><span class="ind"></span><span class="lbl">Resumen</span><span class="bdg"></span></button>
-          <button class="snav" type="button" data-panel="inventario"><span class="ind"></span><span class="lbl">Inventario</span><span class="bdg">10.4k</span></button>
-          <button class="snav" type="button" data-panel="movilizacion"><span class="ind"></span><span class="lbl">Movilizaci&oacute;n</span><span class="bdg">3</span></button>
-          <button class="snav" type="button" data-panel="dashboard"><span class="ind"></span><span class="lbl">Dashboard</span><span class="bdg"></span></button>
-          <button class="snav" type="button" data-panel="fabricantes"><span class="ind"></span><span class="lbl">Fabricantes</span><span class="bdg">18</span></button>
+          <button class="snav" type="button" data-panel="resumen"><span class="nav-ico" aria-hidden="true">⌂</span><span class="lbl">Resumen</span><span class="bdg"></span></button>
+          <button class="snav" type="button" data-panel="inventario"><span class="nav-ico" aria-hidden="true">▦</span><span class="lbl">Inventario</span><span class="bdg">10.4k</span></button>
+          <button class="snav" type="button" data-panel="movilizacion"><span class="nav-ico" aria-hidden="true">⇄</span><span class="lbl">Movilizaci&oacute;n</span><span class="bdg">3</span></button>
+          <button class="snav" type="button" data-panel="dashboard"><span class="nav-ico" aria-hidden="true">▥</span><span class="lbl">Dashboard</span><span class="bdg"></span></button>
+          <button class="snav" type="button" data-panel="fabricantes"><span class="nav-ico" aria-hidden="true">⚙</span><span class="lbl">Fabricantes</span><span class="bdg">18</span></button>
         </nav>
         <div class="side-foot">
           <div class="side-aviso">
@@ -872,6 +1282,7 @@
               <div class="rs-side">
                 <div class="rs-card rs-acc">
                   <button class="rs-acc-primary" id="rsRegistrar" type="button">REGISTRAR MANTENIMIENTO</button>
+                  <button class="rs-acc-sec" id="rsAdminUbic" type="button">ADMINISTRAR UBICACIONES</button>
                   <button class="rs-acc-sec" type="button" data-goto="inventario">Ver inventario</button>
                   <button class="rs-acc-sec" type="button" data-goto="movilizacion">Movilizar equipo</button>
                   <button class="rs-acc-sec" type="button" data-goto="dashboard">Ir al Dashboard</button>
@@ -886,7 +1297,16 @@
 
     <!-- VISTA INVENTARIO -->
     <div id="vInv">
-      <div class="inv-filtros">
+      <div class="inv-search" role="search" aria-label="Buscar en inventario">
+        <input class="inv-search-input" id="invBuscar" type="search" placeholder="Buscar por código, S/N o descripción…" autocomplete="off" enterkeyhint="search" aria-label="Buscar por código, S/N o descripción">
+        <button class="inv-search-btn" id="invBuscarBtn" type="button">BUSCAR</button>
+        <button class="inv-search-clear" id="invBuscarClear" type="button" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+      </div>
+      <div class="inv-filtro-bar">
+        <button class="inv-filtrar-btn" id="invFiltrarBtn" type="button" aria-expanded="false">☷ &nbsp;FILTRAR</button>
+        <span class="inv-filtro-resumen" id="invFiltroResumen">Todas las líneas · Todas las categorías · Todas las ubicaciones</span>
+      </div>
+      <div class="inv-filtros hidden" id="invFiltrosPanel">
         <select id="fLinea" class="inv-sel" title="Grupo de l&iacute;neas">
           <option value="">Todas las l&iacute;neas</option>
           <option value="WL">Wireline (WL)</option>
@@ -901,7 +1321,6 @@
           <option value="">Todas las ubicaciones</option>
         </select>
         <input class="inv-sel fTipo" id="fTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
-        <button class="inv-guardar" id="invGuardar" type="button" title="Disponible en el paso de b&uacute;squedas">+ Guardar filtro</button>
         <span class="inv-conteo"><b id="conteo">0</b> &Iacute;TEMS</span>
         <span class="cargando hidden" id="cargando">buscando&hellip;</span>
       </div>
@@ -983,6 +1402,10 @@
     <!-- VISTA MOVILIZACIÓN -->
     <div id="vMov" class="hidden">
       <div class="mv-kpis" id="mvKpis"></div>
+      <div class="mv-masiva-head">
+        <div class="mv-form-t">Movilización de equipos / herramientas</div>
+        <button class="mv-masiva-btn" id="movMasivoBtn" type="button">+ Movilización masiva</button>
+      </div>
       <div class="mv-form" id="movForm">
         <div class="mv-form-t">Movilizar equipo / herramienta</div>
         <div class="mv-row">
@@ -1008,6 +1431,47 @@
       </div>
     </div>
 
+    <!-- MODAL MOVILIZACION MASIVA -->
+    <div id="movMasivoBg" class="modal-bg hidden">
+      <div class="modal mv-bulk-modal" role="dialog" aria-modal="true" aria-labelledby="movMasivoTit">
+        <button class="modal-x" id="movMasivoX" type="button" aria-label="Cerrar">&times;</button>
+        <div class="modal-h" id="movMasivoTit">Movilización masiva</div>
+        <div class="modal-sub">AGRUPAR HERRAMIENTAS Y MOVERLAS A UNA SOLA BASE O UNIDAD</div>
+        <div class="mv-form" style="margin-top:14px">
+          <div class="mv-row">
+            <input id="movBulkCodigo" class="mv-inp" placeholder="Buscar código, S/N o descripción…" autocomplete="off">
+            <button class="mv-btn2" id="movBulkBuscar" type="button">Buscar</button>
+          </div>
+          <p class="mv-info" id="movBulkInfo"></p>
+        </div>
+        <div class="mv-bulk-list" id="movBulkLista"><div class="mv-bulk-empty">Aún no has agregado herramientas.</div></div>
+        <div class="mv-bulk-dest">
+          <label class="lbl">DESTINO ÚNICO</label>
+          <select id="movBulkDestino" class="mv-inp" style="width:100%;min-width:0"><option value="">Seleccionar base o unidad…</option></select>
+        </div>
+        <div class="mv-bulk-summary" id="movBulkResumen">Selecciona una o más herramientas y luego un destino.</div>
+        <div class="mv-bulk-actions">
+          <button class="mv-btn2" id="movBulkCancelar" type="button">Cancelar</button>
+          <button class="mv-btn" id="movBulkEjecutar" type="button" disabled>Mover grupo</button>
+        </div>
+        <p class="msg hidden" id="movBulkMsg"></p>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMACION MOVILIZACION MASIVA -->
+    <div id="movBulkConfirmBg" class="modal-bg hidden">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="movBulkConfirmTit">
+        <button class="modal-x" id="movBulkConfirmX" type="button" aria-label="Cerrar">&times;</button>
+        <div class="modal-h" id="movBulkConfirmTit">Confirmar movilización</div>
+        <div class="modal-sub">REVISA EL GRUPO ANTES DE EJECUTAR</div>
+        <div class="mv-bulk-confirm" id="movBulkConfirmText"></div>
+        <div class="mv-bulk-actions">
+          <button class="mv-btn2" id="movBulkConfirmNo" type="button">Cancelar</button>
+          <button class="mv-btn" id="movBulkConfirmYes" type="button">Confirmar movilización</button>
+        </div>
+      </div>
+    </div>
+
     <!-- VISTA FABRICANTES -->
     <div id="vFab" class="hidden">
       <div id="fabLista">
@@ -1029,11 +1493,11 @@
       </div>
     </div>
     <nav class="bottombar">
-      <button class="btab" type="button" data-panel="resumen"><span class="ind"></span><span class="lbl">Resumen</span></button>
-      <button class="btab" type="button" data-panel="inventario"><span class="ind"></span><span class="lbl">Inventario</span></button>
-      <button class="btab" type="button" data-panel="movilizacion"><span class="ind"></span><span class="lbl">Movil.</span></button>
-      <button class="btab" type="button" data-panel="dashboard"><span class="ind"></span><span class="lbl">Dashboard</span></button>
-      <button class="btab" type="button" data-panel="fabricantes"><span class="ind"></span><span class="lbl">Fabric.</span></button>
+      <button class="btab" type="button" data-panel="resumen"><span class="nav-ico" aria-hidden="true">⌂</span><span class="lbl">Resumen</span></button>
+      <button class="btab" type="button" data-panel="inventario"><span class="nav-ico" aria-hidden="true">▦</span><span class="lbl">Inventario</span></button>
+      <button class="btab" type="button" data-panel="movilizacion"><span class="nav-ico" aria-hidden="true">⇄</span><span class="lbl">Movil.</span></button>
+      <button class="btab" type="button" data-panel="dashboard"><span class="nav-ico" aria-hidden="true">▥</span><span class="lbl">Dashboard</span></button>
+      <button class="btab" type="button" data-panel="fabricantes"><span class="nav-ico" aria-hidden="true">⚙</span><span class="lbl">Fabric.</span></button>
     </nav>
   </div>
 
@@ -1117,6 +1581,26 @@
         <button class="btn hidden" id="mGuardar">Guardar</button>
         <button class="btn2" id="mCerrar">Cerrar</button>
       </div>
+      <div class="admin-acciones hidden" id="mAdminAcciones">
+        <button class="btn-danger" id="mDarBaja" type="button">Dar de baja</button>
+        <button class="btn-danger hidden" id="mEliminarDef" type="button">Eliminar definitivamente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMINISTRACION DE UBICACIONES -->
+  <div id="ubicAdminBg" class="modal-bg hidden">
+    <div class="modal" style="max-width:720px">
+      <h2>Administrar ubicaciones</h2>
+      <p class="sub">Una ubicación solo puede eliminarse cuando no tiene herramientas asignadas. Eliminar una ubicación no elimina herramientas ni historial.</p>
+      <div class="row2">
+        <label>Tipo<select id="ubicTipo"><option value="base">Bases</option><option value="unidad">Unidades</option></select></label>
+        <label>Nueva ubicación<input id="ubicNueva" type="text" placeholder="Nombre de la base o unidad"></label>
+      </div>
+      <button class="btn" id="ubicAgregar" type="button">+ Agregar ubicación</button>
+      <p class="msg hidden" id="ubicMsg"></p>
+      <div id="ubicLista" class="loc-list"><div class="loc-empty">Cargando…</div></div>
+      <div class="acc"><button class="btn2" id="ubicCerrar" type="button">Cerrar</button></div>
     </div>
   </div>
 
@@ -1380,7 +1864,8 @@
   const debounce = fn => { clearTimeout(timer); timer=setTimeout(fn,300); };
   async function buscar(){
     $("#cargando").classList.remove("hidden");
-    const q=$("#q").value.trim(), estado=invEstado, cat=$("#fCategoria").value;
+    const q=((document.getElementById("invBuscar") ? document.getElementById("invBuscar").value : $("#q").value) || "").trim(), estado=invEstado, cat=$("#fCategoria").value;
+    if(document.getElementById("q")) $("#q").value=q;
     const ubi=$("#fUbi").value;
     const grp=GRUPOS[$("#fLinea").value];
     const tipoCodes=codigosDeTipo($("#fTipo").value);
@@ -1418,13 +1903,14 @@
     else items.forEach(function(it){
       const ubic=(it.unidades&&it.unidades.nombre)||(it.bases&&it.bases.nombre)||"—";
       const tipo=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"—";
+      const desc=it.descripcion||"Sin descripción";
       const docs=(window.invDocs&&window.invDocs[it.id])||{n:0};
       const pct=Math.round((docs.n/3)*100);
       const cls=pct>=100?'good':(pct>=67?'mid':'low');
       const tr=document.createElement("tr"); tr.className="inv-row";
       if(it.id===invSelId) tr.classList.add("sel");
       tr.innerHTML='<td class="c-cod">'+codHTML(it.codigo)+'</td>'+
-        '<td class="c-tipo">'+esc(tipo)+'</td>'+
+        '<td class="c-tipo"><div class="inv-tipo">'+esc(tipo)+'</div><div class="inv-desc">'+esc(desc)+'</div></td>'+
         '<td class="c-ubi">'+esc(ubic)+'</td>'+
         '<td class="c-doc"><span class="doc-pct '+cls+'">'+pct+'%</span></td>';
       tr.addEventListener("click", function(){ seleccionarItem(it, tr); });
@@ -1659,7 +2145,9 @@
     $("#mSub").innerHTML = codHTML(it.codigo)+' &nbsp; '+esc((it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"");
     const baseOpts=[{v:"",t:"— Sin base —"}].concat(bases.map(b=>({v:String(b.id),t:b.nombre})));
     const uniOpts=[{v:"",t:"— Sin unidad —"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
+    const tipoNombre=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"";
     $("#mCampos").innerHTML =
+      (esAdmin() ? '<label>Tipo <span class="tipo-ayuda">(compartido por todos los códigos con '+esc(it.tipo_codigo||"")+')</span><input id="f_tipo_nombre" type="text" value="'+esc(tipoNombre)+'"></label>' : '<label>Tipo <div class="ro">'+(esc(tipoNombre)||"—")+'</div></label>') +
       campoInput("f_desc","Descripción", it.descripcion) +
       '<div class="row2">'+campoInput("f_sn","S/N", it.sn)+campoInput("f_fab","Fabricante", it.fabricante)+'</div>'+
       '<div class="row2">'+campoInput("f_med","Medida", it.medida)+campoInput("f_anio","Año", it.anio, "number")+'</div>'+
@@ -1671,7 +2159,11 @@
       (esAdmin() ? '<label>Agregar unidad nueva<div class="unidad-add"><input id="f_uni_nueva" placeholder="Nombre de la unidad"><button class="btn2" id="f_uni_btn" type="button">Agregar</button></div></label>' : '');
     $("#mMsg").className="msg hidden";
     $("#mGuardar").classList.toggle("hidden", !esAdmin());
+    $("#mAdminAcciones").classList.toggle("hidden", !esAdmin() || modoNuevo);
+    $("#mDarBaja").classList.toggle("hidden", !esAdmin() || modoNuevo || String(it.estado||"") === "inactivo");
+    $("#mEliminarDef").classList.toggle("hidden", !esAdmin() || modoNuevo);
     if(esAdmin()) $("#f_uni_btn").addEventListener("click", agregarUnidad);
+    configurarUbicacionExclusiva();
     // mantenimiento
     $("#mMantForm").classList.add("hidden");
     $("#mMantBox").classList.remove("hidden");
@@ -1880,6 +2372,7 @@
     const uniOpts=[{v:"",t:"— Sin unidad —"}].concat(unidades.map(u=>({v:String(u.id),t:u.nombre})));
     $("#mCampos").innerHTML =
       campoInput("f_codigo","Código (13 caracteres)","") +
+      '<label>Tipo <span class="tipo-ayuda">(nombre compartido por los códigos con las mismas 3 letras)</span><input id="f_tipo_nombre" type="text" value=""></label>' +
       campoInput("f_desc","Descripción","") +
       '<div class="row2">'+campoInput("f_sn","S/N","")+campoInput("f_fab","Fabricante","")+'</div>'+
       '<div class="row2">'+campoInput("f_med","Medida","")+campoInput("f_anio","Año","","number")+'</div>'+
@@ -1888,9 +2381,11 @@
       campoSelect("f_estado","Estado","activo",[{v:"activo",t:"Activo"},{v:"en_mantenimiento",t:"En mantenimiento"},{v:"fuera_servicio",t:"Fuera de servicio"},{v:"inactivo",t:"Inactivo"}])+
       '<div class="row2">'+campoSelect("f_base","Base","", baseOpts)+campoSelect("f_uni","Unidad","", uniOpts)+'</div>';
     $("#mMsg").className="msg hidden";
+    configurarUbicacionExclusiva();
     $("#mMantBox").classList.add("hidden");
     $("#mDocsBox").classList.add("hidden");
     $("#mGuardar").classList.remove("hidden");
+    $("#mAdminAcciones").classList.add("hidden");
     $("#modalBg").classList.remove("hidden");
   }
 
@@ -1907,14 +2402,78 @@
 
   function valOrNull(id){ const el=$("#"+id); if(!el) return null; const v=(el.value||"").trim(); return v===""?null:v; }
 
+  function configurarUbicacionExclusiva(){
+    const baseEl=$("#f_base"), uniEl=$("#f_uni");
+    if(!baseEl || !uniEl) return;
+    const aplicar=function(origen){
+      if(origen==="base" && baseEl.value){
+        uniEl.value=""; uniEl.disabled=true; uniEl.title="Deshabilitado porque el ítem está ubicado en una base.";
+      }else if(origen==="unidad" && uniEl.value){
+        baseEl.value=""; baseEl.disabled=true; baseEl.title="Deshabilitado porque el ítem está ubicado en una unidad.";
+      }else if(!baseEl.value && !uniEl.value){
+        baseEl.disabled=false; uniEl.disabled=false; baseEl.title=""; uniEl.title="";
+      }else if(baseEl.value){
+        uniEl.disabled=true; baseEl.disabled=false;
+      }else if(uniEl.value){
+        baseEl.disabled=true; uniEl.disabled=false;
+      }
+    };
+    baseEl.addEventListener("change",function(){aplicar("base");});
+    uniEl.addEventListener("change",function(){aplicar("unidad");});
+    // Si existiera un registro antiguo con ambas ubicaciones, no permitimos seguir editándolo como doble ubicación.
+    if(baseEl.value && uniEl.value){
+      uniEl.value="";
+    }
+    aplicar(baseEl.value ? "base" : (uniEl.value ? "unidad" : ""));
+  }
+
+  async function evaluarHistorialItem(id){
+    const out={ciclos:0,estaticos:0,dinamicos:0};
+    try{ const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id&item_id=eq."+encodeURIComponent(id)+"&limit=1",{headers:headers()}); if(r.ok){ const d=await r.json(); out.ciclos=d.length?1:0; } }catch(e){}
+    try{ const r=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=id&item_id=eq."+encodeURIComponent(id)+"&limit=1",{headers:headers()}); if(r.ok){ const d=await r.json(); out.estaticos=d.length?1:0; } }catch(e){}
+    return out;
+  }
+  async function darDeBajaItem(){
+    if(!esAdmin() || !itemActual) return;
+    const cod=itemActual.codigo||"este equipo";
+    if(!confirm("¿Dar de baja " + cod + "?\n\nLa herramienta no se eliminará. Quedará INACTIVA y conservará toda su Hoja de Vida e historial.")) return;
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+encodeURIComponent(itemActual.id),{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({estado:"inactivo",base_id:null,unidad_id:null})});
+      if(!r.ok) throw new Error("No se pudo dar de baja la herramienta.");
+      mostrarMsg("Herramienta dada de baja. Se conserva su historial.",true);
+      setTimeout(async()=>{ $("#modalBg").classList.add("hidden"); await buscar(); },700);
+    }catch(e){mostrarMsg(e.message||"No se pudo dar de baja.",false);}
+  }
+  async function eliminarItemDefinitivo(){
+    if(!esAdmin() || !itemActual) return;
+    const chk=await evaluarHistorialItem(itemActual.id);
+    if(chk.ciclos||chk.estaticos){
+      alert("Esta herramienta tiene historial o documentos asociados.\n\nNo se permite el borrado definitivo. Utiliza 'Dar de baja' para conservar la trazabilidad.");
+      return;
+    }
+    const cod=itemActual.codigo||"este equipo";
+    if(!confirm("ELIMINACIÓN DEFINITIVA\n\n¿Eliminar " + cod + " de la base de datos?\n\nEsta acción no debe usarse si necesitas conservar trazabilidad.")) return;
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+encodeURIComponent(itemActual.id),{method:"DELETE",headers:headers({"Prefer":"return=minimal"})});
+      if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"No se pudo eliminar."); }
+      $("#modalBg").classList.add("hidden"); await buscar(); mostrarMsg("Herramienta eliminada.",true);
+    }catch(e){alert("No se pudo eliminar definitivamente. Si existe cualquier relación en la base de datos, utiliza 'Dar de baja'.\n\n"+(e.message||""));}
+  }
+
   async function guardar(){
     const btn=$("#mGuardar"); btn.disabled=true;
+    const baseVal=valOrNull("f_base");
+    const uniVal=valOrNull("f_uni");
+    if(baseVal && uniVal){
+      mostrarMsg("Una herramienta no puede estar ubicada simultáneamente en una Base y una Unidad.", false);
+      btn.disabled=false; return;
+    }
     const cuerpo={
       descripcion: valOrNull("f_desc"), sn: valOrNull("f_sn"), fabricante: valOrNull("f_fab"),
       medida: valOrNull("f_med"), anio: valOrNull("f_anio")?parseInt(valOrNull("f_anio")):null,
       presion: valOrNull("f_pres"), categoria_id: $("#f_cat").value, estado: $("#f_estado").value,
-      base_id: valOrNull("f_base")?parseInt(valOrNull("f_base")):null,
-      unidad_id: valOrNull("f_uni")?parseInt(valOrNull("f_uni")):null
+      base_id: baseVal?parseInt(baseVal):null,
+      unidad_id: uniVal?parseInt(uniVal):null
     };
     try{
       if(modoNuevo){
@@ -1922,20 +2481,85 @@
         if(codigo.length<9){ mostrarMsg("El código debe tener al menos 9 caracteres.", false); btn.disabled=false; return; }
         const linea=codigo.slice(0,2), tipo=codigo.slice(2,5);
         if(!LINEAS_OK.includes(linea)){ mostrarMsg("La línea "+linea+" no está habilitada.", false); btn.disabled=false; return; }
-        await fetch(URL_SB+"/rest/v1/tipos_item",{method:"POST",headers:headers({"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({codigo_tipo:tipo,nombre:cuerpo.descripcion||tipo,categoria_id:cuerpo.categoria_id})});
+        const tipoNombre=(valOrNull("f_tipo_nombre")||tipo).trim();
+        const existente=await fetch(URL_SB+"/rest/v1/tipos_item?select=codigo_tipo,nombre,categoria_id&codigo_tipo=eq."+encodeURIComponent(tipo)+"&limit=1",{headers:headers()});
+        const tiposExistentes=existente.ok?(await existente.json()||[]):[];
+        if(!tiposExistentes.length){
+          const rt=await fetch(URL_SB+"/rest/v1/tipos_item",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({codigo_tipo:tipo,nombre:tipoNombre,categoria_id:cuerpo.categoria_id})});
+          if(!rt.ok){ const e=await rt.json().catch(()=>({})); throw new Error(e.message||"No se pudo crear el tipo"); }
+        }
         cuerpo.codigo=codigo; cuerpo.linea_codigo=linea; cuerpo.tipo_codigo=tipo; cuerpo.cvtools="CVTOOLS2";
         const r=await fetch(URL_SB+"/rest/v1/items",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
         if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
       }else{
         const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+itemActual.id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
         if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+        const tipoNombre=(valOrNull("f_tipo_nombre")||"").trim();
+        const tipoActual=String(itemActual.tipo_codigo||"").toUpperCase();
+        if(tipoNombre && tipoActual){
+          const rt=await fetch(URL_SB+"/rest/v1/tipos_item?codigo_tipo=eq."+encodeURIComponent(tipoActual),{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({nombre:tipoNombre})});
+          if(!rt.ok){ const e=await rt.json().catch(()=>({})); throw new Error(e.message||"No se pudo actualizar el tipo"); }
+        }
       }
       mostrarMsg("Guardado correctamente.", true);
-      setTimeout(()=>{ $("#modalBg").classList.add("hidden"); buscar(); }, 700);
+      setTimeout(async ()=>{ $("#modalBg").classList.add("hidden"); await buscar(); }, 700);
     }catch(e){ mostrarMsg("No se pudo guardar. "+(e.message&&e.message.includes("duplicate")?"Ese código ya existe.":""), false); }
     finally{ btn.disabled=false; }
   }
   function mostrarMsg(t, ok){ const m=$("#mMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
+
+  function ubicAdminMsg(t,ok){ const m=$("#ubicMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); m.classList.remove("hidden"); }
+  async function cargarUbicAdmin(){
+    const tipo=$("#ubicTipo").value; const tabla=tipo==="base"?"bases":"unidades"; const arr=tipo==="base"?bases:unidades;
+    const cont=$("#ubicLista"); cont.innerHTML='<div class="loc-empty">Consultando…</div>';
+    try{
+      const r=await fetch(URL_SB+"/rest/v1/"+tabla+"?select=id,nombre&order=nombre",{headers:headers()});
+      const data=await r.json(); if(!r.ok) throw new Error("No se pudieron consultar las ubicaciones.");
+      const rows=await Promise.all((data||[]).map(async function(x){
+        const campo=tipo==="base"?"base_id":"unidad_id";
+        let n=0; try{const q=await fetch(URL_SB+"/rest/v1/items?select=id&"+campo+"=eq."+x.id+"&limit=1",{headers:headers({"Prefer":"count=exact"})}); const cr=q.headers.get("content-range"); if(cr&&cr.includes("/")){n=parseInt(cr.split("/")[1])||0;} else {const d=await q.json();n=(d||[]).length;}}catch(e){}
+        return {x:x,n:n};
+      }));
+      cont.innerHTML=rows.map(function(r){
+        // El botón no se bloquea por el contador visual: la validación real se hace
+        // nuevamente al pulsar Eliminar. Así evitamos falsos positivos por caché,
+        // conteos desactualizados o respuestas sin Content-Range.
+        const tiene=r.n>0;
+        return '<div class="loc-row"><div><div class="loc-name">'+esc(r.x.nombre)+'</div><div class="loc-count">'+r.n+' herramienta(s) asignada(s)</div></div><button class="btn2" type="button" data-rename-ubic="'+r.x.id+'">Renombrar</button><button class="btn-danger'+(tiene?'':' loc-danger')+'" type="button" data-del-ubic="'+r.x.id+'">'+ (tiene?'Verificar y eliminar':'Eliminar') +'</button></div>';
+      }).join("") || '<div class="loc-empty">No hay ubicaciones.</div>';
+      cont.querySelectorAll("[data-del-ubic]").forEach(function(b){b.addEventListener("click",function(){eliminarUbicacion(tipo,parseInt(b.dataset.delUbic,10));});});
+      cont.querySelectorAll("[data-rename-ubic]").forEach(function(b){b.addEventListener("click",function(){renombrarUbicacion(tipo,parseInt(b.dataset.renameUbic,10));});});
+    }catch(e){cont.innerHTML='<div class="loc-empty">No se pudo cargar la lista.</div>';}
+  }
+  async function renombrarUbicacion(tipo,id){
+    if(!esAdmin()) return; const tabla=tipo==="base"?"bases":"unidades"; const arr=tipo==="base"?bases:unidades; const actual=(arr.find(x=>x.id===id)||{}).nombre||"";
+    const nom=prompt("Nuevo nombre de la ubicación:",actual); if(nom===null) return; const v=nom.trim(); if(!v) return;
+    try{const r=await fetch(URL_SB+"/rest/v1/"+tabla+"?id=eq."+id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({nombre:v})});if(!r.ok)throw 0; await cargarBasesUnidades(); await cargarUbicAdmin(); ubicAdminMsg("Ubicación actualizada.",true);}catch(e){ubicAdminMsg("No se pudo renombrar la ubicación.",false);}
+  }
+  async function eliminarUbicacion(tipo,id){
+    if(!esAdmin()) return; const tabla=tipo==="base"?"bases":"unidades"; const campo=tipo==="base"?"base_id":"unidad_id";
+    try{
+      // Validación definitiva: consultar los IDs sin depender de Content-Range.
+      // Esto evita que una ubicación vacía aparezca erróneamente como ocupada.
+      const q=await fetch(URL_SB+"/rest/v1/items?select=id&"+campo+"=eq."+encodeURIComponent(id),{headers:headers()});
+      const d=await q.json();
+      if(!q.ok) throw new Error("No se pudo verificar si la ubicación está vacía.");
+      if(Array.isArray(d) && d.length){
+        alert("No se puede eliminar: todavía hay "+d.length+" herramienta(s) asignada(s) a esta ubicación.");
+        await cargarUbicAdmin();
+        return;
+      }
+      const nombre=((tipo==="base"?bases:unidades).find(x=>x.id===id)||{}).nombre||"la ubicación";
+      if(!confirm("¿Eliminar "+nombre+"?\n\nLa ubicación está vacía. Las herramientas e historiales no serán eliminados.")) return;
+      const r=await fetch(URL_SB+"/rest/v1/"+tabla+"?id=eq."+id,{method:"DELETE",headers:headers({"Prefer":"return=minimal"})});if(!r.ok)throw 0;
+      await cargarBasesUnidades(); await cargarUbicAdmin(); ubicAdminMsg("Ubicación eliminada.",true); await buscar();
+    }catch(e){ubicAdminMsg("No se pudo eliminar la ubicación.",false);}
+  }
+  function abrirUbicAdmin(){if(!esAdmin())return;$("#ubicMsg").className="msg hidden";$("#ubicNueva").value="";$("#ubicAdminBg").classList.remove("hidden");cargarUbicAdmin();}
+  async function agregarUbicAdmin(){
+    if(!esAdmin())return; const tipo=$("#ubicTipo").value; const tabla=tipo==="base"?"bases":"unidades"; const v=$("#ubicNueva").value.trim(); if(!v){ubicAdminMsg("Escribe un nombre.",false);return;}
+    try{const r=await fetch(URL_SB+"/rest/v1/"+tabla,{method:"POST",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify({nombre:v})});if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||"");}$("#ubicNueva").value="";await cargarBasesUnidades();await cargarUbicAdmin();ubicAdminMsg("Ubicación agregada.",true);}catch(e){ubicAdminMsg("No se pudo agregar. Puede que ya exista.",false);}
+  }
 
   // ---- Navegación interna app ----
   // ===== Router del shell (hash: #/mtto-operativo/:panel) =====
@@ -2070,6 +2694,100 @@
   $("#btnSincNdt").addEventListener("click", sincronizarNdt);
   $("#btnSincPh").addEventListener("click", sincronizarPh);
 
+  // ---- Movilizacion masiva ----
+  let movBulkItems=[];
+  let movBulkDestinosCargados=false;
+  function movBulkMsg(t,ok){ const m=$("#movBulkMsg"); if(!m) return; m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
+  function movBulkUbicacion(x){ return (x.bases&&x.bases.nombre)||(x.unidades&&x.unidades.nombre)||"Sin ubicación"; }
+  function poblarMovBulkDestinos(){
+    if(movBulkDestinosCargados) return;
+    const sel=$("#movBulkDestino");
+    if(bases&&bases.length){ const og=document.createElement("optgroup"); og.label="Bases"; bases.forEach(function(b){ const o=document.createElement("option"); o.value="base:"+b.id; o.textContent=b.nombre; og.appendChild(o); }); sel.appendChild(og); }
+    if(unidades&&unidades.length){ const og=document.createElement("optgroup"); og.label="Unidades"; unidades.forEach(function(u){ const o=document.createElement("option"); o.value="uni:"+u.id; o.textContent=u.nombre; og.appendChild(o); }); sel.appendChild(og); }
+    movBulkDestinosCargados=true;
+  }
+  function renderMovBulk(){
+    const box=$("#movBulkLista");
+    if(!movBulkItems.length){ box.innerHTML='<div class="mv-bulk-empty">Aún no has agregado herramientas.</div>'; }
+    else box.innerHTML=movBulkItems.map(function(x){
+      return '<div class="mv-bulk-row"><div class="mv-bulk-cod">'+codHTML(x.codigo)+'</div><div class="mv-bulk-desc">'+esc(x.descripcion||"Sin descripción")+'</div><div class="mv-bulk-ubi">Origen: '+esc(movBulkUbicacion(x))+'</div><button class="mv-bulk-remove" type="button" data-bulk-remove="'+esc(String(x.id))+'" title="Quitar">×</button></div>';
+    }).join("");
+    box.querySelectorAll("[data-bulk-remove]").forEach(function(b){ b.addEventListener("click",function(){ const id=String(b.getAttribute("data-bulk-remove")); movBulkItems=movBulkItems.filter(function(x){return String(x.id)!==id;}); renderMovBulk(); actualizarMovBulkEstado(); }); });
+    actualizarMovBulkEstado();
+  }
+  function actualizarMovBulkEstado(){
+    const dest=$("#movBulkDestino").value;
+    const btn=$("#movBulkEjecutar");
+    btn.disabled=!(movBulkItems.length&&dest);
+    const txt=movBulkItems.length?(movBulkItems.length+" herramienta"+(movBulkItems.length===1?"":"s")+" seleccionada"+(movBulkItems.length===1?"":"s")+"."):"Selecciona una o más herramientas";
+    $("#movBulkResumen").textContent=dest?txt+" Todas se moverán al destino seleccionado.":txt+" y luego un destino único.";
+  }
+  async function buscarMovBulk(){
+    const q=($("#movBulkCodigo").value||"").trim(); if(!q) return;
+    $("#movBulkInfo").textContent="Buscando…";
+    try{
+      const enc=encodeURIComponent(q);
+      const url=URL_SB+"/rest/v1/items?select=id,codigo,descripcion,base_id,unidad_id,bases(nombre),unidades(nombre)&or=(codigo.ilike.*"+enc+"*,descripcion.ilike.*"+enc+"*)&limit=8";
+      const r=await fetch(url,{headers:headers()});
+      const d=r.ok?(await r.json()):[];
+      if(!d.length){ $("#movBulkInfo").textContent="No se encontraron herramientas."; return; }
+      // Si hay coincidencia exacta de código, usarla directamente; si no, mostrar las coincidencias para elegir.
+      const exact=d.find(function(x){return String(x.codigo||"").toUpperCase()===q.toUpperCase();});
+      if(exact){ agregarMovBulk(exact); $("#movBulkInfo").textContent="Agregado: "+exact.codigo; $("#movBulkCodigo").value=""; return; }
+      const ya=new Set(movBulkItems.map(function(x){return String(x.id);}));
+      const disponibles=d.filter(function(x){return !ya.has(String(x.id));});
+      $("#movBulkInfo").innerHTML=disponibles.map(function(x){ return '<button type="button" class="mv-btn2" data-bulk-add="'+esc(String(x.id))+'" style="margin:4px 4px 0 0">'+esc(x.codigo||"")+" · "+esc(x.descripcion||"")+'</button>'; }).join("")||"Todos esos resultados ya están seleccionados.";
+      disponibles.forEach(function(x){ const b=document.querySelector('[data-bulk-add="'+String(x.id).replace(/"/g,'\\"')+'"]'); if(b) b.addEventListener("click",function(){ agregarMovBulk(x); $("#movBulkInfo").textContent="Agregado: "+(x.codigo||""); }); });
+    }catch(e){ $("#movBulkInfo").textContent="No se pudo buscar."; }
+  }
+  function agregarMovBulk(x){
+    if(!x||movBulkItems.some(function(y){return String(y.id)===String(x.id);})) return;
+    movBulkItems.push(x); renderMovBulk(); actualizarMovBulkEstado();
+  }
+  function abrirMovBulk(){
+    movBulkItems=[]; $("#movBulkCodigo").value=""; $("#movBulkInfo").textContent=""; $("#movBulkDestino").value=""; movBulkMsg("",true); $("#movBulkMsg").classList.add("hidden");
+    poblarMovBulkDestinos(); renderMovBulk(); $("#movMasivoBg").classList.remove("hidden"); setTimeout(function(){ $("#movBulkCodigo").focus(); },80);
+  }
+  function cerrarMovBulk(){ $("#movMasivoBg").classList.add("hidden"); }
+  function confirmarMovBulk(){
+    const val=$("#movBulkDestino").value; if(!movBulkItems.length||!val) return;
+    const destOpt=$("#movBulkDestino").selectedOptions[0];
+    const dest=destOpt?destOpt.textContent:"destino seleccionado";
+    const repetidos=movBulkItems.filter(function(x){return movBulkUbicacion(x)===dest;});
+    let html='<p>Vas a mover <strong>'+movBulkItems.length+' herramienta'+(movBulkItems.length===1?'':'s')+'</strong> a <strong>'+esc(dest)+'</strong>.</p>';
+    if(repetidos.length) html+='<p>⚠️ '+repetidos.length+' ya aparece'+(repetidos.length===1?'':'n')+' en ese destino y se omitirá'+(repetidos.length===1?'':'n')+'.</p>';
+    html+='<ul>'+movBulkItems.map(function(x){return '<li>'+esc(x.codigo||"")+': '+esc(movBulkUbicacion(x))+' → '+esc(dest)+'</li>';}).join("")+'</ul>';
+    $("#movBulkConfirmText").innerHTML=html; $("#movBulkConfirmBg").classList.remove("hidden");
+  }
+  async function ejecutarMovBulk(){
+    const val=$("#movBulkDestino").value; if(!val) return;
+    let p_base=null,p_uni=null; if(val.indexOf("base:")===0) p_base=parseInt(val.slice(5)); else if(val.indexOf("uni:")===0) p_uni=parseInt(val.slice(4));
+    const btn=$("#movBulkConfirmYes"); btn.disabled=true; btn.textContent="Movilizando…";
+    let ok=0, fallos=[];
+    for(const x of movBulkItems){
+      if((p_base&&String(x.base_id)===String(p_base))||(p_uni&&String(x.unidad_id)===String(p_uni))){ ok++; continue; }
+      try{
+        const r=await fetch(URL_SB+"/rest/v1/rpc/mover_item",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:x.id,p_base_id:p_base,p_unidad_id:p_uni})});
+        if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+        ok++;
+      }catch(e){ fallos.push((x.codigo||x.id)+": "+(e.message||"error")); }
+    }
+    $("#movBulkConfirmBg").classList.add("hidden"); btn.disabled=false; btn.textContent="Confirmar movilización";
+    if(fallos.length){ movBulkMsg("Se movilizaron "+ok+" de "+movBulkItems.length+". Fallos: "+fallos.join(" | "),false); $("#movBulkMsg").classList.remove("hidden"); }
+    else { movBulkMsg("Movilización masiva registrada: "+ok+" herramienta"+(ok===1?"":"s")+".",true); $("#movBulkMsg").classList.remove("hidden"); movBulkItems=[]; renderMovBulk(); $("#movBulkDestino").value=""; }
+    cargarHistorial(); cargarMovKpis();
+  }
+  document.getElementById("movMasivoBtn").addEventListener("click", abrirMovBulk);
+  document.getElementById("movMasivoX").addEventListener("click", cerrarMovBulk);
+  document.getElementById("movBulkCancelar").addEventListener("click", cerrarMovBulk);
+  document.getElementById("movBulkBuscar").addEventListener("click", buscarMovBulk);
+  document.getElementById("movBulkCodigo").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();buscarMovBulk();}});
+  document.getElementById("movBulkDestino").addEventListener("change",actualizarMovBulkEstado);
+  document.getElementById("movBulkEjecutar").addEventListener("click",confirmarMovBulk);
+  document.getElementById("movBulkConfirmX").addEventListener("click",function(){document.getElementById("movBulkConfirmBg").classList.add("hidden");});
+  document.getElementById("movBulkConfirmNo").addEventListener("click",function(){document.getElementById("movBulkConfirmBg").classList.add("hidden");});
+  document.getElementById("movBulkConfirmYes").addEventListener("click",ejecutarMovBulk);
+
   // ---- Movilizacion ----
   let movItem=null, movDestinosCargados=false;
   function movMsg(t,ok){ const m=$("#movMsg"); m.textContent=t; m.className="msg "+(ok?"ok":"bad"); }
@@ -2157,6 +2875,47 @@
       return '<div class="db-lin"><div class="db-lin-top"><span class="db-lin-k">'+x.k+'</span><span class="db-lin-n">'+x.n.toLocaleString("es-CO")+'</span></div><div class="db-lin-bar"><span style="width:'+w+'%"></span></div></div>';
     }).join("");
   }
+  async function idsConDocumento(tipoDoc){
+    try{
+      if(tipoDoc==="coc"){
+        const r=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=item_id&tipo=eq.coc&limit=5000",{headers:headers()});
+        if(!r.ok) return [];
+        const d=await r.json()||[];
+        return [...new Set(d.map(x=>x.item_id).filter(Boolean))];
+      }
+      const r=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=ciclo_id&tipo=eq."+encodeURIComponent(tipoDoc)+"&limit=5000",{headers:headers()});
+      if(!r.ok) return [];
+      const docs=await r.json()||[];
+      const cids=[...new Set(docs.map(x=>x.ciclo_id).filter(Boolean))];
+      if(!cids.length) return [];
+      const rc=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,item_id&id=in.("+cids.join(",")+")&limit=5000",{headers:headers()});
+      if(!rc.ok) return [];
+      const ciclos=await rc.json()||[];
+      return [...new Set(ciclos.map(x=>x.item_id).filter(Boolean))];
+    }catch(e){ return []; }
+  }
+  async function filtrarInventarioPorDocumento(tipoDoc,label){
+    const ids=await idsConDocumento(tipoDoc);
+    irPanel("inventario");
+    invEstado="";
+    invChip="todos";
+    invExtra=ids.length ? "&id=in.("+ids.join(",")+")" : "&id=eq.-1";
+    pagina=0;
+    actualizarResumenFiltros();
+    await buscar();
+    const q=document.getElementById("invBuscar"); if(q) q.value="";
+    const title=document.getElementById("tbSub"); if(title) title.textContent=(label||"Documentos")+" · "+ids.length+" ítems";
+  }
+  function actualizarResumenFiltros(){
+    const el=document.getElementById("invFiltroResumen"); if(!el) return;
+    const vals=[];
+    const l=document.getElementById("fLinea"), c=document.getElementById("fCategoria"), u=document.getElementById("fUbi"), t=document.getElementById("fTipo");
+    vals.push(l&&l.value?(l.options[l.selectedIndex]?.text||l.value):"Todas las líneas");
+    vals.push(c&&c.value?(c.options[c.selectedIndex]?.text||c.value):"Todas las categorías");
+    vals.push(u&&u.value?(u.options[u.selectedIndex]?.text||u.value):"Todas las ubicaciones");
+    if(t&&t.value.trim()) vals.push("Tipo: "+t.value.trim());
+    el.textContent=vals.join(" · ");
+  }
   async function cargarDbMetricas(){
     var R={};
     try{ var rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify({p_linea:null,p_categoria:null,p_base:null,p_tipo:null})}); if(rr.ok) R=await rr.json(); }catch(e){}
@@ -2176,11 +2935,13 @@
     if(ao) ao.textContent=fuera.toLocaleString("es-CO");
     const dc=$("#dbAlDoc"); if(dc) dc.textContent=((R.total)?Math.round((R.con_coc+R.con_ficha+R.con_manual)/(R.total*3)*100):0)+"%";
     var total=await contarRest("items",LINEAS_IN);
-    var coc=await contarRest("documentos_estaticos","tipo=eq.coc");
-    var rep=await contarRest("ciclos_mantenimiento","metodo=not.is.null");
-    var ndt=await contarRest("documentos_dinamicos","tipo=eq.ndt");
+    var idsCoc=await idsConDocumento("coc");
+    var idsRep=await idsConDocumento("reporte_mantenimiento");
+    var idsNdt=await idsConDocumento("ndt");
+    var coc=idsCoc.length, rep=idsRep.length, ndt=idsNdt.length;
     [["dbCoc",coc],["dbRep",rep],["dbNdt",ndt]].forEach(function(x){var e=$("#"+x[0]);if(e)e.textContent=x[1].toLocaleString("es-CO");});
     [["dbCocP",coc/Math.max(total,1)],["dbRepP",rep/Math.max(total,1)],["dbNdtP",ndt/Math.max(total,1)]].forEach(function(x){var e=$("#"+x[0]);if(e)e.textContent=Math.round(x[1]*1000)/10+"% de la totalidad";});
+    document.querySelectorAll(".db-doc-card").forEach(function(card){ card.style.cursor="pointer"; });
     var inc=await contarRest("ciclos_mantenimiento","datos_formulario->>incompleto=eq.true");
     var ei=$("#dbAlInc"); if(ei) ei.textContent=inc.toLocaleString("es-CO");
   }
@@ -2340,17 +3101,45 @@
   // (filtros del dashboard anterior retirados; el panel ahora usa cargarDashboard)
 
   $("#nuevo").addEventListener("click", abrirNuevo);
+  $("#rsAdminUbic").addEventListener("click", function(){ if(esAdmin()) abrirUbicAdmin(); else alert("Solo un administrador puede administrar ubicaciones."); });
   $("#mGuardar").addEventListener("click", guardar);
+  $("#mDarBaja").addEventListener("click", darDeBajaItem);
+  $("#mEliminarDef").addEventListener("click", eliminarItemDefinitivo);
+  $("#ubicCerrar").addEventListener("click", function(){ $("#ubicAdminBg").classList.add("hidden"); });
+  $("#ubicAgregar").addEventListener("click", agregarUbicAdmin);
+  $("#ubicTipo").addEventListener("change", cargarUbicAdmin);
   $("#mCerrar").addEventListener("click", ()=>$("#modalBg").classList.add("hidden"));
   $("#modalBg").addEventListener("click", e=>{ if(e.target===$("#modalBg")) $("#modalBg").classList.add("hidden"); });
-  $("#q").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
-  $("#fLinea").addEventListener("change", ()=>{ pagina=0; buscar(); });
-  $("#fCategoria").addEventListener("change", ()=>{ pagina=0; buscar(); });
-  $("#fUbi").addEventListener("change", ()=>{ pagina=0; buscar(); });
-  $("#fTipo").addEventListener("input", ()=>{ pagina=0; debounce(buscar); });
+  $("#q").addEventListener("input", ()=>{
+    const inv=document.getElementById("invBuscar"); if(inv) inv.value=$("#q").value;
+    pagina=0; debounce(buscar);
+  });
+  $("#invBuscar").addEventListener("input", ()=>{
+    $("#q").value=$("#invBuscar").value;
+    pagina=0; debounce(buscar);
+  });
+  $("#invBuscar").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); pagina=0; buscar(); } });
+  $("#invBuscarBtn").addEventListener("click", ()=>{ pagina=0; buscar(); });
+  $("#invBuscarClear").addEventListener("click", ()=>{ $("#invBuscar").value=""; $("#q").value=""; pagina=0; buscar(); $("#invBuscar").focus(); });
+  $("#fLinea").addEventListener("change", ()=>{ pagina=0; invExtra=""; actualizarResumenFiltros(); buscar(); });
+  $("#fCategoria").addEventListener("change", ()=>{ pagina=0; invExtra=""; actualizarResumenFiltros(); buscar(); });
+  $("#fUbi").addEventListener("change", ()=>{ pagina=0; invExtra=""; actualizarResumenFiltros(); buscar(); });
+  $("#fTipo").addEventListener("input", ()=>{ pagina=0; invExtra=""; actualizarResumenFiltros(); debounce(buscar); });
+  $("#invFiltrarBtn").addEventListener("click", function(){
+    const p=$("#invFiltrosPanel"), b=$("#invFiltrarBtn");
+    const abrir=p.classList.contains("hidden"); p.classList.toggle("hidden",!abrir); b.classList.toggle("on",abrir); b.setAttribute("aria-expanded",String(abrir));
+  });
+  $("#invBuscarBtn").addEventListener("click", function(){ pagina=0; invExtra=""; buscar(); });
+  $("#invBuscar").addEventListener("keydown", function(e){ if(e.key==="Enter"){e.preventDefault(); pagina=0; invExtra=""; buscar();} });
+  $("#invBuscarClear").addEventListener("click", function(){ $("#invBuscar").value=""; pagina=0; invExtra=""; buscar(); });
+  [
+    ["dbCoc","coc","COC"],
+    ["dbRep","reporte_mantenimiento","Reportes de mantenimiento"],
+    ["dbNdt","ndt","NDT"]
+  ].forEach(function(cfg){ var card=document.getElementById(cfg[0])?.closest(".db-doc-card"); if(card) card.addEventListener("click",function(){ filtrarInventarioPorDocumento(cfg[1],cfg[2]); }); });
+  actualizarResumenFiltros();
   // paginacion dinamica: renderPagerInv()
   $("#invDetX").addEventListener("click", function(){ $("#invDetalle").classList.remove("open"); });
-  $("#invGuardar").addEventListener("click", function(){ /* Guardar filtro: paso de busquedas */ });
 
 
   // ---- Documentos ----

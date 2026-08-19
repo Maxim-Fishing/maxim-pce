@@ -2828,13 +2828,15 @@
   }
   function wlSet(id,v){ var el=$("#"+id); if(el) el.value=(v==null?"":v); }
   async function siguienteNumeroReporte(){
-    var max=9999;
+    // Consecutivo corporativo actual: el siguiente reporte debe iniciar en 10005.
+    // Si ya existen reportes superiores en Supabase, se respeta el mayor + 1.
+    var max=10004;
     try{
       var r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=datos_formulario&limit=5000",{headers:headers()});
       var d=r.ok?await r.json():[]; d.forEach(function(x){var n=Number((x.datos_formulario||{}).n_reporte);if(Number.isFinite(n)&&n>max)max=n;});
     }catch(e){}
-    var local=Number(localStorage.getItem("maxim_ultimo_reporte")||9999);
-    max=Math.max(max,local); var next=max+1; localStorage.setItem("maxim_ultimo_reporte",String(next)); return String(next);
+    var local=Number(localStorage.getItem("maxim_ultimo_reporte")||10004);
+    max=Math.max(10004, max, local); var next=max+1; localStorage.setItem("maxim_ultimo_reporte",String(next)); return String(next);
   }
   function validarFormularioWL(datos){
     var oblig=['lugar_base','tecnico_repara','operatividad','estado_final','observaciones','firma_repara','supervisa'];

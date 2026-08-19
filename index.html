@@ -557,7 +557,10 @@
   .db-prog{height:8px;background:var(--bg-app);margin-top:12px;overflow:hidden}
   .db-prog span{display:block;height:100%;background:var(--acento);width:0}
   @media(max-width:900px){ .db-fila{grid-template-columns:1fr} .db-fila3{grid-template-columns:1fr} }
-  .mant-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.mant-menu .mant-menu-btn{min-height:48px}
+  .mant-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .mant-menu .mant-menu-btn{min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .mant-menu .mant-menu-btn.btn{background:var(--naranja);color:#180a00}
+  .mant-menu .mant-menu-btn.btn:hover{background:var(--naranja2)}
   .mant-incomplete{margin:10px 0;padding:10px 12px;border:1px solid rgba(245,166,35,.45);background:rgba(245,166,35,.08);border-radius:10px}.mant-chip{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.mant-chip.ok{background:rgba(53,194,106,.14);color:#35c26a}.mant-chip.bad{background:rgba(226,72,63,.14);color:#ff6b61}.mant-falta{display:block;margin-top:6px;color:var(--txt-2,#bbb);font-size:12px}.hist-docs{margin-top:7px;display:flex;flex-wrap:wrap;gap:6px}.hist-docs a{font-size:12px}.db-docs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.db-doc-card{padding:16px;border:1px solid var(--line,#2b2b2b);border-radius:12px;background:var(--bg-panel,#141414);text-align:center}.db-doc-card .n{font-size:26px;font-weight:800}.db-doc-card .t{font-size:11px;color:var(--txt-2,#aaa);text-transform:uppercase;margin-top:4px}.db-doc-card .p{font-size:12px;margin-top:6px}.db-incomplete{margin-top:14px}.db-incomplete button{width:100%;text-align:left}
   @media(max-width:700px){.mant-menu{grid-template-columns:1fr}.db-docs-grid{grid-template-columns:1fr}.modal{width:min(96vw,760px)}}
 
@@ -1047,8 +1050,11 @@
       <div class="mant-box hidden" id="mMantBox">
         <div class="seccion" style="margin-top:0">Mantenimiento</div>
         <p class="mant-estado hidden" id="mMantEstado"></p>
-        <div class="mant-menu"><button class="btn2 hidden mant-menu-btn" id="mMantAbrir">Registrar mantenimiento</button><button class="btn2 mant-menu-btn" id="mDocsCicloBtn" type="button">Documentos del ciclo actual</button><button class="btn2 mant-menu-btn" id="mHistBtn" type="button">Historial de mantenimiento</button></div>
-        <button class="btn hidden" id="mFormWLAbrir">Formulario en línea</button>
+        <div class="mant-menu">
+          <button class="btn hidden mant-menu-btn" id="mMantAbrir" type="button">Registrar mantenimiento</button>
+          <button class="btn mant-menu-btn" id="mDocsCicloBtn" type="button">Documentos del ciclo actual</button>
+          <button class="btn mant-menu-btn" id="mHistBtn" type="button">Historial de mantenimiento</button>
+        </div>
         <button class="btn2 hidden" id="mVerFormWL">Ver formulario</button>
         <div class="grid hidden" id="mMantForm" style="margin-top:8px">
           <div class="row2">
@@ -1670,8 +1676,6 @@
     $("#mMantForm").classList.add("hidden");
     $("#mMantBox").classList.remove("hidden");
     $("#mMantAbrir").classList.toggle("hidden", !puedeMant());
-    var _esWL = grupoDe(it)==="WL";
-    $("#mFormWLAbrir").classList.toggle("hidden", !puedeMant());
     $("#mVerFormWL").classList.add("hidden");
     $("#mFecha").value = hoyISO();
     cicloVigente = null;
@@ -2774,7 +2778,6 @@
   $("#wl_parte_add").addEventListener("click", function(){ wlAddParte("","",""); });
   $("#wlCerrar").addEventListener("click", function(){ $("#formWLbg").classList.add("hidden"); });
   $("#formWLbg").addEventListener("click", function(e){ if(e.target===$("#formWLbg")) $("#formWLbg").classList.add("hidden"); });
-  $("#mFormWLAbrir").addEventListener("click", function(){ abrirFormWL(null,false); });
   $("#mVerFormWL").addEventListener("click", function(){ abrirFormWL(cicloDatos,true); });
   $("#wlGuardar").addEventListener("click", async function(){
     if(!itemActual) return;

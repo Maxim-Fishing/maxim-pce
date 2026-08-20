@@ -269,7 +269,7 @@
 
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;z-index:20}
-  .modal{width:min(760px,96vw);max-width:760px;max-height:calc(100vh - 40px);height:auto;background:var(--panel);border:1px solid var(--borde);border-radius:12px;overflow-y:auto;padding:22px;box-sizing:border-box}
+  .modal{width:min(760px,96vw);max-width:760px;max-height:calc(100dvh - 40px);height:auto;background:var(--panel);border:1px solid var(--borde);border-radius:12px;overflow-y:auto;padding:22px;box-sizing:border-box}
   .modal h2{margin:0 0 4px;font-size:18px}
   .modal .sub{color:var(--tenue);font-size:13px;margin:0 0 18px}
   .grid{display:grid;gap:13px}
@@ -295,7 +295,7 @@
   .slot a{background:var(--panel2);color:var(--acero);border:1px solid var(--borde)}
   .slot .up{background:var(--naranja);color:#180a00;border:0;font-weight:700}
   .slot .rep{background:var(--panel2);color:var(--texto);border:1px solid var(--borde)}
-  @media(max-width:640px){.desc{max-width:130px}.modal-bg{padding:8px}.modal{width:100%;max-width:100%;max-height:calc(100vh - 16px);border-radius:10px}}
+  @media(max-width:640px){.desc{max-width:130px}.modal-bg{padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}.modal{width:100%;max-width:100%;max-height:calc(100dvh - 16px - env(safe-area-inset-bottom));border-radius:10px}}
 
   /* ===== Optimizacion movil ===== */
   html,body{max-width:100%;overflow-x:hidden}
@@ -1241,7 +1241,7 @@
               <span class="nombre" id="nombre"></span>
               <span class="rol" id="rol"></span>
             </div>
-            <button class="side-salir" id="salir" type="button" title="Cerrar sesi&oacute;n">&#8631;</button>
+            <button class="side-salir" id="salir" type="button" title="Cerrar sesi&oacute;n" aria-label="Cerrar sesi&oacute;n">&#8631;</button>
           </div>
           <div class="side-links">
             <button class="lnk" id="navHome" type="button">&larr; Volver a Nexus Tools</button>
@@ -1696,6 +1696,8 @@
   const GRUPOS = { WL:["EL","EP","SL","WL"], WS:["FB","SW","WT","WS"] };
   function grupoDe(it){ return GRUPO[String((it&&it.linea_codigo)||"").toUpperCase()] || ""; }
   let token = localStorage.getItem("maxim_token") || null;
+  let refreshToken = localStorage.getItem("maxim_refresh") || null;
+  let refreshTimer = null;
   let usuario = JSON.parse(localStorage.getItem("maxim_user") || "null");
   let rolActual = "consulta";
   let pagina = 0, total = 0;
@@ -1705,6 +1707,59 @@
 
   const $ = s => document.querySelector(s);
   const esc = s => (s==null ? "" : String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"));
+
+  // ---- Diálogos propios (reemplazan alert/confirm/prompt nativos) ----
+  // Los diálogos nativos se ven pobres en móvil y prompt() no aparece en algunos
+  // WebViews (la app corre como Web App). Estos respetan la paleta y sí funcionan.
+  function uiDialog(opts){
+    return new Promise(function(resolve){
+      var o=document.createElement("div");
+      o.setAttribute("style","position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))");
+      var card=document.createElement("div");
+      card.setAttribute("style","width:min(420px,100%);background:var(--panel,#101114);border:1px solid var(--borde,#23252A);border-radius:12px;padding:20px;box-sizing:border-box;color:var(--texto,#e6e8ea);font-family:var(--sans);box-shadow:0 18px 50px rgba(0,0,0,.5)");
+      var msg=document.createElement("div");
+      msg.setAttribute("style","font-size:14.5px;line-height:1.5;white-space:pre-line;margin-bottom:16px;color:var(--txt-body,#e6e8ea)");
+      msg.textContent=opts.mensaje||"";
+      card.appendChild(msg);
+      var input=null;
+      if(opts.tipo==="prompt"){
+        input=document.createElement("input");
+        input.type="text"; input.value=opts.valor||"";
+        input.setAttribute("style","width:100%;background:var(--negro,#0A0A0B);border:1px solid var(--borde-ctrl,#2a2d33);color:var(--texto,#e6e8ea);padding:11px 12px;border-radius:7px;font-size:15px;box-sizing:border-box;margin-bottom:16px;font-family:var(--sans)");
+        card.appendChild(input);
+      }
+      var fila=document.createElement("div");
+      fila.setAttribute("style","display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap");
+      function cerrar(val){ if(o.parentNode) o.parentNode.removeChild(o); document.removeEventListener("keydown",onKey); resolve(val); }
+      function onKey(e){
+        if(e.key==="Escape"){ cerrar(opts.tipo==="prompt"?null:(opts.tipo==="confirm"?false:undefined)); }
+        else if(e.key==="Enter"){ cerrar(opts.tipo==="prompt"?(input?input.value:""):(opts.tipo==="confirm"?true:undefined)); }
+      }
+      if(opts.tipo==="confirm"||opts.tipo==="prompt"){
+        var bc=document.createElement("button");
+        bc.type="button"; bc.textContent=opts.cancelar||"Cancelar";
+        bc.setAttribute("style","min-height:44px;padding:0 16px;border-radius:7px;border:1px solid var(--borde-ctrl,#2a2d33);background:transparent;color:var(--txt2,#c2c5ca);font-weight:600;font-size:14px;cursor:pointer;font-family:var(--sans)");
+        bc.addEventListener("click",function(){ cerrar(opts.tipo==="prompt"?null:false); });
+        fila.appendChild(bc);
+      }
+      var bo=document.createElement("button");
+      bo.type="button"; bo.textContent=opts.ok||"Aceptar";
+      var col=opts.peligro? "var(--rojo,#e2483f)":"var(--naranja,#FF6600)";
+      var colTx=opts.peligro? "#fff":"var(--sobre-acento,#000)";
+      bo.setAttribute("style","min-height:44px;padding:0 18px;border-radius:7px;border:1px solid "+col+";background:"+col+";color:"+colTx+";font-weight:700;font-size:14px;cursor:pointer;font-family:var(--sans)");
+      bo.addEventListener("click",function(){ cerrar(opts.tipo==="prompt"?(input?input.value:""):(opts.tipo==="confirm"?true:undefined)); });
+      fila.appendChild(bo);
+      card.appendChild(fila);
+      o.appendChild(card);
+      o.addEventListener("click",function(e){ if(e.target===o && (opts.tipo==="confirm"||opts.tipo==="prompt")) cerrar(opts.tipo==="prompt"?null:false); });
+      document.body.appendChild(o);
+      document.addEventListener("keydown",onKey);
+      if(input){ input.focus(); input.select(); } else { bo.focus(); }
+    });
+  }
+  function uiAlert(mensaje, opts){ opts=opts||{}; return uiDialog({tipo:"alert",mensaje:mensaje,ok:opts.ok||"Entendido",peligro:opts.peligro}); }
+  function uiConfirm(mensaje, opts){ opts=opts||{}; return uiDialog({tipo:"confirm",mensaje:mensaje,ok:opts.ok||"Confirmar",cancelar:opts.cancelar,peligro:opts.peligro}); }
+  function uiPrompt(mensaje, valor, opts){ opts=opts||{}; return uiDialog({tipo:"prompt",mensaje:mensaje,valor:valor||"",ok:opts.ok||"Guardar",cancelar:opts.cancelar}); }
   function headers(extra){
     const h = {"apikey":KEY,"Content-Type":"application/json"};
     if(token) h["Authorization"] = "Bearer "+token;
@@ -1727,9 +1782,46 @@
   const verGuia    = () => mostrarPantalla("guia");
   const verAppReal = () => mostrarPantalla("app");
   function cerrarSesion(){
-    token=null; usuario=null;
-    localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user");
+    token=null; usuario=null; refreshToken=null;
+    if(refreshTimer){ clearTimeout(refreshTimer); refreshTimer=null; }
+    localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user"); localStorage.removeItem("maxim_refresh");
     verLanding();
+  }
+
+  // ---- Sesión: renovación automática del token ----
+  // El access_token de Supabase expira (~1h). Guardamos el refresh_token y
+  // renovamos ~1 min antes de que caduque, para que ninguna operación falle
+  // silenciosamente por sesión vencida. Si el refresh falla, se cierra sesión.
+  function guardarSesion(d){
+    token = d.access_token;
+    if(d.refresh_token){ refreshToken = d.refresh_token; localStorage.setItem("maxim_refresh", refreshToken); }
+    localStorage.setItem("maxim_token", token);
+    if(d.user){ usuario = d.user; localStorage.setItem("maxim_user", JSON.stringify(usuario)); }
+    const expiresIn = d.expires_in ? Number(d.expires_in) : 3600;
+    programarRefresh(expiresIn);
+  }
+  function programarRefresh(expiresIn){
+    if(refreshTimer){ clearTimeout(refreshTimer); refreshTimer=null; }
+    // renovar 60 s antes de expirar (mínimo 30 s)
+    const ms = Math.max((Number(expiresIn||3600) - 60), 30) * 1000;
+    refreshTimer = setTimeout(function(){ refrescarSesion(); }, ms);
+  }
+  async function refrescarSesion(){
+    if(!refreshToken) return false;
+    try{
+      const r = await fetch(URL_SB+"/auth/v1/token?grant_type=refresh_token",{
+        method:"POST", headers:{"apikey":KEY,"Content-Type":"application/json"},
+        body: JSON.stringify({refresh_token: refreshToken})
+      });
+      const d = await r.json().catch(function(){return {};});
+      if(!r.ok || !d.access_token) throw new Error("refresh_failed");
+      guardarSesion(d);
+      return true;
+    }catch(e){
+      // El refresh_token ya no es válido: sesión terminada de verdad.
+      cerrarSesion();
+      return false;
+    }
   }
 
   $("#btnLanding").addEventListener("click", verLogin);
@@ -1760,9 +1852,7 @@
       });
       const d = await r.json();
       if(!r.ok || !d.access_token) throw new Error("bad");
-      token = d.access_token; usuario = d.user;
-      localStorage.setItem("maxim_token", token);
-      localStorage.setItem("maxim_user", JSON.stringify(usuario));
+      guardarSesion(d);
       await iniciar();
     }catch(ex){
       err.textContent = "No pudimos iniciar sesión. Revisa el correo y la contraseña.";
@@ -2436,10 +2526,12 @@
   async function darDeBajaItem(){
     if(!esAdmin() || !itemActual) return;
     const cod=itemActual.codigo||"este equipo";
-    if(!confirm("¿Dar de baja " + cod + "?\n\nLa herramienta no se eliminará. Quedará INACTIVA y conservará toda su Hoja de Vida e historial.")) return;
+    if(!(await uiConfirm("¿Dar de baja " + cod + "?\n\nLa herramienta no se eliminará. Quedará INACTIVA y conservará toda su Hoja de Vida e historial.",{ok:"Dar de baja"}))) return;
     try{
-      const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+encodeURIComponent(itemActual.id),{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({estado:"inactivo",base_id:null,unidad_id:null})});
-      if(!r.ok) throw new Error("No se pudo dar de baja la herramienta.");
+      const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+encodeURIComponent(itemActual.id),{method:"PATCH",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify({estado:"inactivo",base_id:null,unidad_id:null})});
+      if(!r.ok){ const e=await r.json().catch(function(){return{};}); throw new Error(e.message||"No se pudo dar de baja la herramienta."); }
+      const filas=await r.json().catch(function(){return[];});
+      if(!filas || !filas.length) throw new Error("No se aplicó el cambio. Verifica que tu usuario tenga permisos (rol admin).");
       mostrarMsg("Herramienta dada de baja. Se conserva su historial.",true);
       setTimeout(async()=>{ $("#modalBg").classList.add("hidden"); await buscar(); },700);
     }catch(e){mostrarMsg(e.message||"No se pudo dar de baja.",false);}
@@ -2448,16 +2540,18 @@
     if(!esAdmin() || !itemActual) return;
     const chk=await evaluarHistorialItem(itemActual.id);
     if(chk.ciclos||chk.estaticos){
-      alert("Esta herramienta tiene historial o documentos asociados.\n\nNo se permite el borrado definitivo. Utiliza 'Dar de baja' para conservar la trazabilidad.");
+      await uiAlert("Esta herramienta tiene historial o documentos asociados.\n\nNo se permite el borrado definitivo. Utiliza 'Dar de baja' para conservar la trazabilidad.");
       return;
     }
     const cod=itemActual.codigo||"este equipo";
-    if(!confirm("ELIMINACIÓN DEFINITIVA\n\n¿Eliminar " + cod + " de la base de datos?\n\nEsta acción no debe usarse si necesitas conservar trazabilidad.")) return;
+    if(!(await uiConfirm("ELIMINACIÓN DEFINITIVA\n\n¿Eliminar " + cod + " de la base de datos?\n\nEsta acción no debe usarse si necesitas conservar trazabilidad.",{ok:"Eliminar",peligro:true}))) return;
     try{
-      const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+encodeURIComponent(itemActual.id),{method:"DELETE",headers:headers({"Prefer":"return=minimal"})});
+      const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+encodeURIComponent(itemActual.id),{method:"DELETE",headers:headers({"Prefer":"return=representation"})});
       if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"No se pudo eliminar."); }
+      const filas=await r.json().catch(function(){return[];});
+      if(!filas || !filas.length) throw new Error("No se eliminó ninguna fila. Verifica permisos (rol admin) o si existen registros relacionados que lo impiden.");
       $("#modalBg").classList.add("hidden"); await buscar(); mostrarMsg("Herramienta eliminada.",true);
-    }catch(e){alert("No se pudo eliminar definitivamente. Si existe cualquier relación en la base de datos, utiliza 'Dar de baja'.\n\n"+(e.message||""));}
+    }catch(e){await uiAlert("No se pudo eliminar definitivamente. Si existe cualquier relación en la base de datos, utiliza 'Dar de baja'.\n\n"+(e.message||""));}
   }
 
   async function guardar(){
@@ -2492,8 +2586,10 @@
         const r=await fetch(URL_SB+"/rest/v1/items",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
         if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
       }else{
-        const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+itemActual.id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify(cuerpo)});
+        const r=await fetch(URL_SB+"/rest/v1/items?id=eq."+itemActual.id,{method:"PATCH",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify(cuerpo)});
         if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||"error"); }
+        const filasEd=await r.json().catch(function(){return[];});
+        if(!filasEd || !filasEd.length) throw new Error("No se aplicaron los cambios. Verifica tus permisos (rol admin).");
         const tipoNombre=(valOrNull("f_tipo_nombre")||"").trim();
         const tipoActual=String(itemActual.tipo_codigo||"").toUpperCase();
         if(tipoNombre && tipoActual){
@@ -2533,7 +2629,7 @@
   }
   async function renombrarUbicacion(tipo,id){
     if(!esAdmin()) return; const tabla=tipo==="base"?"bases":"unidades"; const arr=tipo==="base"?bases:unidades; const actual=(arr.find(x=>x.id===id)||{}).nombre||"";
-    const nom=prompt("Nuevo nombre de la ubicación:",actual); if(nom===null) return; const v=nom.trim(); if(!v) return;
+    const nom=await uiPrompt("Nuevo nombre de la ubicación:",actual); if(nom===null) return; const v=nom.trim(); if(!v) return;
     try{const r=await fetch(URL_SB+"/rest/v1/"+tabla+"?id=eq."+id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({nombre:v})});if(!r.ok)throw 0; await cargarBasesUnidades(); await cargarUbicAdmin(); ubicAdminMsg("Ubicación actualizada.",true);}catch(e){ubicAdminMsg("No se pudo renombrar la ubicación.",false);}
   }
   async function eliminarUbicacion(tipo,id){
@@ -2545,12 +2641,12 @@
       const d=await q.json();
       if(!q.ok) throw new Error("No se pudo verificar si la ubicación está vacía.");
       if(Array.isArray(d) && d.length){
-        alert("No se puede eliminar: todavía hay "+d.length+" herramienta(s) asignada(s) a esta ubicación.");
+        await uiAlert("No se puede eliminar: todavía hay "+d.length+" herramienta(s) asignada(s) a esta ubicación.");
         await cargarUbicAdmin();
         return;
       }
       const nombre=((tipo==="base"?bases:unidades).find(x=>x.id===id)||{}).nombre||"la ubicación";
-      if(!confirm("¿Eliminar "+nombre+"?\n\nLa ubicación está vacía. Las herramientas e historiales no serán eliminados.")) return;
+      if(!(await uiConfirm("¿Eliminar "+nombre+"?\n\nLa ubicación está vacía. Las herramientas e historiales no serán eliminados.",{ok:"Eliminar",peligro:true}))) return;
       const r=await fetch(URL_SB+"/rest/v1/"+tabla+"?id=eq."+id,{method:"DELETE",headers:headers({"Prefer":"return=minimal"})});if(!r.ok)throw 0;
       await cargarBasesUnidades(); await cargarUbicAdmin(); ubicAdminMsg("Ubicación eliminada.",true); await buscar();
     }catch(e){ubicAdminMsg("No se pudo eliminar la ubicación.",false);}
@@ -2875,6 +2971,19 @@
       return '<div class="db-lin"><div class="db-lin-top"><span class="db-lin-k">'+x.k+'</span><span class="db-lin-n">'+x.n.toLocaleString("es-CO")+'</span></div><div class="db-lin-bar"><span style="width:'+w+'%"></span></div></div>';
     }).join("");
   }
+  // Consulta una tabla filtrando por una lista de IDs, dividiéndola en lotes.
+  // Evita que "id=in.(...miles de ids...)" genere una URL demasiado larga (error 414).
+  async function fetchIdsEnLotes(tabla, selectCols, campoIn, ids, tam){
+    const out=[]; tam=tam||150;
+    for(let i=0;i<ids.length;i+=tam){
+      const lote=ids.slice(i,i+tam);
+      try{
+        const r=await fetch(URL_SB+"/rest/v1/"+tabla+"?select="+selectCols+"&"+campoIn+"=in.("+lote.join(",")+")&limit=5000",{headers:headers()});
+        if(r.ok){ const d=await r.json()||[]; for(let k=0;k<d.length;k++) out.push(d[k]); }
+      }catch(e){ console.warn("fetchIdsEnLotes",tabla,e&&e.message); }
+    }
+    return out;
+  }
   async function idsConDocumento(tipoDoc){
     try{
       if(tipoDoc==="coc"){
@@ -2888,9 +2997,9 @@
       const docs=await r.json()||[];
       const cids=[...new Set(docs.map(x=>x.ciclo_id).filter(Boolean))];
       if(!cids.length) return [];
-      const rc=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,item_id&id=in.("+cids.join(",")+")&limit=5000",{headers:headers()});
-      if(!rc.ok) return [];
-      const ciclos=await rc.json()||[];
+      // Antes: una sola URL con todos los ciclo_id (podía superar el límite de longitud).
+      // Ahora: se consulta por lotes de 150 IDs.
+      const ciclos=await fetchIdsEnLotes("ciclos_mantenimiento","id,item_id","id",cids,150);
       return [...new Set(ciclos.map(x=>x.item_id).filter(Boolean))];
     }catch(e){ return []; }
   }
@@ -2924,25 +3033,29 @@
     var cumpl= conReg ? Math.round(alDia/conReg*100) : 0;
     $("#dbCumpl").textContent=cumpl+"%";
     $("#dbCumplBar").style.width=cumpl+"%";
-    var ini=new Date(); ini.setDate(1); var iniISO=ini.toISOString().slice(0,10);
-    var mesN=await contarRest("ciclos_mantenimiento","fecha_realizado=gte."+iniISO);
-    $("#dbMes").textContent=mesN.toLocaleString("es-CO");
-    var fuera=await contarRest("items","estado=eq.fuera_servicio&"+LINEAS_IN);
-    $("#dbFuera").textContent=fuera.toLocaleString("es-CO");
-    const av=$("#dbAlVenc"), ap=$("#dbAlPv"), ao=$("#dbAlOff");
+    const av=$("#dbAlVenc"), ap=$("#dbAlPv");
     if(av) av.textContent=venc.toLocaleString("es-CO");
     if(ap) ap.textContent=pv.toLocaleString("es-CO");
-    if(ao) ao.textContent=fuera.toLocaleString("es-CO");
     const dc=$("#dbAlDoc"); if(dc) dc.textContent=((R.total)?Math.round((R.con_coc+R.con_ficha+R.con_manual)/(R.total*3)*100):0)+"%";
-    var total=await contarRest("items",LINEAS_IN);
-    var idsCoc=await idsConDocumento("coc");
-    var idsRep=await idsConDocumento("reporte_mantenimiento");
-    var idsNdt=await idsConDocumento("ndt");
+    var ini=new Date(); ini.setDate(1); var iniISO=ini.toISOString().slice(0,10);
+    // Consultas independientes en paralelo (antes iban en serie, lo que hacía lento el panel en móvil).
+    var res=await Promise.all([
+      contarRest("ciclos_mantenimiento","fecha_realizado=gte."+iniISO),
+      contarRest("items","estado=eq.fuera_servicio&"+LINEAS_IN),
+      contarRest("items",LINEAS_IN),
+      idsConDocumento("coc"),
+      idsConDocumento("reporte_mantenimiento"),
+      idsConDocumento("ndt"),
+      contarRest("ciclos_mantenimiento","datos_formulario->>incompleto=eq.true")
+    ]);
+    var mesN=res[0], fuera=res[1], total=res[2], idsCoc=res[3], idsRep=res[4], idsNdt=res[5], inc=res[6];
+    $("#dbMes").textContent=mesN.toLocaleString("es-CO");
+    $("#dbFuera").textContent=fuera.toLocaleString("es-CO");
+    const ao=$("#dbAlOff"); if(ao) ao.textContent=fuera.toLocaleString("es-CO");
     var coc=idsCoc.length, rep=idsRep.length, ndt=idsNdt.length;
     [["dbCoc",coc],["dbRep",rep],["dbNdt",ndt]].forEach(function(x){var e=$("#"+x[0]);if(e)e.textContent=x[1].toLocaleString("es-CO");});
     [["dbCocP",coc/Math.max(total,1)],["dbRepP",rep/Math.max(total,1)],["dbNdtP",ndt/Math.max(total,1)]].forEach(function(x){var e=$("#"+x[0]);if(e)e.textContent=Math.round(x[1]*1000)/10+"% de la totalidad";});
     document.querySelectorAll(".db-doc-card").forEach(function(card){ card.style.cursor="pointer"; });
-    var inc=await contarRest("ciclos_mantenimiento","datos_formulario->>incompleto=eq.true");
     var ei=$("#dbAlInc"); if(ei) ei.textContent=inc.toLocaleString("es-CO");
   }
   async function mostrarMantenimientosIncompletos(){
@@ -3101,7 +3214,7 @@
   // (filtros del dashboard anterior retirados; el panel ahora usa cargarDashboard)
 
   $("#nuevo").addEventListener("click", abrirNuevo);
-  $("#rsAdminUbic").addEventListener("click", function(){ if(esAdmin()) abrirUbicAdmin(); else alert("Solo un administrador puede administrar ubicaciones."); });
+  $("#rsAdminUbic").addEventListener("click", function(){ if(esAdmin()) abrirUbicAdmin(); else uiAlert("Solo un administrador puede administrar ubicaciones."); });
   $("#mGuardar").addEventListener("click", guardar);
   $("#mDarBaja").addEventListener("click", darDeBajaItem);
   $("#mEliminarDef").addEventListener("click", eliminarItemDefinitivo);
@@ -3318,7 +3431,7 @@
 
   async function sincronizarNdt(){
     if(!esAdmin()) return;
-    if(!confirm("¿Buscar certificados NDT nuevos en Drive y enlazarlos como mantenimiento?")) return;
+    if(!(await uiConfirm("¿Buscar certificados NDT nuevos en Drive y enlazarlos como mantenimiento?",{ok:"Buscar"}))) return;
     var t=ndtToast("Consultando Drive…");
     try{
       var resp=await driveListNdt("");
@@ -3353,7 +3466,7 @@
 
   async function sincronizarPh(){
     if(!esAdmin()) return;
-    if(!confirm("¿Buscar pruebas hidrostáticas nuevas en Drive y enlazarlas a todos los equipos indicados en cada archivo?")) return;
+    if(!(await uiConfirm("¿Buscar pruebas hidrostáticas nuevas en Drive y enlazarlas a todos los equipos indicados en cada archivo?",{ok:"Buscar"}))) return;
     var t=ndtToast("Consultando carpeta de PH…");
     try{
       var resp=await driveListPh("");
@@ -3471,7 +3584,7 @@
   async function eliminarDocumento(scope,tipo,id,path){
     if(!puedeMant() && !esAdmin()) return;
     if(!id){mostrarMsg("No se puede eliminar: documento sin identificador.",false);return;}
-    if(!confirm("¿Eliminar este documento?")) return;
+    if(!(await uiConfirm("¿Eliminar este documento?",{ok:"Eliminar",peligro:true}))) return;
     try{
       // Archivos sincronizados desde NDT/PH tienen URL de Drive: se desvinculan
       // del ciclo, pero no se borra el certificado original de la carpeta fuente.
@@ -3856,8 +3969,8 @@
       return '<div class="ia-row" data-id="'+gi.id+'">'+
         '<img src="'+infoPublicURL(gi.imagen_path)+'" alt="">'+
         '<span class="ia-tt">'+(gi.titulo?esc(gi.titulo):'<span style="color:var(--tenue)">(sin titulo)</span>')+'</span>'+
-        '<button data-mov="up" '+(i===0?"disabled":"")+'>&uarr;</button>'+
-        '<button data-mov="down" '+(i===infoData.length-1?"disabled":"")+'>&darr;</button>'+
+        '<button data-mov="up" aria-label="Subir" '+(i===0?"disabled":"")+'>&uarr;</button>'+
+        '<button data-mov="down" aria-label="Bajar" '+(i===infoData.length-1?"disabled":"")+'>&darr;</button>'+
         '<button class="ia-del" data-del="'+gi.id+'">Borrar</button>'+
       '</div>';
     }).join("");
@@ -3921,7 +4034,7 @@
   async function borrarInfo(id){
     const gi=infoData.find(function(x){ return x.id===id; });
     if(!gi) return;
-    if(!window.confirm("Borrar esta infografia? No se puede deshacer.")) return;
+    if(!(await uiConfirm("Borrar esta infografia? No se puede deshacer.",{ok:"Borrar",peligro:true}))) return;
     try{
       await fetch(URL_SB+"/rest/v1/infografias?id=eq."+id,{method:"DELETE",headers:headers({"Prefer":"return=minimal"})});
       try{ await fetch(URL_SB+"/storage/v1/object/"+INFO_BUCKET+"/"+encPath(gi.imagen_path),{method:"DELETE",headers:{ "apikey":KEY, "Authorization":"Bearer "+token }}); }catch(_e){}
@@ -3938,7 +4051,13 @@
   $("#infoAdminX").addEventListener("click", function(){ $("#infoAdminBg").classList.add("hidden"); });
   $("#infoAdminBg").addEventListener("click", function(e){ if(e.target===$("#infoAdminBg")) $("#infoAdminBg").classList.add("hidden"); });
 
-  if(token && usuario){ iniciar(); } else { verLanding(); }
+  if(token && usuario){
+    // Al recargar no sabemos cuánto le queda al access_token guardado.
+    // Si tenemos refresh_token, renovamos primero para arrancar con sesión fresca.
+    if(refreshToken){
+      refrescarSesion().then(function(ok){ if(ok) iniciar(); else verLanding(); });
+    } else { iniciar(); }
+  } else { verLanding(); }
 </script>
 </body>
 </html>

@@ -226,6 +226,34 @@
   .badge.en_mantenimiento{background:rgba(245,166,35,.15);color:var(--ambar)}
   .badge.fuera_servicio{background:rgba(226,72,63,.15);color:var(--rojo)}
   .badge.inactivo{background:rgba(154,160,168,.12);color:var(--tenue)}
+  /* ===== Acordeón de historial de mantenimiento ===== */
+  .hist-acc{border:1px solid var(--borde);border-radius:10px;background:var(--panel2);margin-bottom:10px;overflow:hidden}
+  .hist-acc.open{border-color:var(--naranja)}
+  .hist-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;background:transparent;border:0;cursor:pointer;color:var(--texto);text-align:left;font-size:14px;font-family:inherit}
+  .hist-head:hover{background:rgba(255,102,0,.05)}
+  .hh-tit b{color:var(--naranja2);font-weight:800}
+  .hh-meta{display:flex;align-items:center;gap:9px;flex:none}
+  .hh-count{font-size:11px;color:var(--tenue);font-family:var(--mono);white-space:nowrap}
+  .hh-chev{color:var(--tenue);font-size:12px;transition:transform .25s ease}
+  .hist-acc.open .hh-chev{transform:rotate(180deg);color:var(--naranja)}
+  .hist-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .hist-acc.open .hist-body{max-height:1200px}
+  .hist-body-in{padding:2px 14px 12px}
+  .hd-doc{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--borde-sutil)}
+  .hd-ic{font-size:16px;flex:none;line-height:1}
+  .hd-n{flex:1;font-size:14px;color:var(--texto)}
+  .hd-acc{display:flex;gap:7px;flex:none}
+  .hd-acc a,.hd-acc button{font-size:13px;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none;border:1px solid var(--borde);font-family:inherit}
+  .hd-ver{background:var(--panel);color:var(--acero)}
+  .hd-chg{background:var(--panel);color:var(--naranja2)}
+  .hd-chg:hover{border-color:var(--naranja2)}
+  .hd-del{background:transparent;color:var(--rojo);border-color:rgba(226,72,63,.5)}
+  .hd-del:hover{background:rgba(226,72,63,.12)}
+  .hd-vacio{padding:12px 0 4px;color:var(--tenue);font-size:13px}
+  .hd-ciclo-foot{margin-top:12px;padding-top:12px;border-top:1px dashed var(--borde);text-align:right}
+  .hd-delciclo{background:transparent;color:var(--rojo);border:1px solid rgba(226,72,63,.5);font-size:12.5px;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600}
+  .hd-delciclo:hover{background:rgba(226,72,63,.14)}
+  @media(max-width:560px){ .hh-tit{font-size:13px} .hd-doc{flex-wrap:wrap} .hd-n{flex:1 1 100%} .hd-acc{width:100%;justify-content:flex-end} }
   .cat{font-size:11px;padding:3px 9px;border-radius:3px;font-weight:600;white-space:nowrap}
   .cat.equipo{background:rgba(255,106,0,.15);color:var(--naranja2)}
   .cat.herramienta{background:rgba(95,168,211,.15);color:var(--acero)}
@@ -1683,6 +1711,7 @@
   </div>
 
   <input type="file" id="filePicker" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
+  <input type="file" id="histFile" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
 
 <script>
   const URL_SB = "https://ryfhzlbvcqnxaptltslo.supabase.co";
@@ -2269,6 +2298,8 @@
     $("#modalBg").classList.remove("hidden");
   }
 
+  let histAbierto=null;
+  function fechaDMY(iso){ if(!iso) return "Sin fecha"; var s=String(iso).slice(0,10).split("-"); return (s.length===3)?(s[2]+"-"+s[1]+"-"+s[0]):String(iso); }
   async function cargarHistorialItem(itemId){
     const box=$("#mHistorial"); if(!box) return;
     box.innerHTML='<div class="rs-empty">Consultando historial…</div>';
@@ -2279,21 +2310,103 @@
       var ids=d.map(function(x){return x.id;}).filter(Boolean); var docs=[];
       if(ids.length){ try{ var dr=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,ciclo_id,tipo,archivo_path&ciclo_id=in.("+ids.join(',')+")",{headers:headers()}); docs=dr.ok?await dr.json():[]; }catch(_e){} }
       var docsPor={}; docs.forEach(function(q){(docsPor[q.ciclo_id]||(docsPor[q.ciclo_id]=[])).push(q);});
-      const nombres={reporte_mantenimiento:'Reporte de mantenimiento',reporte_falla:'Reporte de falla',ndt:'Reporte NDT',prueba_presion:'PH'};
+      const nombres={reporte_mantenimiento:'Reporte de mantenimiento',reporte_falla:'Reporte de falla',ndt:'Reporte NDT',prueba_presion:'PH',espesores:'Espesores',prueba_dureza:'Prueba de dureza'};
+      const puede=puedeMant(); const admin=esAdmin();
       box.innerHTML=d.map(function(x){
-        const estado=x.vigente?'<span class="badge activo">VIGENTE</span>':'<span class="badge inactivo">CERRADO</span>';
-        const docs=docsPor[x.id]||[];
-        const links=docs.length?'<div class="hist-docs">'+docs.map(function(q){return '<a href="#" data-ver="'+esc(q.archivo_path)+'">'+esc(nombres[q.tipo]||q.tipo)+'</a>';}).join(' · ')+'</div>':'';
+        const abierto=(String(x.id)===String(histAbierto));
+        const dl=docsPor[x.id]||[];
         const datos=x.datos_formulario||{};
+        const nrep=String(datos.n_reporte||'');
         const tipoRaw=String(datos.tipo_mantenimiento||'').toLowerCase();
         const prevRaw=String(datos.ciclo_preventivo||'').toUpperCase();
         let tipoLabel='Mantenimiento';
         if(tipoRaw==='correctivo') tipoLabel='Correctivo';
         else if(tipoRaw==='preventivo') tipoLabel='Preventivo'+(prevRaw?' '+prevRaw:'');
-        return '<div class="inv-pair"><span class="k">'+esc(x.fecha_realizado||'Sin fecha')+'</span><span class="v"><b>'+esc(tipoLabel)+'</b> &nbsp; '+estado+links+'</span></div>';
+        const estado=x.vigente?'<span class="badge activo">VIGENTE</span>':'<span class="badge inactivo">HISTÓRICO</span>';
+        const filas = dl.length
+          ? dl.map(function(q){
+              const clave=esc(x.id)+'|'+esc(q.tipo)+'|'+esc(q.id);
+              let acc='<a href="#" class="hd-ver" data-ver="'+esc(q.archivo_path)+'">Ver</a>';
+              if(puede) acc+='<button type="button" class="hd-chg" data-hchg="'+clave+'">Cambiar</button>'
+                +'<button type="button" class="hd-del" data-hdel="'+clave+'" data-hpath="'+esc(q.archivo_path||'')+'" data-hnrep="'+esc(nrep)+'">Eliminar</button>';
+              return '<div class="hd-doc"><span class="hd-ic">📄</span><span class="hd-n">'+esc(nombres[q.tipo]||q.tipo)+'</span><span class="hd-acc">'+acc+'</span></div>';
+            }).join("")
+          : '<div class="hd-vacio">No hay documentos asociados a este ciclo.</div>';
+        const pie = admin ? '<div class="hd-ciclo-foot"><button type="button" class="hd-delciclo" data-hdelciclo="'+esc(x.id)+'">🗑 Eliminar ciclo</button></div>' : '';
+        return '<div class="hist-acc'+(abierto?' open':'')+'" data-ciclo="'+esc(x.id)+'">'
+          +'<button type="button" class="hist-head" data-acc="'+esc(x.id)+'">'
+            +'<span class="hh-tit"><b>'+esc(tipoLabel)+'</b> / '+esc(fechaDMY(x.fecha_realizado))+'</span>'
+            +'<span class="hh-meta">'+estado+'<span class="hh-count">'+dl.length+' '+(dl.length===1?'documento':'documentos')+'</span><span class="hh-chev">▼</span></span>'
+          +'</button>'
+          +'<div class="hist-body"><div class="hist-body-in">'+filas+pie+'</div></div>'
+        +'</div>';
       }).join("");
+      box.querySelectorAll("[data-acc]").forEach(function(btn){
+        btn.addEventListener("click",function(){
+          var cont=btn.closest(".hist-acc"); var abrir=!cont.classList.contains("open");
+          box.querySelectorAll(".hist-acc.open").forEach(function(o){ o.classList.remove("open"); });
+          if(abrir){ cont.classList.add("open"); histAbierto=cont.getAttribute("data-ciclo"); }
+          else histAbierto=null;
+        });
+      });
+      box.querySelectorAll("[data-hchg]").forEach(function(b){ b.addEventListener("click",function(){ var p=b.getAttribute("data-hchg").split("|"); histCambiarDoc(p[0],p[1],p[2]); }); });
+      box.querySelectorAll("[data-hdel]").forEach(function(b){ b.addEventListener("click",function(){ var p=b.getAttribute("data-hdel").split("|"); histEliminarDoc(p[0],p[1],p[2],b.getAttribute("data-hpath"),b.getAttribute("data-hnrep")); }); });
+      box.querySelectorAll("[data-hdelciclo]").forEach(function(b){ b.addEventListener("click",function(){ histEliminarCiclo(b.getAttribute("data-hdelciclo")); }); });
       enlazarSlots(box);
     }catch(e){ box.innerHTML='<div class="rs-empty">No se pudo cargar el historial.</div>'; }
+  }
+  // ===== Acciones del acordeón de historial (funciona en cualquier ciclo, no solo el vigente) =====
+  let histPend=null;
+  function histCambiarDoc(cicloId, tipo, docId){
+    if(!puedeMant()){ mostrarMsg("No tienes permiso para cambiar documentos.",false); return; }
+    histPend={cicloId:cicloId, tipo:tipo, docId:docId};
+    var fp=$("#histFile"); if(!fp) return; fp.value=""; fp.click();
+  }
+  async function histEliminarDoc(cicloId, tipo, id, path, nrep){
+    if(!puedeMant()){ mostrarMsg("No tienes permiso para eliminar documentos.",false); return; }
+    if(!id){ mostrarMsg("No se puede eliminar: documento sin identificador.",false); return; }
+    if(!(await uiConfirm("¿Deseas eliminar este documento?\nEsta acción no se puede deshacer.",{ok:"Eliminar",peligro:true}))) return;
+    try{
+      if(path && !/^https?:\/\//i.test(path)){ try{ await fetch(URL_SB+"/storage/v1/object/documentos/"+encPath(path),{method:"DELETE",headers:headers()}); }catch(_e){} }
+      var r=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?id=eq."+encodeURIComponent(id),{method:"DELETE",headers:headers({"Prefer":"return=representation"})});
+      var dd=r.ok?await r.json():[];
+      if(!r.ok || !dd.length){ throw new Error("No se pudo eliminar el registro (posible restricción de permisos/RLS)."); }
+      if(DRIVE_URL){
+        var esArchivoNexus = path && !/^https?:\/\//i.test(path);
+        var esPdfCorporativo = (tipo==="reporte_mantenimiento" && path && /^https?:\/\//i.test(path));
+        if(esArchivoNexus || esPdfCorporativo){
+          try{
+            var nombreDrive = (tipo==="reporte_mantenimiento") ? ("MF-F-MTO-025_"+String(nrep||cicloId)+".pdf") : ("dinamico_"+tipo);
+            await fetch(DRIVE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"delete_file",token:DRIVE_TOKEN,categoria:itemActual.categoria_id||"herramienta",tipo_codigo:itemActual.tipo_codigo||"SINTIPO",codigo:itemActual.codigo,ciclo:cicloId,filename:nombreDrive})});
+          }catch(_e){}
+        }
+      }
+      mostrarMsg("Documento eliminado.",true);
+      histAbierto=String(cicloId);
+      cargarHistorialItem(itemActual.id);
+      if(cicloVigente && String(cicloVigente.id)===String(cicloId)) cargarDocsDinamicos();
+    }catch(e){ mostrarMsg(e.message||"No se pudo eliminar el documento.",false); }
+  }
+  async function histEliminarCiclo(cicloId){
+    if(!esAdmin()){ mostrarMsg("Solo un administrador puede eliminar ciclos.",false); return; }
+    if(!(await uiConfirm("⚠️ ELIMINAR CICLO\nEsta acción eliminará el ciclo de mantenimiento y los documentos asociados a él.\n¿Deseas continuar?",{ok:"Eliminar ciclo",peligro:true}))) return;
+    try{
+      var dr=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,tipo,archivo_path&ciclo_id=eq."+encodeURIComponent(cicloId),{headers:headers()});
+      var docs=dr.ok?await dr.json():[];
+      for(var i=0;i<docs.length;i++){
+        var q=docs[i];
+        if(q.archivo_path && !/^https?:\/\//i.test(q.archivo_path)){ try{ await fetch(URL_SB+"/storage/v1/object/documentos/"+encPath(q.archivo_path),{method:"DELETE",headers:headers()}); }catch(_e){} }
+        try{ await fetch(URL_SB+"/rest/v1/documentos_dinamicos?id=eq."+encodeURIComponent(q.id),{method:"DELETE",headers:headers({"Prefer":"return=minimal"})}); }catch(_e){}
+        if(DRIVE_URL && q.tipo!=="reporte_mantenimiento"){ try{ await fetch(DRIVE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"delete_file",token:DRIVE_TOKEN,categoria:itemActual.categoria_id||"herramienta",tipo_codigo:itemActual.tipo_codigo||"SINTIPO",codigo:itemActual.codigo,ciclo:cicloId,filename:"dinamico_"+q.tipo})}); }catch(_e){} }
+      }
+      var cr=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?id=eq."+encodeURIComponent(cicloId),{method:"DELETE",headers:headers({"Prefer":"return=representation"})});
+      var cd=cr.ok?await cr.json():[];
+      if(!cr.ok || !cd.length){ mostrarMsg("Los documentos se eliminaron, pero el ciclo no se pudo borrar. Revisa la política RLS de DELETE en ciclos_mantenimiento.",false); }
+      else{ mostrarMsg("Ciclo eliminado.",true); }
+      histAbierto=null;
+      if(cicloVigente && String(cicloVigente.id)===String(cicloId)){ cicloVigente=null; cicloDatos=null; try{ cargarEstadoMant(itemActual.id); }catch(_e){} }
+      cargarHistorialItem(itemActual.id);
+    }catch(e){ mostrarMsg(e.message||"No se pudo eliminar el ciclo.",false); }
   }
 
   async function cargarEstadoMant(itemId){
@@ -3714,6 +3827,36 @@
         reflejarDrive({categoria:itemActual.categoria_id||"herramienta",tipo_codigo:itemActual.tipo_codigo||"SINTIPO",codigo:itemActual.codigo,ciclo:cicloVigente.id,filename:"dinamico_"+tipo+"."+ext},file);
       }
     }catch(ex){ mostrarMsg("No se pudo subir/reemplazar el archivo. "+(ex.message||""), false); }
+  });
+
+  // ---- Cambiar documento desde el acordeón de historial (cualquier ciclo) ----
+  $("#histFile").addEventListener("change", async function(e){
+    const file=e.target.files[0]; if(!file||!histPend) return;
+    const pend=histPend; histPend=null;
+    if(!validarArchivo(file,"El documento")) return;
+    mostrarMsg("Subiendo…", true);
+    try{
+      const ext=(file.name.split(".").pop()||"pdf").toLowerCase().replace(/[^a-z0-9]/g,"")||"pdf";
+      const path=rutaBase()+"/ciclo_"+pend.cicloId+"/dinamico_"+pend.tipo+"_"+Date.now()+"."+ext;
+      const rq=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?select=id,archivo_path&ciclo_id=eq."+encodeURIComponent(pend.cicloId)+"&tipo=eq."+encodeURIComponent(pend.tipo),{headers:headers()});
+      const ex=rq.ok?await rq.json():[];
+      await subirArchivo(path,file);
+      if(ex&&ex[0]){
+        if(ex[0].archivo_path && !/^https?:\/\//i.test(ex[0].archivo_path) && ex[0].archivo_path!==path) await borrarStorage(ex[0].archivo_path);
+        const pr=await fetch(URL_SB+"/rest/v1/documentos_dinamicos?id=eq."+ex[0].id,{method:"PATCH",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify({archivo_path:path})});
+        const pd=pr.ok?await pr.json():[];
+        if(!pr.ok || !pd.length) throw new Error("No se pudo reemplazar el documento (posible restricción de permisos/RLS).");
+      }else{
+        const ir=await fetch(URL_SB+"/rest/v1/documentos_dinamicos",{method:"POST",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify({ciclo_id:Number(pend.cicloId)||pend.cicloId,tipo:pend.tipo,archivo_path:path})});
+        const idd=ir.ok?await ir.json():[];
+        if(!ir.ok || !idd.length) throw new Error("No se pudo guardar el documento (posible restricción de permisos/RLS).");
+      }
+      reflejarDrive({categoria:itemActual.categoria_id||"herramienta",tipo_codigo:itemActual.tipo_codigo||"SINTIPO",codigo:itemActual.codigo,ciclo:pend.cicloId,filename:"dinamico_"+pend.tipo+"."+ext},file);
+      mostrarMsg("Documento reemplazado.",true);
+      histAbierto=String(pend.cicloId);
+      cargarHistorialItem(itemActual.id);
+      if(cicloVigente && String(cicloVigente.id)===String(pend.cicloId)) cargarDocsDinamicos();
+    }catch(ex){ mostrarMsg(ex.message||"No se pudo reemplazar el documento.", false); }
   });
 
   // ---- Formulario Wireline ----

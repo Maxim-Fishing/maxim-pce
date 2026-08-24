@@ -2012,7 +2012,10 @@
     const grp=GRUPOS[$("#fLinea").value];
     const tipoCodes=codigosDeTipo($("#fTipo").value);
     let url=URL_SB+"/rest/v1/items?select=id,codigo,codigo_ant,descripcion,estado,linea_codigo,tipo_codigo,categoria_id,sn,fabricante,medida,anio,presion,base_id,unidad_id,lineas(nombre),tipos_item(nombre),bases(nombre),unidades(nombre)&order=codigo";
-    url += grp ? "&linea_codigo=in.("+grp.join(",")+")" : "&linea_codigo=in.("+LINEAS_OK.join(",")+")";
+    if(cat==='izaje'){ /* izaje no tiene línea: se filtra por categoría más abajo */ }
+    else if(grp){ url += "&linea_codigo=in.("+grp.join(",")+")"; }
+    else if(q){ /* búsqueda global: sin filtro de línea para hallar también izaje */ }
+    else { url += "&or=(linea_codigo.in.("+LINEAS_OK.join(",")+"),categoria_id.eq.izaje)"; }
     if(q){ const t=encodeURIComponent("*"+q+"*"); url+="&or=(codigo.ilike."+t+",sn.ilike."+t+",descripcion.ilike."+t+")"; }
     if(cat) url+="&categoria_id=eq."+cat;
     if(estado) url+="&estado=eq."+estado;
@@ -2102,7 +2105,7 @@
   }
   async function cargarChipsInv(){
     const hoyISOs=new Date().toISOString().slice(0,10);
-    const base=LINEAS_IN;
+    const base="or=(linea_codigo.in.(EL,EP,FB,SL,SW,WL,WS,WT),categoria_id.eq.izaje)";
     const cTodos=await contarRest("items",base);
     const cAct=await contarRest("items","estado=eq.activo&"+base);
     const cCampo=await contarRest("items","unidad_id=not.is.null&"+base);
@@ -2210,15 +2213,21 @@
     const grupo=$("#pLinea").value, cat=$("#pCategoria").value, base=$("#pBase").value;
     const grpLineas=GRUPOS[grupo];
     const tipoCodes=codigosDeTipo($("#pTipo").value);
-    const lineIn = grpLineas ? grpLineas.join(",") : LINEAS_OK.join(",");
-    let itemFiltro = "&items.linea_codigo=in.("+lineIn+")";
-    if(cat) itemFiltro+="&items.categoria_id=eq."+cat;
+    // Izaje no tiene línea: se incluye por categoría en vez de por línea.
+    let filtroLinea;
+    if(cat==='izaje') filtroLinea="&items.categoria_id=eq.izaje";
+    else if(grpLineas) filtroLinea="&items.linea_codigo=in.("+grpLineas.join(",")+")";
+    else filtroLinea="&items.or=(linea_codigo.in.("+LINEAS_OK.join(",")+"),categoria_id.eq.izaje)";
+    let itemFiltro = filtroLinea;
+    if(cat && cat!=='izaje') itemFiltro+="&items.categoria_id=eq."+cat;
     if(base) itemFiltro+="&items.base_id=eq."+base;
     if(tipoCodes) itemFiltro+="&items.tipo_codigo=in.("+tipoCodes.join(",")+")";
     // total de items segun filtro (para "sin registro")
     let itemsUrl=URL_SB+"/rest/v1/items?select=id";
-    itemsUrl += "&linea_codigo=in.("+lineIn+")";
-    if(cat) itemsUrl+="&categoria_id=eq."+cat;
+    if(cat==='izaje') itemsUrl+="&categoria_id=eq.izaje";
+    else if(grpLineas) itemsUrl+="&linea_codigo=in.("+grpLineas.join(",")+")";
+    else itemsUrl+="&or=(linea_codigo.in.("+LINEAS_OK.join(",")+"),categoria_id.eq.izaje)";
+    if(cat && cat!=='izaje') itemsUrl+="&categoria_id=eq."+cat;
     if(base) itemsUrl+="&base_id=eq."+base;
     if(tipoCodes) itemsUrl+="&tipo_codigo=in.("+tipoCodes.join(",")+")";
     let totalItems=0;

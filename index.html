@@ -3118,11 +3118,8 @@
     }catch(e){ $("#rsProx").innerHTML='<div class="rs-empty">No se pudo cargar.</div>'; $("#rsProxPie").textContent=""; }
   }
   async function cargarResumenMov(){
-    // En modo IT no se muestran movimientos de otros modulos (herramientas/equipos/izaje).
-    // El RPC historial_movimientos aun no filtra por categoria; se deja vacio en IT hasta ese ajuste de backend.
-    if(MODULO==='it'){ $("#rsMov").innerHTML='<div class="rs-empty">Sin movimientos de instrumentos.</div>'; return; }
     try{
-      var r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:30})});
+      var r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:30,p_modulo:MODULO})});
       var d=r.ok?await r.json():[];
       if(!d.length){ $("#rsMov").innerHTML='<div class="rs-empty">Sin movimientos recientes.</div>'; return; }
       var mapa={}; d.forEach(function(m){ var dest=(m.destino||"—"); mapa[dest]=(mapa[dest]||0)+1; });
@@ -3301,10 +3298,8 @@
   }
   async function cargarHistorial(){
     const tb=$("#movFilas"); tb.innerHTML='<tr><td colspan="6" class="vacio">Cargando…</td></tr>';
-    // En IT no se listan movimientos de otros modulos; el RPC aun no filtra por categoria.
-    if(MODULO==='it'){ tb.innerHTML='<tr><td colspan="6" class="vacio">Aún no hay movimientos de instrumentos registrados.</td></tr>'; return; }
     try{
-      const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:60})});
+      const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:60,p_modulo:MODULO})});
       const d=await r.json()||[];
       if(!d.length){ tb.innerHTML='<tr><td colspan="6" class="vacio">Sin movimientos en los últimos 60 días.</td></tr>'; return; }
       tb.innerHTML=d.map(function(m){ return '<tr><td>'+esc(String(m.fecha||"").slice(0,16).replace("T"," "))+'</td><td>'+codHTML(m.codigo)+'</td><td class="desc">'+esc(m.descripcion)+'</td><td>'+esc(m.origen)+'</td><td>'+esc(m.destino)+'</td><td>'+esc(m.usuario)+'</td></tr>'; }).join("");
@@ -3462,17 +3457,14 @@
   async function cargarMovKpis(){
     var enCampo=await contarRest("items","unidad_id=not.is.null&"+scopeItemsMod());
     var total=0, hoyN=0, destinos=0;
-    // En IT no se cuentan movimientos globales (el RPC no filtra por categoria todavia).
-    if(MODULO!=='it'){
     try{
-      var r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:30})});
+      var r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:30,p_modulo:MODULO})});
       var d=r.ok?await r.json():[];
       total=d.length;
       var hoyStr=new Date().toISOString().slice(0,10); var setD={};
       d.forEach(function(m){ if(String(m.fecha||"").slice(0,10)===hoyStr) hoyN++; if(m.destino) setD[m.destino]=1; });
       destinos=Object.keys(setD).length;
     }catch(e){}
-    }
     var kpis=[
       {n:enCampo, t:(MODULO==='it'?"INSTRUMENTOS EN CAMPO":"ÍTEMS EN CAMPO"), crit:true},
       {n:total, t:"MOVIMIENTOS 30 D"},
@@ -3485,7 +3477,7 @@
   }
   async function movInforme(){
     try{
-      const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:7})});
+      const r=await fetch(URL_SB+"/rest/v1/rpc/historial_movimientos",{method:"POST",headers:headers(),body:JSON.stringify({p_item_id:null,p_dias:7,p_modulo:MODULO})});
       const d=await r.json()||[];
       const cab=["Fecha","Codigo","Descripcion","Origen","Destino","Usuario"];
       const cq=function(s){ return '"'+String(s==null?"":s).replace(/"/g,'""')+'"'; };

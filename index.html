@@ -515,6 +515,12 @@
   .c-lin{width:52px;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
   .c-ubi{width:118px;font-size:12px;color:var(--txt-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .c-est{width:92px}
+  .c-mant{width:104px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .mant{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:5px;font-family:var(--mono)}
+  .mant.ok{color:var(--verde);background:rgba(53,194,106,.13)}
+  .mant.pv{color:var(--ambar);background:rgba(245,166,35,.15)}
+  .mant.venc{color:#fff;background:var(--rojo)}
+  .mant.sr{color:var(--txt-mut);background:transparent;font-weight:600}
   .inv-vacio{text-align:center;color:var(--txt-mut);padding:30px 0}
   .inv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:var(--bg-panel);border-top:1px solid var(--borde)}
   .inv-rango{font-family:var(--mono);font-size:11px;color:var(--txt-mut)}
@@ -1367,7 +1373,7 @@
           <div class="wrap inv-tabla">
             <table>
               <thead><tr>
-                <th class="c-cod">Cod</th><th class="c-tipo">Tipo</th><th class="c-ubi">Ubicaci&oacute;n</th><th class="c-doc">Doc %</th>
+                <th class="c-cod">Cod</th><th class="c-tipo">Tipo</th><th class="c-ubi">Ubicaci&oacute;n</th><th class="c-mant">&Uacute;lt. mant.</th><th class="c-doc">Doc %</th>
               </tr></thead>
               <tbody id="filas"></tbody>
             </table>
@@ -1409,7 +1415,7 @@
           <div class="db-bars" id="dbMeses"><div class="rs-empty">Cargando&hellip;</div></div>
         </div>
         <div class="db-card" id="dbLineasCard">
-          <div class="db-card-t">Inventario por l&iacute;nea</div>
+          <div class="db-card-t" id="dbLineasT">Inventario por l&iacute;nea</div>
           <div class="db-lineas" id="dbLineas"><div class="rs-empty">Cargando&hellip;</div></div>
         </div>
       </div>
@@ -2047,7 +2053,7 @@
     else if(q){ /* búsqueda global: sin filtro de línea para hallar también izaje */ }
     else { url += "&or=(linea_codigo.in.("+LINEAS_OK.join(",")+"),categoria_id.eq.izaje)"; }
     if(q){ const t=encodeURIComponent("*"+q+"*"); url+="&or=(codigo.ilike."+t+",sn.ilike."+t+",descripcion.ilike."+t+")"; }
-    if(cat && MODULO!=='it') url+="&categoria_id=eq."+cat;
+    if(cat){ if(MODULO==='it') url+="&subtipo=eq."+encodeURIComponent('"'+cat+'"'); else url+="&categoria_id=eq."+cat; }
     if(estado) url+="&estado=eq."+estado;
     if(ubi){ const pref=ubi.slice(0,2), id=ubi.slice(2); if(pref==="b:") url+="&base_id=eq."+id; else if(pref==="u:") url+="&unidad_id=eq."+id; }
     if(tipoCodes) url+="&tipo_codigo=in.("+tipoCodes.map(encodeURIComponent).join(",")+")";
@@ -2059,22 +2065,41 @@
       const rango=r.headers.get("content-range");
       total = rango && rango.includes("/") ? parseInt(rango.split("/")[1]) : 0;
       const items=await r.json()||[];
-      window.invDocs={};
+      window.invDocs={}; window.invMant={};
       if(items.length){
         const ids=items.map(x=>x.id).join(",");
         try{ const rd=await fetch(URL_SB+"/rest/v1/documentos_estaticos?select=item_id,tipo&item_id=in.("+ids+")",{headers:headers()});
           if(rd.ok){ (await rd.json()).forEach(function(d){ if(!window.invDocs[d.item_id]) window.invDocs[d.item_id]={n:0}; if(["coc","ficha_tecnica","manual"].indexOf(d.tipo)>=0) window.invDocs[d.item_id].n++; }); }
         }catch(e){}
+        // Ciclo vigente por ítem (para la columna "Últ. mant." con semáforo)
+        try{ const rc=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=item_id,fecha_realizado,fecha_vencimiento&vigente=eq.true&item_id=in.("+ids+")",{headers:headers()});
+          if(rc.ok){ (await rc.json()).forEach(function(c){ var prev=window.invMant[c.item_id]; if(!prev || String(c.fecha_vencimiento||"")>String(prev.fv||"")) window.invMant[c.item_id]={fr:c.fecha_realizado, fv:c.fecha_vencimiento}; }); }
+        }catch(e){}
       }
       pintar(items);
-    }catch(e){ $("#filas").innerHTML='<tr><td colspan="4" class="inv-vacio">No se pudo cargar.</td></tr>'; }
+    }catch(e){ $("#filas").innerHTML='<tr><td colspan="5" class="inv-vacio">No se pudo cargar.</td></tr>'; }
     finally{ $("#cargando").classList.add("hidden"); }
   }
   // ===== Inventario: render de filas, paginador, chips y detalle =====
   let invExtra="", invChip="todos", invSelId=null, invEstado="";
+  // Celda "Último mantenimiento" con semáforo: verde=al día, ámbar=por vencer, rojo=vencido, gris=sin ciclo.
+  function mantCelda(it){
+    var m=(window.invMant&&window.invMant[it.id])||null;
+    if(!m){ return '<span class="mant sr" title="Sin ciclo registrado">—</span>'; }
+    var fecha=m.fr?fechaDMY(m.fr):"—";
+    if(!m.fv){ return '<span class="mant sr" title="Sin fecha de vencimiento">'+fecha+'</span>'; }
+    var hoy=new Date(); hoy.setHours(0,0,0,0);
+    var fv=new Date(String(m.fv).slice(0,10)+"T00:00:00");
+    var aviso=(it.categoria_id==='instrumento'||it.categoria_id==='izaje')?15:10;
+    var lim=new Date(hoy.getTime()+aviso*86400000);
+    var cls='ok', tit='Al día';
+    if(fv<hoy){ cls='venc'; tit='VENCIDO'; }
+    else if(fv<=lim){ cls='pv'; tit='Por vencer'; }
+    return '<span class="mant '+cls+'" title="'+tit+' · vence '+fechaDMY(m.fv)+'">'+fecha+'</span>';
+  }
   function pintar(items){
     const tb=$("#filas"); tb.innerHTML="";
-    if(!items.length){ tb.innerHTML='<tr><td colspan="4" class="inv-vacio">No hay &iacute;tems que coincidan.</td></tr>'; }
+    if(!items.length){ tb.innerHTML='<tr><td colspan="5" class="inv-vacio">No hay &iacute;tems que coincidan.</td></tr>'; }
     else items.forEach(function(it){
       const ubic=(it.unidades&&it.unidades.nombre)||(it.bases&&it.bases.nombre)||"—";
       const tipo=(it.tipos_item&&it.tipos_item.nombre)||it.tipo_codigo||"—";
@@ -2087,6 +2112,7 @@
       tr.innerHTML='<td class="c-cod">'+codHTML(it.codigo)+'</td>'+
         '<td class="c-tipo"><div class="inv-tipo">'+esc(tipo)+'</div><div class="inv-desc">'+esc(desc)+'</div></td>'+
         '<td class="c-ubi">'+esc(ubic)+'</td>'+
+        '<td class="c-mant">'+mantCelda(it)+'</td>'+
         '<td class="c-doc"><span class="doc-pct '+cls+'">'+pct+'%</span></td>';
       tr.addEventListener("click", function(){ seleccionarItem(it, tr); });
       tb.appendChild(tr);
@@ -2195,7 +2221,17 @@
   }
   function setupDashboard(){
     var panel=$("#panel"); if(!panel) return;
-    document.querySelectorAll("#dbAlertas [data-alert]").forEach(function(b){ if(!b.getAttribute("data-bound")){ b.setAttribute("data-bound","1"); b.addEventListener("click",function(){ var a=b.getAttribute("data-alert"); if(a==="venc") renderDetalle("venc"); else if(a==="pv") renderDetalle("pv"); else if(a==="off") irPanel("inventario"); else if(a==="doc") irPanel("inventario"); else if(a==="inc") mostrarMantenimientosIncompletos(); }); }});
+    document.querySelectorAll("#dbAlertas [data-alert]").forEach(function(b){ if(!b.getAttribute("data-bound")){ b.setAttribute("data-bound","1"); b.addEventListener("click",async function(){
+      var a=b.getAttribute("data-alert");
+      var hoy=new Date().toISOString().slice(0,10);
+      var aviso=(MODULO==='it')?15:10;
+      var dLim=new Date(Date.now()+aviso*86400000).toISOString().slice(0,10);
+      if(a==="venc"){ var ids=await idsCiclosCond("vigente=eq.true&fecha_vencimiento=lt."+hoy); drillInventario(ids.length?"&id=in.("+ids.join(",")+")":"&id=eq.-1","Vencidos"); }
+      else if(a==="pv"){ var ids=await idsCiclosCond("vigente=eq.true&fecha_vencimiento=gte."+hoy+"&fecha_vencimiento=lte."+dLim); drillInventario(ids.length?"&id=in.("+ids.join(",")+")":"&id=eq.-1","Por vencer ("+aviso+" días)"); }
+      else if(a==="off"){ drillInventario("&estado=eq.fuera_servicio", (MODULO==='it'?"Instrumentos":"Ítems")+" fuera de servicio"); }
+      else if(a==="inc"){ var ids=await idsCiclosCond("datos_formulario->>incompleto=eq.true"); drillInventario(ids.length?"&id=in.("+ids.join(",")+")":"&id=eq.-1","Mantenimiento incompleto"); }
+      else if(a==="doc"){ irPanel("inventario"); }
+    }); }});
     if(!$("#donut")){
       var cardsFirst=panel.querySelector(".cards");
       var d=document.createElement("div"); d.id="donut"; d.style.cssText="display:flex;justify-content:center;margin:6px 0 14px";
@@ -2988,6 +3024,30 @@
     if(n){ var ps=n.split(/\s+/); ini=((ps[0]&&ps[0][0])||"")+((ps[1]&&ps[1][0])||""); ini=ini.toUpperCase()||"--"; }
     var a=$("#sideAva"); if(a) a.textContent=ini;
   }
+  // Opciones originales del filtro "Categoría" (modo Mtto Operativo).
+  var _CAT_OPCIONES_MTTO='<option value="">Todas las categorías</option><option value="equipo">Equipo de Presión</option><option value="herramienta">Herramienta</option><option value="izaje">Izaje</option>';
+  var _tiposITCache=null;
+  // En IT, el filtro "Categoría" se reutiliza como "Tipo de instrumento" (subtipo). En Mtto vuelve a lo original.
+  async function configurarFiltroTipoInstrumento(){
+    var sel=$("#fCategoria"); if(!sel) return;
+    if(MODULO!=='it'){
+      if(sel.getAttribute("data-modo")!=="mtto"){ sel.innerHTML=_CAT_OPCIONES_MTTO; sel.value=""; sel.title="Categoría"; sel.setAttribute("data-modo","mtto"); }
+      return;
+    }
+    sel.title="Tipo de instrumento";
+    if(sel.getAttribute("data-modo")==="it") return; // ya poblado
+    // De una vez (sincrono) dejamos el filtro en "Todos los tipos" para que buscar() no use un valor viejo del modo Mtto.
+    sel.innerHTML='<option value="">Todos los tipos</option>'; sel.value=""; sel.setAttribute("data-modo","it");
+    if(!_tiposITCache){
+      try{
+        var r=await fetch(URL_SB+"/rest/v1/items?select=subtipo&categoria_id=eq.instrumento&limit=5000",{headers:headers()});
+        var d=r.ok?await r.json():[];
+        var set={}; d.forEach(function(x){ var k=(x.subtipo&&x.subtipo.trim()); if(k) set[k]=1; });
+        _tiposITCache=Object.keys(set).sort(function(a,b){ return a.localeCompare(b,'es'); });
+      }catch(e){ _tiposITCache=[]; }
+    }
+    sel.innerHTML='<option value="">Todos los tipos</option>'+_tiposITCache.map(function(t){ return '<option value="'+esc(t)+'">'+esc(t)+'</option>'; }).join("");
+  }
   function renderPanel(){
     var p=panelDeHash();
     ORDEN_PANELES.forEach(function(k){ var d=$("#"+PANELES[k].el); if(d) d.classList.toggle("hidden", k!==p); });
@@ -2998,9 +3058,11 @@
     $("#q").classList.toggle("hidden", !esInv);
     $("#nuevo").classList.toggle("hidden", !(esInv && esAdmin()));
     if(esInv){
-      // En IT no hay lineas: se oculta ese filtro y "Tipo" pasa a "Tipo de instrumento".
+      // En IT no hay lineas: se oculta ese filtro. El desplegable "Categoria" se reutiliza como "Tipo de instrumento".
       var _fl=$("#fLinea"); if(_fl) _fl.classList.toggle("hidden", MODULO==='it');
-      var _ft=$("#fTipo"); if(_ft) _ft.setAttribute("placeholder", MODULO==='it' ? "Tipo de instrumento…" : "Tipo de herramienta…");
+      // El filtro "Tipo" (por tipo_codigo) no aplica a instrumentos: se oculta en IT.
+      var _ft=$("#fTipo"); if(_ft){ _ft.classList.toggle("hidden", MODULO==='it'); _ft.setAttribute("placeholder", "Tipo de herramienta…"); }
+      configurarFiltroTipoInstrumento();
     }
     $("#btnSincNdt").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
     $("#btnSincPh").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
@@ -3313,15 +3375,38 @@
     var pv=await contarCiclos("vigente=eq.true&fecha_vencimiento=gte."+hoyISOs+"&fecha_vencimiento=lte."+d10);
     var n=venc+pv; var pt=$("#ptAlerta"); if(pt){ pt.textContent=n; pt.classList.toggle("hidden", n===0); }
   }
+  // Devuelve los item_id de los ciclos que cumplen una condicion (respetando el modulo activo).
+  async function idsCiclosCond(cond){
+    var sel=(MODULO==='it')?"item_id,items!inner(id)":"item_id";
+    var extra=(MODULO==='it')?"&items.categoria_id=eq.instrumento":"";
+    try{
+      var r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select="+sel+"&"+cond+extra+"&limit=5000",{headers:headers()});
+      var d=r.ok?await r.json():[];
+      return Array.from(new Set(d.map(function(x){return x.item_id;}).filter(Boolean)));
+    }catch(e){ return []; }
+  }
+  // Lleva al Inventario aplicando un filtro (drill-down desde el dashboard) y pone un subtitulo con el conteo.
+  async function drillInventario(filtro, label){
+    irPanel("inventario");
+    invEstado=""; invChip="todos"; pagina=0;
+    ["fLinea","fCategoria","fUbi"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
+    var ft=document.getElementById("fTipo"); if(ft) ft.value="";
+    var q1=document.getElementById("invBuscar"); if(q1) q1.value=""; var q2=document.getElementById("q"); if(q2) q2.value="";
+    invExtra=filtro||"";
+    try{ actualizarResumenFiltros(); }catch(e){}
+    await buscar();
+    var t=$("#tbSub"); if(t && label) t.textContent=label+" · "+(total||0)+" ítems";
+  }
   async function cargarDashboard(){
     var esIT=(MODULO==='it');
     // Ajustes de contexto para el modulo IT (instrumentos):
-    var cardLin=$("#dbLineasCard"); if(cardLin) cardLin.classList.toggle("hidden", esIT);      // "por linea" no aplica a instrumentos
+    var cardLin=$("#dbLineasCard"); if(cardLin) cardLin.classList.remove("hidden");             // en IT se reutiliza como "por tipo de instrumento"
+    var cardLinT=$("#dbLineasT"); if(cardLinT) cardLinT.textContent = esIT ? "Inventario por tipo de instrumento" : "Inventario por línea";
     var docsGrid=$("#dbDocsGrid"); if(docsGrid) docsGrid.classList.toggle("hidden", esIT);       // COC/Reporte/NDT no aplican a instrumentos
     var docBtn=$("#dbAlDocBtn"); if(docBtn) docBtn.classList.toggle("hidden", esIT);
     var mesesT=$("#dbMesesT"); if(mesesT) mesesT.textContent = esIT ? "Calibraciones / verificaciones por mes" : "Mantenimientos por mes";
     var fueraT=$("#dbFueraT"); if(fueraT) fueraT.textContent = esIT ? "INSTRUMENTOS FUERA DE SERVICIO" : "HERRAMIENTAS FUERA DE SERVICIO";
-    cargarDbMeses(); if(!esIT) cargarDbLineas(); cargarDbMetricas(); setTimeout(mostrarMantenimientosIncompletos,300);
+    cargarDbMeses(); if(esIT){ cargarDbSubtipos(); } else { cargarDbLineas(); } cargarDbMetricas(); setTimeout(mostrarMantenimientosIncompletos,300);
   }
   async function cargarDbMeses(){
     var cont=$("#dbMeses");
@@ -3339,8 +3424,15 @@
       var max=Math.max.apply(null, meses.map(function(m){return m.n;}).concat([1]));
       cont.innerHTML=meses.map(function(m){
         var h=Math.max(Math.round(m.n/max*150),2);
-        return '<div class="db-bar'+(m.n===max&&max>0?" max":"")+'"><div class="db-bar-v">'+m.n+'</div><div class="db-bar-fill" style="height:'+h+'px"></div><div class="db-bar-m">'+m.lbl+'</div></div>';
+        return '<div class="db-bar'+(m.n===max&&max>0?" max":"")+'" data-y="'+m.y+'" data-m="'+m.m+'" style="cursor:pointer" title="Ver ítems de '+m.lbl+'"><div class="db-bar-v">'+m.n+'</div><div class="db-bar-fill" style="height:'+h+'px"></div><div class="db-bar-m">'+m.lbl+'</div></div>';
       }).join("");
+      cont.querySelectorAll(".db-bar[data-y]").forEach(function(el){ el.addEventListener("click",async function(){
+        var y=parseInt(el.getAttribute("data-y"),10), mo=parseInt(el.getAttribute("data-m"),10);
+        var ini=new Date(y,mo,1).toISOString().slice(0,10), fin=new Date(y,mo+1,1).toISOString().slice(0,10);
+        var nomMes=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"][mo];
+        var ids=await idsCiclosCond("fecha_realizado=gte."+ini+"&fecha_realizado=lt."+fin);
+        drillInventario(ids.length?"&id=in.("+ids.join(",")+")":"&id=eq.-1","Mantenimientos "+nomMes+" "+y);
+      }); });
     }catch(e){ cont.innerHTML='<div class="rs-empty">No se pudo cargar.</div>'; }
   }
   async function cargarDbLineas(){
@@ -3351,8 +3443,29 @@
     var max=Math.max.apply(null, arr.map(function(x){return x.n;}).concat([1]));
     cont.innerHTML=arr.map(function(x){
       var w=Math.max(Math.round(x.n/max*100),2);
-      return '<div class="db-lin"><div class="db-lin-top"><span class="db-lin-k">'+x.k+'</span><span class="db-lin-n">'+x.n.toLocaleString("es-CO")+'</span></div><div class="db-lin-bar"><span style="width:'+w+'%"></span></div></div>';
+      return '<div class="db-lin" data-linea="'+esc(x.k)+'" style="cursor:pointer" title="Ver ítems de la línea '+esc(x.k)+'"><div class="db-lin-top"><span class="db-lin-k">'+x.k+'</span><span class="db-lin-n">'+x.n.toLocaleString("es-CO")+'</span></div><div class="db-lin-bar"><span style="width:'+w+'%"></span></div></div>';
     }).join("");
+    cont.querySelectorAll(".db-lin[data-linea]").forEach(function(el){ el.addEventListener("click",function(){ var lc=el.getAttribute("data-linea"); drillInventario("&linea_codigo=eq."+encodeURIComponent(lc),"Línea "+lc); }); });
+  }
+  // IT: inventario por tipo de instrumento (subtipo). Muestra el top 12 y agrupa el resto en "Otros".
+  async function cargarDbSubtipos(){
+    var cont=$("#dbLineas"); if(!cont) return;
+    try{
+      var r=await fetch(URL_SB+"/rest/v1/items?select=subtipo&categoria_id=eq.instrumento&limit=5000",{headers:headers()});
+      var d=r.ok?await r.json():[];
+      var mapa={};
+      d.forEach(function(x){ var k=(x.subtipo&&x.subtipo.trim())||'(sin tipo)'; mapa[k]=(mapa[k]||0)+1; });
+      var arr=Object.keys(mapa).map(function(k){ return {k:k, n:mapa[k]}; }).sort(function(a,b){ return b.n-a.n; });
+      var top=arr.slice(0,12), resto=arr.slice(12);
+      if(resto.length){ var s=resto.reduce(function(a,b){ return a+b.n; },0); top.push({k:'Otros ('+resto.length+' tipos)', n:s}); }
+      var max=Math.max.apply(null, top.map(function(x){return x.n;}).concat([1]));
+      cont.innerHTML=top.map(function(x){
+        var w=Math.max(Math.round(x.n/max*100),2);
+        var clic=/^Otros \(/.test(x.k) ? '' : (' data-sub="'+esc(x.k)+'" style="cursor:pointer" title="Ver ítems de '+esc(x.k)+'"');
+        return '<div class="db-lin"'+clic+'><div class="db-lin-top"><span class="db-lin-k">'+esc(x.k)+'</span><span class="db-lin-n">'+x.n.toLocaleString("es-CO")+'</span></div><div class="db-lin-bar"><span style="width:'+w+'%"></span></div></div>';
+      }).join("");
+      cont.querySelectorAll(".db-lin[data-sub]").forEach(function(el){ el.addEventListener("click",function(){ var sub=el.getAttribute("data-sub"); drillInventario("&subtipo=eq."+encodeURIComponent('"'+sub+'"'),"Tipo: "+sub); }); });
+    }catch(e){ cont.innerHTML='<div class="rs-empty">No se pudo cargar.</div>'; }
   }
   // Consulta una tabla filtrando por una lista de IDs, dividiéndola en lotes.
   // Evita que "id=in.(...miles de ids...)" genere una URL demasiado larga (error 414).
@@ -3403,7 +3516,7 @@
     const vals=[];
     const l=document.getElementById("fLinea"), c=document.getElementById("fCategoria"), u=document.getElementById("fUbi"), t=document.getElementById("fTipo");
     if(MODULO!=='it') vals.push(l&&l.value?(l.options[l.selectedIndex]?.text||l.value):"Todas las líneas");
-    vals.push(c&&c.value?(c.options[c.selectedIndex]?.text||c.value):"Todas las categorías");
+    vals.push(c&&c.value?(c.options[c.selectedIndex]?.text||c.value):(MODULO==='it'?"Todos los tipos":"Todas las categorías"));
     vals.push(u&&u.value?(u.options[u.selectedIndex]?.text||u.value):"Todas las ubicaciones");
     if(t&&t.value.trim()) vals.push((MODULO==='it'?"Tipo de instrumento: ":"Tipo: ")+t.value.trim());
     el.textContent=vals.join(" · ");

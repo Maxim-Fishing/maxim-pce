@@ -1,75 +1,151 @@
-# Maxim PCE — App de herramientas y equipos de presión
+# Maxim PCE — NEXUS TOOLS
 
-Aplicación web (y móvil, se ve bien en el teléfono) para consultar y administrar el
-inventario de herramientas y equipos de presión de Maxim Fishing, conectada a Supabase.
+Aplicación web y móvil para administrar y controlar el mantenimiento de las
+**herramientas y equipos de presión** de Maxim Fishing. Funciona como módulo
+**Mtto Operativo** dentro de NEXUS TOOLS.
 
-Esta primera versión incluye: **login con usuarios propios**, **lista de ítems con
-búsqueda** por código / S/N / descripción, **filtros** por línea y estado, y el
-**código resaltado por partes** (línea · tipo · medida). Los permisos por rol
-(admin / operador / consulta) ya están protegidos en la base de datos.
+- **En producción:** https://maxim-fishing.github.io/maxim-pce/
+- **Backend de datos:** Supabase (proyecto *Maxim-PCE*) — Auth, base de datos y Storage.
+- **Backend de archivos:** Google Apps Script + Google Drive (reflejo y sincronización de PDFs).
+
+Incluye: login con usuarios propios y roles, inventario con búsqueda y filtros,
+fichas (hoja de vida) con documentos estáticos, ciclos de mantenimiento con
+alertas de vencimiento, dashboard, movilización de equipos, formulario Wireline,
+generación del reporte MF-F-MTO-025 y **sincronización masiva de certificados
+(NDT / PH / COC) desde Drive**.
 
 ---
 
-## 1. Requisitos
-- Node.js 18 o superior (https://nodejs.org).
+## 1. Cómo está construida
 
-## 2. Instalar y ejecutar
-```bash
-npm install
-cp .env.example .env      # en Windows: copy .env.example .env
+> ⚠️ La app en producción es **un solo archivo: `Index.html`** (HTML + JavaScript
+> vanilla, sin framework ni paso de build). Los archivos de React/Vite
+> (`package.json`, `vite.config.js`, `.env.example`, `index .html` con espacio)
+> son de un scaffold anterior y **no son lo que está desplegado** — se conservan
+> solo como referencia.
+
+Archivos relevantes en esta carpeta:
+
 ```
-Abre el archivo `.env` y pega tu **clave anon public**:
-Supabase → tu proyecto **Maxim-PCE** → Project Settings → API → "anon public".
-(La URL ya viene puesta.)
-
-```bash
-npm run dev
+Index.html        La aplicación completa en producción (editar aquí).
+apps-script.gs    Código de Google Apps Script (backend de Drive). Se pega en el editor de Apps Script.
+logo.png          Logo.
+intro.mp4 / acceso.mp4   Videos de la portada.
 ```
-Abre la dirección que muestra la terminal (normalmente http://localhost:5173).
 
-## 3. Crear tu primer usuario (administrador)
-Los usuarios NO se registran solos; los creas tú:
-1. Supabase → **Authentication** → **Add user** → correo y contraseña.
-2. Copia el **User UID** que aparece.
-3. Supabase → **SQL Editor** y ejecuta (reemplaza el UID y el nombre):
+Configuración incrustada en `Index.html` (cerca del inicio del `<script>`):
+
+```js
+const URL_SB      = "https://ryfhzlbvcqnxaptltslo.supabase.co";  // proyecto Supabase
+const KEY         = "sb_publishable_...";                        // clave publicable (pública, correcta)
+const DRIVE_URL   = "https://script.google.com/macros/s/.../exec"; // Web App de Apps Script
+const DRIVE_TOKEN = "maxim-pce-2026";                            // debe coincidir con TOKEN del Apps Script
+```
+
+La clave de Supabase es la **publicable** (antes "anon"): es pública por diseño y
+la seguridad real la dan las políticas **RLS** de la base de datos.
+
+---
+
+## 2. Roles
+
+Se asignan en Supabase (no hay auto-registro):
+
+| Rol | Puede |
+|-----|-------|
+| `admin` | Control total: fichas, mantenimientos, documentos, unidades, dashboard y sincronizaciones. |
+| `operador` | Registrar mantenimientos y subir documentos de ciclo; consulta inventario y dashboard. |
+| `consulta` | Solo lectura: fichas, documentos, dashboard y alertas. |
+
+Crear un usuario:
+1. Supabase → **Authentication** → **Add user** (correo y contraseña).
+2. Copia el **User UID**.
+3. Supabase → **SQL Editor**:
 ```sql
 insert into profiles (id, nombre, rol)
-values ('14129f3d-5a7b-43ec-9596-c10e887c53e3', 'Cristian Repizo', 'admin');
+values ('UID-DEL-USUARIO', 'Nombre Apellido', 'admin');
 ```
-Roles posibles: `admin`, `operador`, `consulta`.
-
-## 4. Subir a un repositorio (GitHub)
-```bash
-git init
-git add .
-git commit -m "Primera versión Maxim PCE"
-```
-Crea un repositorio vacío en GitHub y sigue las instrucciones para conectar y hacer `git push`.
-El archivo `.env` NO se sube (está en `.gitignore`) — así tus claves quedan protegidas.
-
-## 5. Publicar en internet (Vercel — gratis)
-1. Entra a https://vercel.com e importa el repositorio de GitHub.
-2. En "Environment Variables" agrega las dos:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-3. Deploy. Vercel te da un enlace que puedes abrir desde el celular.
 
 ---
 
-## Estructura del proyecto
-```
-src/
-  App.jsx               Decide si mostrar Login o la app segun la sesion
-  supabaseClient.js     Conexion a Supabase
-  lib/useSession.js     Sesion + perfil (nombre y rol) del usuario
-  pages/Login.jsx       Pantalla de inicio de sesion
-  pages/Items.jsx       Lista de items con busqueda, filtros y paginacion
-  components/CodigoTag   Resalta las partes del codigo (linea/tipo/medida)
-  styles.css            Tema industrial oscuro (naranja/negro)
+## 3. Modelo de documentos
+
+El vínculo real es por `item_id`; el **código** del ítem es el puente para encontrarlo.
+
+- **Estáticos** (`documentos_estaticos`): **COC**, ficha técnica y manual O&M. Uno por
+  ítem. Se ven en la ficha.
+- **Dinámicos** (`documentos_dinamicos`): reportes, NDT y pruebas, ligados a un
+  **ciclo de mantenimiento**.
+
+El campo `archivo_path` puede ser una ruta de Supabase Storage (bucket `documentos`)
+**o** una URL de Google Drive. La app abre ambas correctamente.
+
+Ruta de archivos en Drive/Storage: **`Categoría / Tipo / Código`**
+(ej. `equipo / EPLST312F / EPLST312F0058`).
+
+Estructura del código (resaltado por partes en la interfaz): `EP · LST · 312 · F0058`
+→ **línea** (2) · **tipo** (3) · **medida** (3) · **serie** (resto).
+
+---
+
+## 4. Backend de Drive (Apps Script)
+
+El archivo `apps-script.gs` vive en tu cuenta de Google y expone un Web App.
+Carpetas configuradas dentro del script:
+
+```js
+CARPETAS.herramienta   // raíz de herramientas
+CARPETAS.equipo        // raíz de equipos de presión
+NDT_FOLDER_NAME        // carpeta de certificados NDT
+PH_FOLDER_ID           // carpeta de pruebas hidrostáticas
+COC_INBOX_ID           // carpeta "bandeja" de COC nuevos
 ```
 
-## Lo que sigue (próximas versiones)
-- Ficha de cada ítem con sus documentos (estáticos y por ciclo).
-- Registro de mantenimiento con los formularios WL (y WS después).
-- Tablero de vencimientos (cumplidos / por vencer / vencidos) con alerta a 10 días.
-- Carga de PDF al bucket `documentos`, en subcarpetas por categoría/tipo/código.
+**Actualizar el Apps Script:** editor de Apps Script → pega `apps-script.gs` →
+Guardar → **Implementar → Administrar implementaciones → editar la existente →
+Versión: "Nueva versión" → Implementar**.
+⚠️ Siempre *editar la implementación existente* para conservar la misma URL
+(`DRIVE_URL`); crear una nueva la cambiaría y rompería la conexión.
+
+---
+
+## 5. Sincronización masiva desde Drive (solo admin)
+
+En la vista **Resumen**, botones **SINCRONIZAR NDT / PH / COC**. Cada uno lee su
+carpeta de Drive, extrae el **código del nombre del archivo**, lo busca en el
+inventario y lo enlaza.
+
+Formato de código en el nombre: `EPLST312F0058`
+(patrón `(EL|EP|FB|SL|SW|WL|WS|WT) + letra + 2 + 3 dígitos + letra + 3-4 dígitos`).
+Un archivo puede contener varios códigos separados por `_`.
+
+### COC (Certificados de Conformidad)
+1. Suelta los COC en la **carpeta bandeja** (`COC_INBOX_ID`), con el código en el
+   nombre (ej. `COC_EPLST312F0058.pdf`).
+2. Entra como **admin** → **Resumen** → **SINCRONIZAR COC**.
+3. La app **verifica los códigos**:
+   - Los que existen se enlazan.
+   - Los que **no existen** se listan; puedes **crearlos** en el momento
+     (eligiendo la categoría) o solo enlazar los existentes.
+4. Cada COC se enlaza en la ficha (`documentos_estaticos`, tipo `coc`) y su archivo
+   se **mueve** de la bandeja a su ruta final `Categoría / Tipo / Código`.
+
+Es idempotente: reprocesar la carpeta no duplica (el archivo movido ya no aparece
+en la bandeja y el enlace se actualiza).
+
+---
+
+## 6. Publicar cambios
+
+La app se sirve por **GitHub Pages** desde el repositorio `maxim-fishing/maxim-pce`.
+Para publicar una nueva versión, sube el `Index.html` actualizado a ese repositorio
+(reemplaza el archivo y confirma el cambio). GitHub Pages actualiza el sitio en
+unos minutos.
+
+---
+
+## Historial de cambios
+- **Sincronización de COC desde Drive** con verificación y creación de ítems faltantes.
+- Generación del reporte de mantenimiento **MF-F-MTO-025** en PDF.
+- Sincronización de **NDT** y **PH** desde Drive.
+- Movilización de equipos, dashboard y alertas de vencimiento.

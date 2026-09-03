@@ -153,6 +153,16 @@
   var _ds=$("#ddSalir"); if(_ds) _ds.addEventListener("click", cerrarSesion);
   $("#navHome").addEventListener("click", verHub);       // volver al hub de modulos
   $("#hubSalir").addEventListener("click", cerrarSesion);
+  // Menú de usuario del topbar (móvil): Volver / Guía / Salir
+  var _tbMenu=$("#tbMenu"), _tbPop=$("#tbMenuPop");
+  if(_tbMenu && _tbPop){
+    _tbMenu.addEventListener("click", function(e){ e.stopPropagation(); var open=_tbPop.classList.toggle("hidden"); _tbMenu.setAttribute("aria-expanded", open?"false":"true"); });
+    _tbPop.addEventListener("click", function(e){ e.stopPropagation(); });
+    document.addEventListener("click", function(){ _tbPop.classList.add("hidden"); _tbMenu.setAttribute("aria-expanded","false"); });
+  }
+  var _tbHome=$("#tbHome"); if(_tbHome) _tbHome.addEventListener("click", verHub);
+  var _tbGuia=$("#tbGuia"); if(_tbGuia) _tbGuia.addEventListener("click", verGuia);
+  var _tbSalir=$("#tbSalir"); if(_tbSalir) _tbSalir.addEventListener("click", cerrarSesion);
   $("#gIr").addEventListener("click", entrarApp);
   $("#gIr2").addEventListener("click", entrarApp);
   $("#navGuia").addEventListener("click", verGuia);
@@ -1260,6 +1270,9 @@
     var n=($("#nombre").textContent||"").trim(); var ini="--";
     if(n){ var ps=n.split(/\s+/); ini=((ps[0]&&ps[0][0])||"")+((ps[1]&&ps[1][0])||""); ini=ini.toUpperCase()||"--"; }
     var a=$("#sideAva"); if(a) a.textContent=ini;
+    var ta=$("#tbAva"); if(ta) ta.textContent=ini;
+    var mn=$("#tbMenuNom"); if(mn) mn.textContent=n||"";
+    var mr=$("#tbMenuRol"); if(mr){ var rl=$("#rol"); mr.textContent=(rl?rl.textContent:"")||""; }
   }
   // Opciones originales del filtro "Categoría" (modo Mtto Operativo).
   var _CAT_OPCIONES_MTTO='<option value="">Todas las categorías</option><option value="equipo">Equipo de Presión</option><option value="herramienta">Herramienta</option><option value="izaje">Izaje</option>';
@@ -2379,6 +2392,7 @@
     ddFormMsg("");
     var hn=$("#hNombre"); var nom=(hn?hn.textContent:"").replace(/^Hola,?\s*/i,"");
     if($("#dd_solicita")) $("#dd_solicita").value=nom||"";
+    if($("#dd_fecha")) $("#dd_fecha").value=new Date().toISOString().slice(0,10);
     $("#ddFormBg").classList.remove("hidden");
   }
   function ddCerrarForm(){ var b=$("#ddFormBg"); if(b) b.classList.add("hidden"); }

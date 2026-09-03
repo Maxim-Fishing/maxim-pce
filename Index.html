@@ -294,6 +294,15 @@
             <button class="btn-nuevo hidden" id="btnSincPh" type="button" title="Enlazar pruebas hidrostáticas desde Drive">SINCRONIZAR PH</button>
             <button class="btn-nuevo hidden" id="btnSincCoc" type="button" title="Enlazar COC desde Drive">SINCRONIZAR COC</button>
             <button class="btn-nuevo hidden" id="nuevo" type="button">+ NUEVO</button>
+            <div class="tb-usermenu" id="tbUserMenu">
+              <button class="tb-menu-btn" id="tbMenu" type="button" aria-label="Men&uacute;" aria-haspopup="true" aria-expanded="false"><span class="tb-ava" id="tbAva">--</span></button>
+              <div class="tb-menu-pop hidden" id="tbMenuPop" role="menu">
+                <div class="tb-menu-user"><span class="tb-menu-nom" id="tbMenuNom"></span><span class="tb-menu-rol" id="tbMenuRol"></span></div>
+                <button type="button" id="tbHome" role="menuitem">&larr; Volver a Nexus Tools</button>
+                <button type="button" id="tbGuia" role="menuitem">Gu&iacute;a</button>
+                <button type="button" id="tbSalir" role="menuitem">Cerrar sesi&oacute;n</button>
+              </div>
+            </div>
           </div>
         </header>
         <div class="contenido">
@@ -665,10 +674,13 @@
         </div>
         <div class="two">
           <label>Nombre de quien solicita<input id="dd_solicita" type="text" required></label>
-          <label>Contacto<input id="dd_contacto" type="text" placeholder="Tel&eacute;fono / extensi&oacute;n"></label>
+          <label>Fecha de solicitud<input id="dd_fecha" type="date" title="Se registra autom&aacute;ticamente"></label>
         </div>
         <div class="two">
+          <label>Contacto<input id="dd_contacto" type="text" placeholder="Tel&eacute;fono / extensi&oacute;n"></label>
           <label>Lugar de la solicitud<input id="dd_lugar" type="text"></label>
+        </div>
+        <div class="two">
           <label>Prioridad
             <select id="dd_prioridad">
               <option value="alta">Alta</option>

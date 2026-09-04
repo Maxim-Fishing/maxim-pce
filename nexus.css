@@ -731,9 +731,9 @@
 /* ===== NEXUS MOBILE AUDIT v5 ===== */
 @media (max-width: 900px){
   :root{--mobile-bar-h:68px}
-  #app{min-height:100dvh;height:100dvh}
-  .shell{min-height:0}
-  .main{min-height:0}
+  #app{min-height:100dvh;height:100dvh;max-width:100%;overflow-x:hidden}
+  .shell{min-height:0;min-width:0;max-width:100%}
+  .main{min-height:0;min-width:0;max-width:100%;overflow-x:hidden}
   .contenido{
     padding:12px 12px calc(var(--mobile-bar-h) + env(safe-area-inset-bottom) + 14px);
     overscroll-behavior-y:contain;
@@ -746,10 +746,14 @@
     gap:8px;
     background:var(--bg-panel);
   }
-  .tb-head{min-width:0;flex:1}
+  .tb-head{min-width:0;flex:1 1 100%}
   .tb-tit{font-size:15px;overflow:hidden;text-overflow:ellipsis}
   .tb-sub{font-size:9px}
-  .tb-r{flex:0 0 auto;width:auto;justify-content:flex-end}
+  /* En móvil los botones (SINCRONIZAR NDT/PH/COC, + NUEVO) envuelven en su
+     propia fila para no desbordar y "correr" toda la página. */
+  .tb-r{flex:1 1 100%;min-width:0;width:100%;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+  .topbar{flex-wrap:wrap}
+  .tb-r .btn-nuevo{font-size:11px;padding:8px 10px;letter-spacing:.02em}
   .tb-buscar{display:none}
   .bottombar{
     position:relative;

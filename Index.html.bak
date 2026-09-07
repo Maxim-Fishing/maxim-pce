@@ -1,10 +1,1980 @@
-  // Configuración central (ver config.js, cargado antes que este archivo).
-  const CFG = window.NEXUS_CONFIG || {};
-  if(!CFG.URL_SB || !CFG.KEY){ console.error("NEXUS: falta config.js (window.NEXUS_CONFIG). Cárgalo antes de nexus.js."); }
-  const URL_SB = CFG.URL_SB;
-  const KEY = CFG.KEY;
-  const DRIVE_URL = CFG.DRIVE_URL;       // URL del Apps Script (Web App)
-  const DRIVE_TOKEN = CFG.DRIVE_TOKEN;   // debe coincidir con el TOKEN del Apps Script
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NEXUS TOOLS · Maxim Fishing</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23ff6a00'/><path d='M17 47V17h7l16 18V17h7v30h-7L24 29v18z' fill='%230d0e10'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23ff6a00'/><path d='M17 47V17h7l16 18V17h7v30h-7L24 29v18z' fill='%230d0e10'/></svg>">
+<meta name="theme-color" content="#FF6600">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ===== Design tokens (handoff Mtto Operativo) ===== */
+    --bg-app:#0A0A0B; --bg-panel:#101114; --surface:#14161A; --surface-tabla:#0d0e11; --surface-off:#0F1114;
+    --borde:#23252A; --borde-ctrl:#2a2d33; --borde-ctrl2:#2f3238; --borde-sutil:#1c1e23;
+    --gris-inact:#2f3238; --gris-ind:#4a4e56;
+    --txt1:#FFFFFF; --txt-body:#e6e8ea; --txt2:#c2c5ca; --txt-mut:#8b9099; --txt-tenue:#6b6f78; --txt-min:#5f646c;
+    --acento:#FF6600; --acento-hover:#ff8534; --sobre-acento:#000000; --sobre-acento2:#3d1900;
+    --side-activo:#1d1310; --azul-qaqc:#4d9fe8;
+    /* alias de compatibilidad con el codigo existente */
+    --negro:#0A0A0B; --panel:#101114; --panel2:#14161A; --borde-legacy:#23252A;
+    --texto:#e6e8ea; --tenue:#8b9099; --naranja:#FF6600; --naranja2:#ff8534;
+    --acero:#4d9fe8; --verde:#35c26a; --ambar:#f5a623; --rojo:#e2483f;
+    --mono:'IBM Plex Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:'Barlow',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--negro);color:var(--texto);font-family:var(--sans);font-size:15px;-webkit-font-smoothing:antialiased}
+  .marca{font-weight:800;letter-spacing:.16em;font-size:17px;display:inline-flex;align-items:center;gap:8px}
+  .marca b{color:var(--naranja);font-weight:900}
+  .marca span{color:var(--negro);background:var(--naranja);padding:1px 7px;border-radius:3px;font-size:11px;letter-spacing:.14em}
+  .hidden{display:none!important}
+  .tipo-ayuda{font-size:11px;color:var(--txt-tenue);font-weight:400;margin-left:4px}
+  .admin-acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--borde)}
+  .btn-danger{background:transparent;color:var(--rojo);border:1px solid rgba(226,72,63,.45);padding:10px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700}
+  .btn-danger:hover{border-color:var(--rojo);background:rgba(226,72,63,.08)}
+  .loc-list{display:grid;gap:8px;margin-top:12px}.loc-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;padding:10px 12px}.loc-name{font-weight:700}.loc-count{font-family:var(--mono);font-size:12px;color:var(--tenue)}
+  .loc-empty{color:var(--tenue);font-size:13px;padding:10px 0}.loc-danger{color:var(--rojo);border-color:rgba(226,72,63,.45)}
+  @media(max-width:760px){.admin-acciones{display:grid;grid-template-columns:1fr}.admin-acciones .btn,.admin-acciones .btn2,.admin-acciones .btn-danger{width:100%;min-height:44px}.loc-row{grid-template-columns:1fr;gap:6px}.loc-row button{width:100%;min-height:42px}}
+
+  input,select,textarea{background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:10px 12px;border-radius:6px;font-size:15px;font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--naranja);border-color:transparent}
+  form{display:grid;gap:15px}
+  label{display:grid;gap:6px;font-size:13px;color:var(--tenue)}
+  .btn{background:var(--naranja);color:#180a00;border:0;padding:11px 16px;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer}
+  .btn:hover{background:var(--naranja2)} .btn:disabled{opacity:.6;cursor:default}
+  .btn2{background:var(--panel2);color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:6px;cursor:pointer;font-size:14px}
+  .btn2:hover{border-color:var(--tenue)}
+  .err{color:var(--rojo);font-size:13px;margin:0}
+
+  /* ===== Pantallas con video (previa / ingreso) ===== */
+  .pantalla-video{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden;z-index:10;
+    background:linear-gradient(135deg,#0d0e10,#1b1207 55%,#0d0e10)}
+  .bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .video-overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 42%, rgba(13,14,16,.30), rgba(13,14,16,.86) 78%)}
+  /* Previa */
+  .landing-inner{position:relative;z-index:2;text-align:center;padding:24px;display:grid;justify-items:center;gap:22px;animation:fadeUp .8s ease}
+  .logo-grande{width:min(440px,74vw);filter:drop-shadow(0 6px 26px rgba(0,0,0,.6))}
+  .landing-sub{color:#d3d7dc;letter-spacing:.42em;font-size:14px;font-weight:600;text-transform:uppercase;padding-left:.42em}
+  .landing-nombre{color:#fff;letter-spacing:.16em;font-size:27px;font-weight:900;text-transform:uppercase}
+  .landing-nombre b{color:var(--naranja)}
+  .btn-cta{background:var(--naranja);color:#180a00;border:0;padding:14px 46px;border-radius:40px;font-weight:800;font-size:16px;cursor:pointer;
+    box-shadow:0 8px 30px rgba(255,106,0,.45);transition:transform .12s, box-shadow .12s}
+  .btn-cta:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,106,0,.62)}
+  .btn-cta.full{width:100%;padding:14px}
+  .btn-cta.ghost{background:transparent;color:var(--texto);border:1px solid var(--borde);box-shadow:none}
+  .btn-cta.ghost:hover{border-color:var(--naranja2);color:var(--naranja2)}
+  /* Tarjeta de ingreso */
+  .login-inner{position:relative;z-index:2;width:100%;max-width:432px;padding:20px}
+  .login-card{background:rgba(19,21,26,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:26px 26px 22px;box-shadow:0 24px 70px rgba(0,0,0,.55);animation:fadeUp .5s ease}
+  .logo-card{display:block;width:200px;margin:2px auto 18px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(255,255,255,.05);padding:5px;border-radius:12px;margin-bottom:18px}
+  .tab{background:transparent;border:0;color:var(--tenue);padding:11px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+  .tab.on{background:rgba(46,52,64,.92);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .login-title{margin:2px 0 18px;font-size:20px;color:#fff;text-align:center;letter-spacing:.18em;font-weight:800}
+  .login-desc{color:var(--tenue);font-size:13.5px;line-height:1.5;margin:0 0 18px}
+  .login-card .lbl{display:grid;gap:7px;font-size:13px;color:#c7ccd2;margin-bottom:14px}
+  .login-card input{background:rgba(13,14,16,.7);border:1px solid rgba(255,255,255,.12);padding:13px 14px;border-radius:10px;font-size:15px}
+  .volver{display:block;text-align:center;margin-top:14px;color:var(--tenue);font-size:13px;text-decoration:none}
+  .volver:hover{color:var(--naranja2)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ===== Guía interactiva ===== */
+  #guia{position:fixed;inset:0;z-index:9;overflow-y:auto;
+    background:radial-gradient(1100px 480px at 82% -12%, rgba(255,106,0,.10), transparent), var(--negro)}
+  .guia-wrap{max-width:1040px;margin:0 auto;padding:26px 22px 60px}
+  .guia-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--borde)}
+  .guia-top img{height:40px}
+  .guia-top .sp{flex:1}
+  .guia-hero{margin:22px 0 8px}
+  .guia-hero h1{font-size:30px;margin:0 0 8px;line-height:1.15}
+  .guia-hero h1 b{color:var(--naranja)}
+  .guia-hero p{color:var(--tenue);font-size:15px;max-width:700px;line-height:1.6;margin:0}
+  .guia-sec{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--naranja2);font-weight:800;margin:30px 0 14px}
+  .guia-sec .hint{color:var(--tenue);text-transform:none;letter-spacing:0;font-weight:400;font-size:12px}
+  .guia-sec2{font-family:var(--sans);font-size:17px;font-weight:700;color:#fff;margin:36px 0 4px;padding-top:22px;border-top:1px solid var(--borde)}
+  .guia-sec2 b{color:var(--naranja)}
+  .mods-guia{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .mg-card{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:16px;transition:transform .12s}
+  .mg-card:hover{transform:translateY(-2px)}
+  .mg-card.po{border-color:rgba(255,106,0,.4);background:linear-gradient(135deg,rgba(255,106,0,.07),transparent)}
+  .mg-ic{width:40px;height:40px;flex:none;border-radius:10px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;font-size:13px}
+  .mg-card.mo .mg-ic{background:rgba(255,106,0,.16);color:var(--naranja2)}
+  .mg-card.it .mg-ic{background:rgba(77,159,232,.16);color:var(--acero)}
+  .mg-card.po .mg-ic{background:var(--acento);color:#180a00}
+  .mg-card.qc .mg-ic{background:rgba(77,159,232,.14);color:var(--acero)}
+  .mg-tx h3{margin:0 0 4px;font-size:15.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .mg-tx p{margin:0;color:var(--tenue);font-size:12.5px;line-height:1.55}
+  .mg-new{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;color:#180a00;background:var(--acento);padding:2px 7px;border-radius:20px}
+  @media(max-width:700px){.mods-guia{grid-template-columns:1fr}}
+  .rol-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .rol-card{background:var(--panel);border:1px solid var(--borde);border-top:3px solid var(--tenue);border-radius:12px;padding:18px;cursor:pointer;transition:transform .12s}
+  .rol-card:hover{transform:translateY(-3px)}
+  .rol-card.admin{border-top-color:var(--naranja)} .rol-card.oper{border-top-color:var(--acero)} .rol-card.cons{border-top-color:var(--tenue)}
+  .rol-card h3{margin:0 0 6px;font-size:17px;display:flex;align-items:center;gap:10px}
+  .rol-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-weight:900;font-size:14px}
+  .rol-card.admin .rol-ic{background:rgba(255,106,0,.16);color:var(--naranja2)}
+  .rol-card.oper .rol-ic{background:rgba(95,168,211,.16);color:var(--acero)}
+  .rol-card.cons .rol-ic{background:rgba(154,160,168,.16);color:var(--tenue)}
+  .rol-card .cargo{color:var(--tenue);font-size:12.5px;margin:0}
+  .rol-card ul{margin:0;padding-left:18px;color:#d4d8dd;font-size:13px;line-height:1.7;max-height:0;overflow:hidden;opacity:0;transition:max-height .3s ease,opacity .3s ease}
+  .rol-card.open ul{max-height:320px;opacity:1;margin-top:10px}
+  .rol-more{color:var(--naranja2);font-size:12px;font-weight:700;margin-top:10px}
+  .grp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grp-card{background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+  .grp-card .tag{font-size:40px;font-weight:900;letter-spacing:.05em;opacity:.13;position:absolute;top:6px;right:16px}
+  .grp-card.wl{border-left:4px solid var(--naranja)} .grp-card.ws{border-left:4px solid var(--acero)}
+  .grp-card h3{margin:0 0 4px;font-size:19px}
+  .grp-card p{color:var(--tenue);font-size:13px;margin:0 0 14px;line-height:1.5}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-family:var(--mono);font-size:12px;font-weight:700;padding:5px 11px;border-radius:6px;background:var(--panel2);border:1px solid var(--borde)}
+  .grp-card.wl .chip{color:var(--naranja2)} .grp-card.ws .chip{color:var(--acero)}
+  .pasos{display:grid;gap:10px}
+  .paso{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:14px 16px}
+  .paso .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--naranja);color:#180a00;font-weight:900;display:grid;place-items:center}
+  .paso .tx b{display:block;margin-bottom:2px}
+  .paso .tx span{color:var(--tenue);font-size:13px}
+  .legend{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .lg{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:14px}
+  .lg .dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:8px}
+  .lg b{font-size:14px}.lg p{margin:6px 0 0;color:var(--tenue);font-size:12px}
+  .guia-cta{display:flex;gap:12px;justify-content:center;margin:38px 0 0;flex-wrap:wrap}
+  @media(max-width:760px){.rol-grid,.legend{grid-template-columns:1fr 1fr}.grp-grid{grid-template-columns:1fr}}
+  @media(max-width:520px){.rol-grid,.legend{grid-template-columns:1fr}.guia-top .btn-cta{padding:12px 20px}}
+
+  /* ===== Hub NEXUS TOOLS (modulos) ===== */
+  #hub{position:fixed;inset:0;z-index:9;overflow-y:auto;
+    background:radial-gradient(1100px 520px at 82% -12%, rgba(255,106,0,.12), transparent), var(--negro)}
+  .hub-wrap{max-width:1000px;margin:0 auto;padding:26px 22px 60px}
+  .hub-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--borde)}
+  .hub-top img{height:40px}
+  .hub-top .sp{flex:1}
+  .hub-hero{margin:26px 0 22px;text-align:center}
+  .hub-hero h1{font-size:40px;letter-spacing:.14em;margin:0 0 10px;text-transform:uppercase}
+  .hub-hero h1 b{color:var(--naranja)}
+  .hub-hero p{color:var(--tenue);font-size:15px;max-width:620px;margin:0 auto;line-height:1.6}
+  .mod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+  .mod{display:block;text-align:left;text-decoration:none;background:var(--panel);border:1px solid var(--borde);border-radius:14px;padding:22px;position:relative;color:var(--texto);font-family:inherit;cursor:pointer;transition:transform .12s, border-color .15s}
+  .mod.on:hover{transform:translateY(-3px);border-color:var(--naranja)}
+  .mod.link:hover{transform:translateY(-3px);border-color:var(--acero)}
+  .mod .mod-ic{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:15px;letter-spacing:.04em;margin-bottom:14px;background:rgba(255,106,0,.16);color:var(--naranja2)}
+  .mod.link .mod-ic{background:rgba(95,168,211,.16);color:var(--acero)}
+  .mod.soon .mod-ic{background:rgba(154,160,168,.14);color:var(--tenue)}
+  .mod h3{margin:0 0 6px;font-size:18px}
+  .mod p{margin:0;color:var(--tenue);font-size:13.5px;line-height:1.5}
+  .mod .mod-cta{display:inline-block;margin-top:14px;color:var(--naranja2);font-weight:700;font-size:13.5px}
+  .mod.link .mod-cta{color:var(--acero)}
+  .mod.soon{cursor:default;opacity:.72}
+  .mod .mod-badge{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tenue);background:var(--panel2);border:1px solid var(--borde);padding:4px 10px;border-radius:20px}
+  .hub-pend{margin-top:26px;border:1px dashed var(--borde);border-radius:12px;padding:22px;text-align:center;color:var(--tenue);font-size:13.5px}
+  /* ===== Banco de infografias ===== */
+  .hub-info{margin-top:30px;border-top:1px solid var(--borde);padding-top:22px}
+  .hub-info-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .hub-info-head h2{margin:0;font-size:17px;letter-spacing:.02em}
+  .info-gear{margin-left:auto;background:var(--panel2);color:var(--texto);border:1px solid var(--borde);padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+  .info-gear:hover{border-color:var(--naranja)}
+  .info-car{position:relative;background:var(--panel);border:1px solid var(--borde);border-radius:14px;overflow:hidden}
+  .info-viewport{position:relative;width:100%;height:min(82vh,940px);min-height:440px;overflow:hidden;touch-action:pan-y;cursor:grab}
+  .info-viewport:active{cursor:grabbing}
+  .info-open{position:absolute;top:12px;right:12px;z-index:4;background:rgba(13,14,16,.78);border:1px solid var(--borde);color:var(--texto);font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .info-open:hover{background:var(--naranja);color:#180a00;border-color:transparent}
+  .info-track{display:flex;height:100%;transition:transform .4s ease}
+  .info-track.nodrag{transition:none}
+  .info-slide{flex:0 0 100%;height:100%;display:grid;place-items:center;background:#0a0b0d}
+  .info-slide img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none;pointer-events:none}
+  .info-empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--tenue);font-size:14px;text-align:center;padding:20px}
+  .info-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--borde);background:rgba(13,14,16,.72);color:var(--texto);font-size:26px;line-height:1;cursor:pointer;display:grid;place-items:center;z-index:3}
+  .info-nav:hover{background:var(--naranja);color:#180a00;border-color:transparent}
+  .info-nav.prev{left:12px} .info-nav.next{right:12px}
+  .info-cap{min-height:20px;padding:12px 16px 4px;text-align:center;color:var(--texto);font-size:14px;font-weight:600}
+  .info-dots{display:flex;gap:7px;justify-content:center;padding:8px 0 14px;flex-wrap:wrap}
+  .info-dots .dot{width:8px;height:8px;border-radius:50%;background:var(--borde);border:0;padding:0;cursor:pointer;transition:width .2s}
+  .info-dots .dot.on{background:var(--naranja);width:22px;border-radius:5px}
+  .ia-up{display:grid;gap:12px;border-bottom:1px solid var(--borde);padding-bottom:18px;margin-bottom:16px}
+  .ia-msg{font-size:13px;margin:2px 0 0}
+  .ia-msg.ok{color:var(--verde)} .ia-msg.bad{color:var(--rojo)}
+  .ia-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a1d22}
+  .ia-row img{width:60px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--borde);background:#0a0b0d}
+  .ia-row .ia-tt{flex:1;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ia-row button{font-size:13px;padding:5px 10px;border-radius:6px;cursor:pointer;border:1px solid var(--borde);background:var(--panel2);color:var(--texto)}
+  .ia-row .ia-del{color:var(--rojo);border-color:rgba(226,72,63,.4)}
+  .ia-row button:disabled{opacity:.35;cursor:default}
+  @media(max-width:640px){.info-viewport{height:min(78vh,680px);min-height:360px}}
+  @media(max-width:640px){.mod-grid{grid-template-columns:1fr}.hub-hero h1{font-size:32px}}
+
+  .barra{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+  .logo-barra{height:34px;display:block;flex:none}
+  .nav{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--borde);border-radius:8px;padding:3px}
+  .nav button{background:transparent;border:0;color:var(--tenue);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600}
+  .nav button.on{background:var(--naranja);color:#180a00}
+  .campana{position:relative;background:transparent;border:1px solid var(--borde);color:var(--texto);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:15px}
+  .campana .pt{position:absolute;top:-7px;right:-7px;background:var(--rojo);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+  .buscar{flex:1;min-width:120px;background:var(--negro);border:1px solid var(--borde);color:var(--texto);padding:9px 14px;border-radius:6px;font-size:14px}
+  .usuario{display:flex;align-items:center;gap:10px}
+  .nombre{color:var(--tenue);font-size:13px}
+  .rol{font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:3px;font-weight:700}
+  .rol.admin{background:rgba(255,106,0,.18);color:var(--naranja2)}
+  .rol.operador{background:rgba(95,168,211,.18);color:var(--acero)}
+  .rol.consulta{background:rgba(154,160,168,.15);color:var(--tenue)}
+  .salir{background:transparent;color:var(--tenue);border:1px solid var(--borde);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+  .salir:hover{border-color:var(--tenue)}
+  .filtros{display:flex;align-items:center;gap:12px;padding:14px 18px;flex-wrap:wrap}
+  .conteo{color:var(--naranja2);font-weight:700;font-size:14px;margin-left:auto}
+  .cargando{color:var(--tenue);font-size:13px}
+  .fTipo{flex:0 1 230px;min-width:160px}
+  .wrap{overflow-x:auto;padding:0 18px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{text-align:left;color:var(--tenue);font-size:11px;text-transform:uppercase;letter-spacing:.1em;padding:10px 12px;border-bottom:1px solid var(--borde)}
+  tbody td{padding:11px 12px;border-bottom:1px solid #1a1d22;vertical-align:middle}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:var(--panel)}
+  .desc{color:var(--tenue);max-width:340px}
+  .vacio{text-align:center;color:var(--tenue);padding:40px 0}
+  .cod{font-family:var(--mono);font-size:13px;letter-spacing:.04em;white-space:nowrap}
+  .c1{color:var(--naranja);font-weight:700}.c2{color:var(--acero);font-weight:700}.c3{color:var(--ambar)}.c4{color:var(--tenue)}
+  .badge{font-size:11px;text-transform:capitalize;padding:3px 9px;border-radius:3px;font-weight:600;white-space:nowrap}
+  .badge.activo{background:rgba(53,194,106,.15);color:var(--verde)}
+  .badge.en_mantenimiento{background:rgba(245,166,35,.15);color:var(--ambar)}
+  .badge.fuera_servicio{background:rgba(226,72,63,.15);color:var(--rojo)}
+  .badge.inactivo{background:rgba(154,160,168,.12);color:var(--tenue)}
+  /* ===== Acordeón de historial de mantenimiento ===== */
+  .hist-acc{border:1px solid var(--borde);border-radius:10px;background:var(--panel2);margin-bottom:10px;overflow:hidden}
+  .hist-acc.open{border-color:var(--naranja)}
+  .hist-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;background:transparent;border:0;cursor:pointer;color:var(--texto);text-align:left;font-size:14px;font-family:inherit}
+  .hist-head:hover{background:rgba(255,102,0,.05)}
+  .hh-tit b{color:var(--naranja2);font-weight:800}
+  .hh-meta{display:flex;align-items:center;gap:9px;flex:none}
+  .hh-count{font-size:11px;color:var(--tenue);font-family:var(--mono);white-space:nowrap}
+  .hh-chev{color:var(--tenue);font-size:12px;transition:transform .25s ease}
+  .hist-acc.open .hh-chev{transform:rotate(180deg);color:var(--naranja)}
+  .hist-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .hist-acc.open .hist-body{max-height:1200px}
+  .hist-body-in{padding:2px 14px 12px}
+  .hd-doc{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--borde-sutil)}
+  .hd-ic{font-size:16px;flex:none;line-height:1}
+  .hd-n{flex:1;font-size:14px;color:var(--texto)}
+  .hd-acc{display:flex;gap:7px;flex:none}
+  .hd-acc a,.hd-acc button{font-size:13px;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none;border:1px solid var(--borde);font-family:inherit}
+  .hd-ver{background:var(--panel);color:var(--acero)}
+  .hd-chg{background:var(--panel);color:var(--naranja2)}
+  .hd-chg:hover{border-color:var(--naranja2)}
+  .hd-del{background:transparent;color:var(--rojo);border-color:rgba(226,72,63,.5)}
+  .hd-del:hover{background:rgba(226,72,63,.12)}
+  .hd-vacio{padding:12px 0 4px;color:var(--tenue);font-size:13px}
+  .hd-ciclo-foot{margin-top:12px;padding-top:12px;border-top:1px dashed var(--borde);text-align:right}
+  .hd-delciclo{background:transparent;color:var(--rojo);border:1px solid rgba(226,72,63,.5);font-size:12.5px;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600}
+  .hd-delciclo:hover{background:rgba(226,72,63,.14)}
+  @media(max-width:560px){ .hh-tit{font-size:13px} .hd-doc{flex-wrap:wrap} .hd-n{flex:1 1 100%} .hd-acc{width:100%;justify-content:flex-end} }
+  .cat{font-size:11px;padding:3px 9px;border-radius:3px;font-weight:600;white-space:nowrap}
+  .cat.equipo{background:rgba(255,106,0,.15);color:var(--naranja2)}
+  .cat.herramienta{background:rgba(95,168,211,.15);color:var(--acero)}
+  .cat.izaje{background:rgba(53,194,106,.15);color:var(--verde)}
+  .cat.instrumento{background:rgba(126,215,230,.15);color:#7ED7E6}
+  .pag{display:flex;align-items:center;justify-content:center;gap:16px;padding:18px;color:var(--tenue);font-size:14px}
+  .pag button{background:var(--panel2);border:1px solid var(--borde);color:var(--texto);padding:8px 16px;border-radius:6px;cursor:pointer}
+  .pag button:disabled{opacity:.4;cursor:default}
+
+  /* Panel */
+  #panel{padding:18px}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:8px}
+  .kpi{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:16px 18px}
+  .kpi .n{font-size:30px;font-weight:800;line-height:1}
+  .kpi .t{color:var(--tenue);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
+  .kpi.venc{border-left:4px solid var(--rojo)} .kpi.venc .n{color:var(--rojo)}
+  .kpi.pv{border-left:4px solid var(--ambar)} .kpi.pv .n{color:var(--ambar)}
+  .kpi.ok{border-left:4px solid var(--verde)} .kpi.ok .n{color:var(--verde)}
+  .kpi.sr{border-left:4px solid var(--tenue)} .kpi.sr .n{color:var(--tenue)}
+  .kpi.venc,.kpi.pv,.kpi.ok,.kpi.sr{cursor:pointer;transition:transform .08s}
+  .kpi.venc:hover,.kpi.pv:hover,.kpi.ok:hover,.kpi.sr:hover{transform:translateY(-2px)}
+  .kpi.sel{outline:2px solid var(--naranja);outline-offset:-1px}
+  .seccion{margin-top:22px;font-size:14px;color:var(--tenue);text-transform:uppercase;letter-spacing:.08em}
+  .dias{font-weight:700;white-space:nowrap}
+  .dias.rojo{color:var(--rojo)} .dias.ambar{color:var(--ambar)}
+  @media(max-width:720px){.cards{grid-template-columns:repeat(2,1fr)}}
+
+  /* Movilizacion */
+  #vMov{padding:18px}
+  .mov-form{max-width:660px;background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:18px 20px;margin-bottom:8px}
+  .mov-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .mov-row input,.mov-row select{flex:1;min-width:190px}
+  .mov-info{color:var(--texto);font-size:13px;margin:12px 0 0;min-height:18px}
+  .mov-info .u{color:var(--naranja2);font-weight:700}
+  .mov-toolbar{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;padding:20px 0 6px}
+
+  /* Fabricantes */
+  .fab-nota{color:var(--tenue);font-size:13px;line-height:1.5;margin:0 0 10px;padding:0 18px}
+  #fabMsg{padding:0 18px}
+  .fab-tipo{border:1px solid var(--borde);border-radius:10px;padding:12px 16px;margin:0 18px 12px;background:var(--panel)}
+  .fab-tipo-h{font-size:14px;margin-bottom:4px}
+  .fab-tipo-h .cod{color:var(--naranja2);font-weight:700;margin-right:6px}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;z-index:20}
+  .modal{width:min(760px,96vw);max-width:760px;max-height:calc(100dvh - 40px);height:auto;background:var(--panel);border:1px solid var(--borde);border-radius:12px;overflow-y:auto;padding:22px;box-sizing:border-box}
+  .modal h2{margin:0 0 4px;font-size:18px}
+  .modal .sub{color:var(--tenue);font-size:13px;margin:0 0 18px}
+  .grid{display:grid;gap:13px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .modal label{color:var(--tenue);font-size:12px}
+  .ro{color:var(--texto);font-size:14px;background:var(--negro);border:1px solid var(--borde);border-radius:6px;padding:9px 12px}
+  .acc{display:flex;gap:10px;margin-top:20px}
+  .unidad-add{display:flex;gap:8px}
+  .unidad-add input{flex:1}
+  .msg{font-size:13px;margin:10px 0 0}
+  .msg.ok{color:var(--verde)} .msg.bad{color:var(--rojo)}
+  .mant-box{margin-top:20px;border-top:1px solid var(--borde);padding-top:16px}
+  .mant-estado{font-size:13px;margin:0 0 12px}
+  .mant-chip{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 10px;border-radius:20px}
+  .mant-chip.ok{background:rgba(53,194,106,.15);color:var(--verde)}
+  .mant-chip.bad{background:rgba(226,72,63,.15);color:var(--rojo)}
+  .mant-falta{display:block;font-size:12px;color:var(--ambar);margin-top:7px}
+  .slot{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a1d22}
+  .slot .sn{flex:1;font-size:14px}
+  .slot .est{font-size:12px;color:var(--tenue)}
+  .slot .est.ok{color:var(--verde)}
+  .slot a,.slot button{font-size:13px;padding:5px 11px;border-radius:6px;cursor:pointer;text-decoration:none}
+  .slot a{background:var(--panel2);color:var(--acero);border:1px solid var(--borde)}
+  .slot .up{background:var(--naranja);color:#180a00;border:0;font-weight:700}
+  .slot .rep{background:var(--panel2);color:var(--texto);border:1px solid var(--borde)}
+  @media(max-width:640px){.desc{max-width:130px}.modal-bg{padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}.modal{width:100%;max-width:100%;max-height:calc(100dvh - 16px - env(safe-area-inset-bottom));border-radius:10px}}
+
+  /* ===== Optimizacion movil ===== */
+  html,body{max-width:100%;overflow-x:hidden}
+  html{-webkit-text-size-adjust:100%}
+  @media(max-width:640px){
+    input,select,textarea{font-size:16px}
+    .barra{gap:8px;padding:10px 12px}
+    .logo-barra{height:28px}
+    .nav{flex-wrap:wrap;gap:2px;padding:2px}
+    .nav button{padding:8px 11px;font-size:13px}
+    .buscar{flex:1 1 100%;min-width:0}
+    .usuario{gap:6px;flex-wrap:wrap}
+    .filtros{gap:8px;padding:12px}
+    .filtros select,.filtros .fTipo,.fTipo{flex:1 1 100%;min-width:0}
+    .conteo{margin-left:0;flex:1 1 100%}
+    .wrap{padding:0 12px}
+    table{font-size:13px}
+    thead th,tbody td{padding:9px 8px}
+    .desc{max-width:120px}
+    #panel,#vMov{padding:12px}
+    .cards{grid-template-columns:1fr 1fr;gap:10px}
+    .kpi{padding:13px 14px}
+    .kpi .n{font-size:24px}
+    .modal{padding:16px}
+    .modal h2{font-size:17px}
+    .row2{grid-template-columns:1fr}
+    .acc{flex-wrap:wrap}
+    .acc>*{flex:1 1 auto}
+    .slot{flex-wrap:wrap;gap:8px}
+    .slot .sn{flex:1 1 100%}
+    .mov-form{padding:14px}
+    .mov-row{gap:8px}
+    .mov-row input,.mov-row select{min-width:0;flex:1 1 100%}
+    .mov-toolbar{gap:8px}
+  }
+  @media(max-width:390px){
+    .cards{grid-template-columns:1fr}
+  }
+  /* ===== App shell (handoff Mtto Operativo) ===== */
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg-app);color:var(--txt-body)}
+  .shell{flex:1;display:flex;min-height:0}
+  .side{width:224px;flex:none;background:var(--bg-panel);border-right:1px solid var(--borde);display:flex;flex-direction:column;min-height:0}
+  .side-top{display:flex;flex-direction:column;gap:8px;padding:18px 16px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .side-logo{height:26px;width:auto;max-width:130px;object-fit:contain;object-position:left}
+  .side-mod{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut)}
+  .side-grp{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--txt-min);padding:8px 10px 6px}
+  .side-nav{display:flex;flex-direction:column}
+  .snav{display:flex;align-items:center;gap:10px;padding:10px;cursor:pointer;border:0;border-left:2px solid transparent;background:transparent;color:var(--txt2);font-family:inherit;text-align:left;width:100%;transition:background .15s,color .15s}
+  .snav:hover{background:#171615}
+  .snav.on{color:#fff;border-left-color:var(--acento);background:var(--side-activo)}
+  .snav .ind{display:none}
+  .snav .nav-ico{width:20px;flex:none;text-align:center;font-size:17px;line-height:1;color:var(--txt-mut);font-family:var(--sans)}
+  .snav.on .nav-ico{color:var(--acento)}
+  .snav .lbl{flex:1;font-size:14px;font-weight:500}
+  .snav .bdg{font-family:var(--mono);font-size:10px;color:var(--txt-tenue)}
+  .snav.on .bdg{color:var(--acento)}
+  .side-foot{margin-top:auto;border-top:1px solid var(--borde-sutil);padding:14px 12px;display:flex;flex-direction:column;gap:10px}
+  .side-aviso{background:#14161A;border:1px solid var(--borde);border-left:3px solid var(--acento);border-radius:8px;padding:10px 12px;transition:border-color .2s}
+  .side-aviso.ok{border-left-color:var(--verde)}
+  .side-aviso-t{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--txt-mut)}
+  .side-aviso-x{font-size:13px;color:#fff;margin-top:3px;font-weight:600;line-height:1.35}
+  .side-aviso.ok .side-aviso-x{color:var(--verde)}
+  /* Callout de Guía (llamativo) */
+  .side-guia{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;font-family:inherit;
+    background:linear-gradient(135deg,rgba(255,106,0,.15),rgba(255,106,0,.04));border:1px solid rgba(255,106,0,.34);border-radius:10px;padding:10px 12px;transition:.15s}
+  .side-guia:hover{border-color:var(--acento);background:linear-gradient(135deg,rgba(255,106,0,.24),rgba(255,106,0,.08));transform:translateY(-1px)}
+  .side-guia-ic{width:30px;height:30px;flex:none;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:15px;color:#180a00;background:var(--acento)}
+  .side-guia-tx{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+  .side-guia-tx b{font-size:12.5px;color:#fff;font-weight:700}
+  .side-guia-tx span{font-size:11px;color:var(--naranja2);font-family:var(--mono)}
+  /* Volver a Nexus Tools (prominente) */
+  .side-volver{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:13px;letter-spacing:.01em;
+    background:var(--panel2);border:1px solid var(--borde-ctrl2);color:var(--texto);border-radius:9px;padding:11px;transition:.15s}
+  .side-volver:hover{border-color:var(--acento);color:#fff;background:#1b1310}
+  .side-volver .sv-ic{font-size:15px;color:var(--naranja2);line-height:1}
+  .side-user{display:flex;align-items:center;gap:10px;padding-top:2px}
+  .side-ava{width:32px;height:32px;border-radius:50%;flex:none;background:#1A1C21;border:1px solid var(--borde-ctrl);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--acento)}
+  .side-user-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .side-user-info .nombre{font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .side-user-info .rol{font-family:var(--mono);font-size:9px;color:var(--acento);background:none;padding:0;letter-spacing:.08em;text-transform:uppercase}
+  .side-salir{background:transparent;border:1px solid var(--borde);border-radius:7px;color:var(--txt-mut);cursor:pointer;font-size:14px;padding:5px 9px;line-height:1;transition:.15s}
+  .side-salir:hover{color:var(--rojo);border-color:rgba(226,72,63,.5)}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+  .topbar{height:60px;flex:none;display:flex;align-items:center;gap:16px;padding:0 22px;background:var(--bg-panel);border-bottom:1px solid var(--borde)}
+  .tb-head{display:flex;flex-direction:column;gap:2px}
+  .tb-tit{font-size:17px;font-weight:600;color:#fff;white-space:nowrap}
+  .tb-sub{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--txt-mut)}
+  .tb-r{flex:1;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+  .tb-buscar{flex:0 1 340px;min-width:140px;height:36px;padding:0 12px}
+  .btn-nuevo{flex:none;height:36px;padding:0 14px;background:var(--acento);color:#000;border:0;border-radius:0;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-nuevo:hover{background:var(--acento-hover)}
+  .topbar .campana{flex:none}
+  .contenido{flex:1;overflow:auto;padding:20px 22px 26px}
+  .ph-panel{border:1px dashed var(--borde-ctrl2);border-radius:12px;padding:40px;text-align:center;color:var(--txt-mut)}
+  .ph-panel .ph-t{font-size:18px;color:#fff;margin-bottom:8px}
+  .ph-panel .ph-x{font-size:14px}
+  .bottombar{display:none}
+  .btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 14px;background:transparent;border:0;cursor:pointer;min-height:44px;font-family:inherit}
+  .btab .ind{display:none}
+  .btab .nav-ico{height:20px;font-size:18px;line-height:20px;color:var(--txt-mut);font-family:var(--sans)}
+  .btab.on .nav-ico{color:var(--acento)}
+  .btab .lbl{font-size:10.5px;font-weight:600;color:var(--txt-mut)}
+  .btab.on .lbl{color:var(--acento)}
+  @media(max-width:900px){
+    .side{display:none}
+    .bottombar{display:flex;flex:none;background:var(--bg-panel);border-top:1px solid var(--borde)}
+    .topbar{height:auto;min-height:56px;padding:8px 14px;flex-wrap:wrap}
+    .tb-buscar{flex:1 1 100%}
+    .contenido{padding:14px 14px 20px}
+  }
+  /* ===== Panel Resumen ===== */
+  #vResumen{display:flex;flex-direction:column;gap:14px}
+  .rs-banda{background:var(--acento);padding:14px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+  .rs-banda.calm{background:var(--surface)}
+  .rs-banda-sobre{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--sobre-acento2)}
+  .rs-banda.calm .rs-banda-sobre{color:var(--txt-mut)}
+  .rs-banda-tit{font-size:23px;font-weight:700;color:#000;margin-top:4px}
+  .rs-banda.calm .rs-banda-tit{color:#fff}
+  .rs-banda-btn{font-family:var(--mono);font-size:11px;font-weight:600;color:#000;background:transparent;border:1px solid #000;padding:6px 10px;cursor:pointer;flex:none}
+  .rs-banda.calm .rs-banda-btn{color:#fff;border-color:var(--borde-ctrl2)}
+  .rs-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--borde);border:1px solid var(--borde)}
+  .rs-kpi{background:var(--surface);padding:14px 16px}
+  .rs-kpi.crit{border-top:3px solid var(--acento)}
+  .rs-kpi-n{font-size:27px;font-weight:700;color:#fff;line-height:1}
+  .rs-kpi-t{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut);margin-top:8px}
+  .rs-fila{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start}
+  .rs-side{display:flex;flex-direction:column;gap:14px}
+  .rs-card{background:var(--surface);border:1px solid var(--borde)}
+  .rs-card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .rs-card-h span{font-size:15px;font-weight:600;color:#fff}
+  .rs-link{background:transparent;border:0;color:var(--acento);font-size:13px;cursor:pointer;font-family:inherit;flex:none}
+  .rs-prox-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .rs-dot{width:7px;height:7px;border-radius:50%;background:var(--gris-ind);flex:none}
+  .rs-dot.crit{background:var(--acento)}
+  .rs-prox-cod{font-family:var(--mono);font-size:12px;color:var(--acento);width:118px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-prox-nom{flex:1;min-width:0;font-size:14px;color:var(--txt-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-prox-pozo{width:96px;flex:none;font-size:12px;color:var(--txt-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-dias{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 7px;flex:none;border:1px solid var(--borde-ctrl);color:var(--txt2)}
+  .rs-dias.crit{background:var(--acento);color:#000;border-color:var(--acento)}
+  .rs-card-f{padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--txt-min)}
+  .rs-acc{display:flex;flex-direction:column;gap:10px;padding:14px}
+  .rs-acc-primary{height:42px;background:var(--acento);color:#000;border:0;font-size:14px;font-weight:700;cursor:pointer}
+  .rs-acc-primary:hover{background:var(--acento-hover)}
+  .rs-acc-sec{height:42px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:14px;cursor:pointer;padding:0 12px;text-align:left;font-family:inherit}
+  .rs-acc-sec:hover{border-color:var(--acento)}
+  .rs-mov-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--borde-sutil)}
+  .rs-mov-dot{width:6px;height:6px;border-radius:50%;background:var(--acento);flex:none}
+  .rs-mov-dest{flex:1;min-width:0;font-size:14px;color:var(--txt-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rs-mov-cont{font-family:var(--mono);font-size:12px;color:var(--txt-mut);flex:none}
+  .rs-empty{padding:16px;color:var(--txt-mut);font-size:14px}
+  @media(max-width:900px){
+    .rs-kpis{grid-template-columns:repeat(3,1fr)}
+    .rs-kpi:nth-child(4),.rs-kpi:nth-child(5){display:none}
+    .rs-fila{grid-template-columns:1fr}
+    .rs-banda-tit{font-size:19px}
+  }
+  /* ===== Panel Inventario ===== */
+  #vInv{display:flex;flex-direction:column;gap:12px;height:100%}
+  .inv-search{display:flex;align-items:center;gap:10px;width:100%;padding:2px 0}
+  .inv-search-input{flex:1;min-width:0;height:44px;padding:0 14px;background:var(--bg-panel);border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:15px;border-radius:7px;font-family:inherit;box-sizing:border-box;outline:none}
+  .inv-search-input:focus{border-color:var(--acento);box-shadow:0 0 0 2px rgba(255,106,0,.12)}
+  .inv-search-input::placeholder{color:var(--txt-mut)}
+  .inv-search-btn{height:44px;flex:none;padding:0 18px;background:var(--acento);color:#000;border:0;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
+  .inv-search-btn:hover{background:var(--acento-hover)}
+  .inv-search-clear{height:44px;min-width:44px;padding:0 10px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt2);border-radius:7px;cursor:pointer;font-size:16px}
+  .inv-search-clear:hover{border-color:var(--acento);color:var(--txt-body)}
+  .inv-filtro-bar{display:flex;align-items:center;gap:12px;min-height:34px}
+.inv-filtrar-btn{height:34px;padding:0 14px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt-body);font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer}
+.inv-filtrar-btn:hover,.inv-filtrar-btn.on{border-color:var(--acento);color:var(--acento)}
+.inv-filtro-resumen{font-family:var(--mono);font-size:10px;color:var(--txt-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .inv-sel{height:34px;padding:0 10px;background:var(--bg-panel);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:13px;border-radius:6px;font-family:inherit}
+  .inv-sel.fTipo{flex:0 1 210px;min-width:150px}
+  .inv-guardar{height:34px;padding:0 12px;background:transparent;border:1px dashed var(--borde-ctrl2);color:var(--txt-mut);font-size:12px;cursor:pointer;border-radius:6px;font-family:inherit}
+  .inv-guardar:hover{color:var(--txt2)}
+  .inv-conteo{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .inv-conteo b{color:#fff;font-weight:600}
+  .inv-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .inv-chip{height:30px;padding:0 12px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt2);font-family:var(--mono);font-size:11px;cursor:pointer;border-radius:0;display:inline-flex;align-items:center;gap:6px}
+  .inv-chip b{font-weight:600}
+  .inv-chip:hover{border-color:var(--borde-ctrl2)}
+  .inv-chip.on{background:var(--acento);color:#000;border-color:var(--acento)}
+  .inv-chip.on b{color:#000}
+  .inv-layout{flex:1;display:flex;gap:14px;min-height:0}
+  .inv-main{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid var(--borde);background:var(--surface-tabla)}
+  .inv-tabla{flex:1;overflow:auto;padding:0}
+  .inv-tabla table{width:100%;border-collapse:collapse;table-layout:fixed}
+  .inv-tabla thead th{position:sticky;top:0;background:var(--bg-panel);text-align:left;padding:10px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);border-bottom:1px solid var(--borde);text-transform:uppercase}
+  .inv-tabla td{padding:12px 16px;border-bottom:1px solid var(--borde-sutil);vertical-align:middle;font-size:13.5px;color:var(--txt-body)}
+  .inv-tipo{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .inv-desc{font-size:11px;color:var(--txt-mut);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+  .inv-row{cursor:pointer}
+  .inv-row:hover{background:var(--surface)}
+  .inv-row.sel{background:var(--side-activo);box-shadow:inset 2px 0 0 var(--acento)}
+    .inv-chk{display:inline-block;width:14px;height:14px;border:1px solid var(--borde-ctrl2)}
+  .c-cod{width:180px}
+  .c-cod .cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
+  .c-desc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c-lin{width:52px;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .c-ubi{width:118px;font-size:12px;color:var(--txt-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .c-est{width:92px}
+  .c-mant{width:104px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .mant{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:5px;font-family:var(--mono)}
+  .mant.ok{color:var(--verde);background:rgba(53,194,106,.13)}
+  .mant.pv{color:var(--ambar);background:rgba(245,166,35,.15)}
+  .mant.venc{color:#fff;background:var(--rojo)}
+  .mant.sr{color:var(--txt-mut);background:transparent;font-weight:600}
+  .inv-vacio{text-align:center;color:var(--txt-mut);padding:30px 0}
+  .inv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:var(--bg-panel);border-top:1px solid var(--borde)}
+  .inv-rango{font-family:var(--mono);font-size:11px;color:var(--txt-mut)}
+  .inv-pager{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .inv-pg{min-width:30px;height:28px;padding:0 8px;background:transparent;border:1px solid var(--borde-ctrl);color:var(--txt2);cursor:pointer;font-family:var(--mono);font-size:12px}
+  .inv-pg.on{background:var(--acento);color:#000;border-color:var(--acento);font-weight:600}
+  .inv-pg:disabled{opacity:.35;cursor:default}
+  .inv-detalle{width:280px;flex:none;background:var(--surface);border:1px solid var(--borde);overflow:auto;position:relative}
+  .inv-det-x{display:none}
+  .inv-det-vacio{padding:24px 18px;color:var(--txt-mut);font-size:13px}
+  .inv-det-body{padding:16px}
+  .inv-det-cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
+  .inv-det-nom{font-size:15px;font-weight:600;color:#fff;margin-top:3px}
+  .inv-det-foto{height:120px;margin:14px 0;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--txt-min);background:repeating-linear-gradient(135deg,#0d0e11 0 8px,#101114 8px 16px);border:1px solid var(--borde)}
+  .inv-pair{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--borde-sutil);font-size:13px}
+  .inv-pair .k{color:var(--txt-mut);font-size:12px;flex:none}
+  .inv-pair .v{color:var(--txt-body);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .inv-det-abrir{width:100%;height:38px;margin-top:14px;background:var(--acento);color:#000;border:0;font-size:13px;font-weight:700;cursor:pointer}
+  .inv-det-abrir:hover{background:var(--acento-hover)}
+  .inv-det-mant{width:100%;height:38px;margin-top:8px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:13px;cursor:pointer;font-family:inherit}
+  .inv-det-mant:hover{border-color:var(--acento)}
+  @media(max-width:1240px){
+    .inv-detalle{position:fixed;top:0;right:0;bottom:0;width:300px;max-width:90vw;z-index:30;transform:translateX(100%);transition:transform .18s;border-left:1px solid var(--borde)}
+    .inv-detalle.open{transform:translateX(0)}
+    .inv-det-x{display:block;position:absolute;top:10px;right:10px;background:transparent;border:0;color:var(--txt-mut);font-size:16px;cursor:pointer;z-index:2}
+  }
+  @media(max-width:900px){
+    .inv-chips{flex-wrap:nowrap;overflow-x:auto}
+    .inv-chip{flex:none}
+  }
+  /* ===== Panel Movilizacion ===== */
+  #vMov{display:flex;flex-direction:column;gap:14px}
+  .mv-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--borde);border:1px solid var(--borde)}
+  .mv-kpi{background:var(--surface);padding:14px 16px}
+  .mv-kpi.crit{border-top:3px solid var(--acento)}
+  .mv-kpi-n{font-size:27px;font-weight:700;color:#fff;line-height:1}
+  .mv-kpi-t{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut);margin-top:8px}
+  .mv-form{background:var(--surface);border:1px solid var(--borde);padding:16px 18px}
+  .mv-form-t{font-size:15px;font-weight:600;color:#fff;margin-bottom:12px}
+  .mv-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .mv-inp{flex:1;min-width:190px;height:38px;padding:0 12px;background:var(--bg-app);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:14px;border-radius:6px;font-family:inherit}
+  .mv-btn{flex:none;height:38px;padding:0 16px;background:var(--acento);color:#000;border:0;font-size:14px;font-weight:700;cursor:pointer}
+  .mv-btn:hover{background:var(--acento-hover)}
+  .mv-btn:disabled{opacity:.5;cursor:default}
+  .mv-btn2{flex:none;height:38px;padding:0 14px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:13px;cursor:pointer;font-family:inherit}
+  .mv-btn2:hover{border-color:var(--acento)}
+  .mv-info{color:var(--txt-body);font-size:13px;margin:12px 0 0;min-height:18px}
+  .mv-info .u{color:var(--acento);font-weight:700}
+  .mv-hist-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .mv-hist-t{font-size:15px;font-weight:600;color:#fff}
+  .mv-tabla{border:1px solid var(--borde);background:var(--surface-tabla);overflow:auto}
+  .mv-tabla table{width:100%;border-collapse:collapse}
+  .mv-tabla thead th{position:sticky;top:0;background:var(--bg-panel);text-align:left;padding:10px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);border-bottom:1px solid var(--borde);text-transform:uppercase}
+  .mv-tabla td{padding:14px 16px;border-bottom:1px solid var(--borde-sutil);font-size:13px;color:var(--txt-body)}
+  .mv-tabla td .cod{font-family:var(--mono);font-size:12px;color:var(--acento)}
+  .mv-tabla tbody tr:hover{background:var(--surface)}
+  .mv-tabla .desc{color:var(--txt-mut)}
+  @media(max-width:900px){ .mv-kpis{grid-template-columns:1fr 1fr} }
+  /* ===== Movilizacion masiva ===== */
+  .mv-masiva-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .mv-masiva-btn{height:38px;padding:0 16px;background:transparent;border:1px solid var(--acento);color:var(--acento);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border-radius:6px}
+  .mv-masiva-btn:hover{background:rgba(245,166,35,.08)}
+  .mv-bulk-list{margin-top:14px;border:1px solid var(--borde);background:var(--surface);max-height:310px;overflow:auto}
+  .mv-bulk-row{display:grid;grid-template-columns:1.1fr 1.4fr 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--borde-sutil);font-size:12px}
+  .mv-bulk-row:last-child{border-bottom:0}
+  .mv-bulk-cod{font-family:var(--mono);color:var(--acento);font-size:11px}
+  .mv-bulk-ubi{color:var(--txt-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mv-bulk-remove{width:30px;height:30px;background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-mut);cursor:pointer;border-radius:5px}
+  .mv-bulk-remove:hover{border-color:var(--rojo);color:var(--rojo)}
+  .mv-bulk-empty{padding:22px;text-align:center;color:var(--txt-mut);font-size:13px}
+  .mv-bulk-dest{margin-top:14px}
+  .mv-bulk-summary{margin-top:10px;color:var(--txt-mut);font-size:12px}
+  .mv-bulk-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .mv-bulk-actions .mv-btn{min-width:150px}
+  @media(max-width:700px){
+    .mv-masiva-head{align-items:stretch}
+    .mv-masiva-btn{width:100%}
+    .mv-bulk-row{grid-template-columns:1fr auto;gap:5px 10px}
+    .mv-bulk-row .mv-bulk-desc{grid-column:1/2}
+    .mv-bulk-row .mv-bulk-ubi{grid-column:1/2}
+    .mv-bulk-row .mv-bulk-remove{grid-column:2;grid-row:1 / span 3;align-self:center}
+    .mv-bulk-actions{flex-direction:column}
+    .mv-bulk-actions button{width:100%}
+  }
+  .mv-bulk-confirm{padding:4px 0;color:var(--txt-body);font-size:13px;line-height:1.5}
+  .mv-bulk-confirm strong{color:var(--acento)}
+  /* ===== Alertas PRO ===== */
+  .db-alertas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .db-alerta{display:flex;align-items:center;gap:12px;min-height:72px;padding:12px 14px;background:var(--surface);border:1px solid var(--borde);color:var(--txt-body);text-align:left;cursor:pointer;font-family:inherit}
+  .db-alerta:hover{border-color:var(--acento);transform:translateY(-1px)}
+  .db-alerta-ic{width:34px;height:34px;display:grid;place-items:center;border:1px solid currentColor;font-family:var(--mono);font-weight:800;flex:none}
+  .db-alerta b{display:block;font-size:22px;color:#fff;line-height:1}
+  .db-alerta small{display:block;margin-top:5px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--txt-mut)}
+  .db-alerta.crit{color:var(--rojo)} .db-alerta.warn{color:var(--ambar)} .db-alerta.doc{color:var(--acento)} .db-alerta.off{color:var(--txt-mut)}
+  @media(max-width:900px){.db-alertas{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.db-alertas{grid-template-columns:1fr 1fr}.db-alerta{justify-content:center;text-align:center;flex-direction:column;gap:7px;padding:10px 6px}.db-alerta b{font-size:20px}}
+
+  /* ===== Panel Dashboard ===== */
+  #panel{display:flex;flex-direction:column;gap:14px}
+  .db-fila{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;align-items:start}
+  .db-card{background:var(--surface);border:1px solid var(--borde);padding:16px}
+  .db-card-t{font-size:15px;font-weight:600;color:#fff;margin-bottom:16px}
+  .db-bars{display:flex;align-items:flex-end;gap:14px;height:200px}
+  .db-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+  .db-bar-v{font-family:var(--mono);font-size:11px;color:var(--txt-body)}
+  .db-bar-fill{width:100%;background:var(--gris-inact);min-height:2px}
+  .db-bar.max .db-bar-fill{background:var(--acento)}
+  .db-bar-m{font-family:var(--mono);font-size:10px;color:var(--txt-mut)}
+  .db-lineas{display:flex;flex-direction:column;gap:12px}
+  .db-lin{display:flex;flex-direction:column;gap:5px}
+  .db-lin-top{display:flex;justify-content:space-between;align-items:baseline}
+  .db-lin-k{font-size:13px;color:var(--txt-body)}
+  .db-lin-n{font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .db-lin-bar{height:8px;background:var(--bg-app);overflow:hidden}
+  .db-lin-bar span{display:block;height:100%;background:var(--acento)}
+  .db-fila3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .db-metric{background:var(--surface);border:1px solid var(--borde);padding:16px}
+  .db-metric-n{font-size:34px;font-weight:700;color:#fff;line-height:1}
+  .db-metric-n.acc{color:var(--acento)}
+  .db-metric-t{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--txt-mut);margin-top:8px}
+  .db-prog{height:8px;background:var(--bg-app);margin-top:12px;overflow:hidden}
+  .db-prog span{display:block;height:100%;background:var(--acento);width:0}
+  @media(max-width:900px){ .db-fila{grid-template-columns:1fr} .db-fila3{grid-template-columns:1fr} }
+  .mant-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .mant-menu .mant-menu-btn{min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .mant-menu .mant-menu-btn.btn{background:var(--naranja);color:#180a00}
+  .mant-menu .mant-menu-btn.btn:hover{background:var(--naranja2)}
+  .mant-incomplete{margin:10px 0;padding:10px 12px;border:1px solid rgba(245,166,35,.45);background:rgba(245,166,35,.08);border-radius:10px}.mant-chip{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.mant-chip.ok{background:rgba(53,194,106,.14);color:#35c26a}.mant-chip.bad{background:rgba(226,72,63,.14);color:#ff6b61}.mant-falta{display:block;margin-top:6px;color:var(--txt-2,#bbb);font-size:12px}.hist-docs{margin-top:7px;display:flex;flex-wrap:wrap;gap:6px}.hist-docs a{font-size:12px}.db-docs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}.db-doc-card{padding:16px;border:1px solid var(--line,#2b2b2b);border-radius:12px;background:var(--bg-panel,#141414);text-align:center}.db-doc-card .n{font-size:26px;font-weight:800}.db-doc-card .t{font-size:11px;color:var(--txt-2,#aaa);text-transform:uppercase;margin-top:4px}.db-doc-card .p{font-size:12px;margin-top:6px}.db-incomplete{margin-top:14px}.db-incomplete button{width:100%;text-align:left}
+  @media(max-width:700px){.mant-menu{grid-template-columns:1fr}.db-docs-grid{grid-template-columns:1fr}.modal{width:min(96vw,760px)}.mv-bulk-modal{max-height:92dvh;overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom))}}
+
+  /* ===== Panel Fabricantes ===== */
+  #vFab{display:flex;flex-direction:column;gap:14px}
+  .fab-top{display:flex;align-items:center;gap:12px}
+  .fab-buscar{height:34px;flex:0 1 320px;min-width:160px;padding:0 12px;background:var(--bg-panel);border:1px solid var(--borde-ctrl);color:var(--txt-body);font-size:13px;border-radius:6px;font-family:inherit}
+  .fab-conteo{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--txt-mut)}
+  .fab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .fab-card{background:var(--surface);border:1px solid var(--borde);border-left:3px solid var(--borde-ctrl);padding:16px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:border-color .15s}
+  .fab-card:hover{border-left-color:var(--acento)}
+  .fab-card-h{display:flex;align-items:center;gap:12px}
+  .fab-ini{width:40px;height:40px;flex:none;background:var(--bg-app);border:1px solid var(--borde-ctrl);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--txt-mut)}
+  .fab-card-hn{min-width:0}
+  .fab-nom{font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fab-pais{font-family:var(--mono);font-size:10px;color:var(--txt-mut)}
+  .fab-metrics{display:flex;gap:24px}
+  .fab-m-n{font-size:19px;font-weight:700;color:#fff}
+  .fab-m-t{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--txt-mut);margin-top:2px}
+  .fab-card-f{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--borde);padding-top:10px;font-size:12px;color:var(--txt-mut)}
+  .fab-ver{color:var(--acento);font-size:13px}
+  .fab-volver{background:transparent;border:1px solid var(--borde-ctrl2);color:var(--txt-body);font-size:13px;padding:7px 12px;cursor:pointer;font-family:inherit;align-self:flex-start}
+  .fab-volver:hover{border-color:var(--acento)}
+  .fab-cat-h{display:flex;align-items:center;gap:12px}
+  .fab-cat-ini{width:40px;height:40px;flex:none;background:var(--bg-app);border:1px solid var(--borde-ctrl);display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--txt-mut)}
+  .fab-cat-nom{font-size:17px;font-weight:600;color:#fff}
+  @media(max-width:1240px){ .fab-grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:760px){ .fab-grid{grid-template-columns:1fr} }
+
+  @media(max-width:640px){
+    .topbar{justify-content:center;text-align:center}
+    .tb-head{width:100%;text-align:center}
+    .tb-r{width:100%;justify-content:center}
+    .contenido{display:flex;flex-direction:column;align-items:center;width:100%;box-sizing:border-box}
+    #vResumen,#vInv,#panel,#vMov,#vFab{width:100%;max-width:760px;align-self:center}
+    .inv-filtros{justify-content:center}
+    .inv-conteo{margin-left:0}
+    .inv-layout{width:100%}
+    .inv-main{width:100%}
+    .inv-tabla{overflow-x:auto}
+    .inv-tabla table{min-width:520px}
+    .inv-detalle{width:min(320px,92vw);right:50%;transform:translateX(50%) translateX(110vw)}
+    .inv-detalle.open{transform:translateX(50%)}
+    .rs-banda{justify-content:center;text-align:center;align-items:center;flex-direction:column}
+    .rs-kpis,.rs-fila,.db-fila,.db-fila3,.mv-kpis{width:100%;margin-left:auto;margin-right:auto}
+    .mv-form{width:100%;box-sizing:border-box;text-align:center}
+    .mv-row{justify-content:center}
+    .fab-top{justify-content:center;flex-wrap:wrap;width:100%}
+    .fab-buscar{width:100%;min-width:0;height:44px;box-sizing:border-box}
+    .fab-conteo{width:100%;margin-left:0;text-align:center}
+    .fab-grid{width:100%;grid-template-columns:1fr;gap:10px}
+    .fab-card{width:100%;box-sizing:border-box;min-height:108px}
+  }
+.btn-del-doc{margin-left:6px;border:0;background:none;color:#d9534f;cursor:pointer;font:inherit;padding:0}.btn-del-doc:hover{text-decoration:underline}
+/* ===== NEXUS MOBILE AUDIT v5 ===== */
+@media (max-width: 900px){
+  :root{--mobile-bar-h:68px}
+  #app{min-height:100dvh;height:100dvh}
+  .shell{min-height:0}
+  .main{min-height:0}
+  .contenido{
+    padding:12px 12px calc(var(--mobile-bar-h) + env(safe-area-inset-bottom) + 14px);
+    overscroll-behavior-y:contain;
+  }
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:10;
+    padding:10px 12px;
+    gap:8px;
+    background:var(--bg-panel);
+  }
+  .tb-head{min-width:0;flex:1}
+  .tb-tit{font-size:15px;overflow:hidden;text-overflow:ellipsis}
+  .tb-sub{font-size:9px}
+  .tb-r{flex:0 0 auto;width:auto;justify-content:flex-end}
+  .tb-buscar{display:none}
+  .bottombar{
+    position:relative;
+    min-height:68px;
+    padding:6px 2px calc(6px + env(safe-area-inset-bottom));
+    box-sizing:border-box;
+    z-index:50;
+    width:100%;
+    overflow:hidden;
+  }
+  .btab{
+    min-height:52px;
+    min-width:0;
+    flex:1 1 0;
+    width:20%;
+    padding:6px 1px 4px;
+    gap:3px;
+    box-sizing:border-box;
+  }
+  .btab .ind{width:18px;height:18px;flex:none}
+  .btab .lbl{font-size:9.5px;white-space:nowrap;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  /* Resumen móvil: 3 KPIs principales, mismo tamaño y una sola fila */
+  .rs-kpis{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:82px;gap:1px;width:100%;box-sizing:border-box}
+  .rs-kpi:nth-child(4),.rs-kpi:nth-child(5){display:none}
+  .rs-kpi{padding:10px 8px;min-width:0;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box;overflow:hidden}
+  .rs-kpi-n{font-size:21px;line-height:1}
+  .rs-kpi-t{font-size:8px;line-height:1.25;text-align:center;white-space:normal}
+  .rs-fila{grid-template-columns:1fr}
+  .rs-banda{padding:13px 14px}
+  .rs-banda-tit{font-size:18px}
+  .rs-prox-row{padding:12px}
+  .rs-prox-cod{width:92px}
+  .rs-prox-pozo{display:none}
+
+  /* Inventory: prominent search on mobile */
+  .inv-search{gap:7px}
+  .inv-search-input{height:46px;font-size:16px}
+  .inv-search-btn{height:46px;padding:0 15px}
+  .inv-search-clear{height:46px;min-width:46px}
+
+  /* Inventory: keep the table usable without squeezing columns */
+  #vInv{height:auto;min-height:0}
+  .inv-filtros{align-items:stretch;justify-content:stretch}
+  .inv-sel,.inv-sel.fTipo,.inv-guardar{
+    width:100%;
+    min-width:0;
+    flex:1 1 100%;
+    height:42px;
+    font-size:14px;
+  }
+  .inv-conteo{width:100%;text-align:center;margin:0}
+  .inv-chips{
+    padding-bottom:4px;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+  }
+  .inv-chip{height:36px;padding:0 13px}
+  .inv-layout{display:block}
+  .inv-main{min-height:0}
+  .inv-tabla{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .inv-tabla table{min-width:560px}
+  .inv-tabla thead th,.inv-tabla td{padding:11px 10px}
+  .inv-foot{padding:10px 12px;flex-wrap:wrap}
+  .inv-rango{width:100%;text-align:center}
+  .inv-pager{width:100%;justify-content:center}
+
+  /* Hoja de vida: centered modal, never a clipped right drawer */
+  .inv-detalle{
+    position:fixed;
+    left:50%;
+    right:auto;
+    top:50%;
+    bottom:auto;
+    width:min(94vw,520px);
+    max-width:520px;
+    max-height:min(88dvh,760px);
+    height:auto;
+    transform:translate(-50%,-50%) scale(.98);
+    opacity:0;
+    visibility:hidden;
+    transition:transform .18s ease,opacity .18s ease,visibility .18s;
+    border:1px solid var(--borde);
+    border-radius:14px;
+    box-shadow:0 24px 80px rgba(0,0,0,.65);
+    z-index:60;
+  }
+  .inv-detalle.open{
+    transform:translate(-50%,-50%) scale(1);
+    opacity:1;
+    visibility:visible;
+  }
+  .inv-det-x{
+    top:8px;
+    right:8px;
+    width:40px;
+    height:40px;
+    font-size:18px;
+    background:rgba(0,0,0,.35);
+    border-radius:10px;
+  }
+  .inv-det-body{padding:18px 16px 20px}
+  .inv-det-foto{height:150px}
+  .inv-det-abrir,.inv-det-mant{height:44px;font-size:14px}
+
+  /* Dashboard / mobilization / manufacturers */
+  .db-alertas{grid-template-columns:repeat(2,1fr)}
+  .db-alerta{min-height:86px}
+  .db-bars{height:170px;gap:7px}
+  .db-bar-m{font-size:9px}
+  .mv-kpis{grid-template-columns:repeat(2,1fr)}
+  .mv-row{flex-direction:column}
+  .mv-inp,.mv-btn,.mv-btn2{width:100%;min-width:0;height:44px}
+  .mv-tabla{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .mv-tabla table{min-width:760px}
+  .fab-top{align-items:stretch}
+  .fab-buscar{height:42px;flex:1 1 100%;min-width:0;font-size:14px}
+  .fab-conteo{width:100%;text-align:center;margin:0}
+
+  /* Forms and dialogs */
+  .modal-bg{
+    padding:10px;
+    align-items:center;
+    overflow:hidden;
+    overscroll-behavior:contain;
+  }
+  .modal,
+  #formWLbg .modal,
+  #infoAdminBg .modal{
+    width:100%;
+    max-width:760px;
+    max-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding:16px;
+    border-radius:14px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+  .modal h2{font-size:17px;line-height:1.25;padding-right:36px}
+  .modal .sub{line-height:1.45}
+  .row2{grid-template-columns:1fr}
+  .modal input,.modal select,.modal textarea{min-height:44px;font-size:16px}
+  .modal textarea{min-height:96px}
+  .acc{
+    position:sticky;
+    bottom:-16px;
+    margin:14px -16px -16px;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--panel) 78%,rgba(20,20,20,.94));
+    border-top:1px solid var(--borde);
+    z-index:5;
+  }
+  .acc>*{min-height:44px}
+  .mant-menu{grid-template-columns:1fr}
+  .mant-menu .mant-menu-btn{min-height:48px}
+  #mRepMantBox .row2{gap:8px}
+  #mRepMantBox .btn2,
+  #mFallaBox .btn2,
+  #mNdtBox .btn2,
+  #mPhBox .btn2,
+  #mVerFormWL{width:100%;min-height:44px}
+
+  /* Wireline form: touch-friendly, compact and scrollable */
+  #formWLbg .modal{max-width:680px}
+  #formWLbg .grid{gap:11px}
+  #formWLbg .seccion{margin-top:7px}
+  #formWLbg .acc{margin-top:14px}
+
+  /* Landing/login/hub/guide */
+  .landing-inner{padding:20px 16px;gap:18px}
+  .logo-grande{width:min(330px,78vw)}
+  .landing-sub{font-size:11px;letter-spacing:.25em}
+  .landing-nombre{font-size:22px}
+  .btn-cta{min-height:46px;padding:12px 30px}
+  .login-inner{max-width:100%;padding:14px}
+  .login-card{padding:20px 18px}
+  .logo-card{width:170px}
+  .hub-wrap,.guia-wrap{padding:18px 14px calc(30px + env(safe-area-inset-bottom))}
+  .hub-top,.guia-top{gap:10px}
+  .hub-top img,.guia-top img{height:32px}
+  .hub-hero{margin:20px 0 16px}
+  .hub-hero h1{font-size:29px}
+  .hub-hero p,.guia-hero p{font-size:14px}
+  .mod-grid{grid-template-columns:1fr;gap:12px}
+  .mod{padding:18px}
+  .rol-grid,.legend{grid-template-columns:1fr}
+  .grp-grid{grid-template-columns:1fr}
+  .paso{padding:12px}
+}
+
+@media (max-width:430px){
+  .contenido{padding-left:10px;padding-right:10px}
+  .btab .lbl{font-size:9px}
+  .btab .ind{width:16px;height:16px}
+  .db-alerta{min-height:78px;padding:9px 5px}
+  .db-alerta b{font-size:19px}
+  .rs-kpi-n{font-size:21px}
+  .inv-tabla table{min-width:540px}
+}
+
+@media (max-width:360px){
+  .btab .lbl{font-size:8px}
+  .btab{padding-left:0;padding-right:0}
+  .hub-hero h1{font-size:25px}
+}
+
+
+/* ===== NEXUS MOBILE v7 — FORMULARIO MTTO 100% RESPONSIVE ===== */
+@media (max-width: 900px){
+  /* Evita cualquier ancho mínimo heredado que empuje el formulario hacia la derecha */
+  #formWLbg,
+  #formWLbg .modal,
+  #formWLbg .grid,
+  #formWLbg .row2,
+  #formWLbg label,
+  #formWLbg input,
+  #formWLbg select,
+  #formWLbg textarea,
+  #formWLbg button{
+    min-width:0;
+    max-width:100%;
+  }
+
+  #formWLbg{
+    width:100vw;
+    padding:6px;
+    align-items:center;
+    justify-content:center;
+  }
+
+  #formWLbg .modal{
+    width:calc(100vw - 12px) !important;
+    max-width:none !important;
+    height:auto;
+    max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    margin:0;
+    padding:14px 12px;
+    border-radius:12px;
+    overflow-x:hidden !important;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #formWLbg .modal > .grid{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:10px;
+  }
+
+  #formWLbg .row2{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:10px;
+  }
+
+  #formWLbg label{
+    width:100%;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    overflow:hidden;
+  }
+
+  #formWLbg input,
+  #formWLbg select,
+  #formWLbg textarea{
+    width:100% !important;
+    box-sizing:border-box;
+  }
+
+  /* Dimensiones: una fila vertical por registro en teléfono */
+  #formWLbg #wl_dims > .row2{
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px;
+  }
+
+  /* Partes reemplazadas: la grilla 2fr/1fr/1fr anterior causaba desborde */
+  #formWLbg #wl_partes > div{
+    width:100%;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+
+  #formWLbg .seccion{
+    width:100%;
+    margin-top:5px;
+  }
+
+  #formWLbg .sub{
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+
+  #formWLbg .acc{
+    position:sticky;
+    bottom:-14px;
+    width:calc(100% + 24px);
+    margin:12px -12px -14px;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  #formWLbg .acc > *{
+    width:100%;
+    min-height:46px;
+  }
+}
+
+@media (max-width:430px){
+  #formWLbg{padding:4px}
+  #formWLbg .modal{
+    width:calc(100vw - 8px) !important;
+    padding:12px 10px;
+    border-radius:10px;
+  }
+  #formWLbg .modal h2{font-size:16px}
+  #formWLbg .modal .sub{font-size:12px}
+  #formWLbg .grid{gap:9px !important}
+  #formWLbg .row2{gap:8px !important}
+}
+
+/* ===== Ajuste final móvil: navegación inferior uniforme ===== */
+@media (max-width: 390px){
+  .btab .lbl{font-size:9px;letter-spacing:-.1px}
+}
+
+/* NEXUS v14 - Inventario: encabezado de filtros */
+.inv-filtro-titulo{margin:12px 0 6px;font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--txt-mut);text-transform:uppercase}
+.inv-filtros{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@media(max-width:640px){.inv-filtro-bar{width:100%;justify-content:flex-start}.inv-filtro-resumen{flex:1;min-width:0}.inv-filtros{width:100%;display:grid;grid-template-columns:1fr;gap:7px}.inv-sel{width:100%;min-width:0;box-sizing:border-box}.inv-conteo{justify-self:center;margin-left:0}}
+
+/* ===== Procedimientos Operativos (base de documentos por linea) ===== */
+#appProc{position:fixed;inset:0;z-index:9;overflow-y:auto;background:radial-gradient(1100px 480px at 82% -12%, rgba(255,106,0,.10), transparent), var(--negro)}
+.procm-wrap{max-width:1160px}
+.procm-back{margin-left:0}
+.procm-hero{display:flex;align-items:center;gap:16px;margin:22px 0 10px}
+.procm-hero .procm-ic{width:52px;height:52px;flex:none;border-radius:13px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;font-size:16px;color:var(--naranja2);background:rgba(255,106,0,.14);border:1px solid rgba(255,106,0,.3)}
+.procm-hero h1{font-size:28px;margin:0 0 4px;line-height:1.15}
+.procm-hero h1 b{color:var(--naranja)}
+.procm-hero p{color:var(--tenue);font-size:14px;max-width:720px;margin:0;line-height:1.6}
+@media(max-width:600px){.procm-hero{gap:12px}.procm-hero .procm-ic{width:44px;height:44px;font-size:14px}.procm-hero h1{font-size:23px}}
+#vProc{display:flex;flex-direction:column;gap:16px}
+.proc-intro{margin-bottom:2px}
+.proc-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--naranja2);font-weight:700;margin:0}
+.proc-lead{color:var(--tenue);font-size:14px;margin:8px 0 0;max-width:78ch;line-height:1.6}
+.proc-lead b{color:var(--texto)}
+.proc-lineas{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:820px){.proc-lineas{grid-template-columns:1fr}}
+.proc-linea{position:relative;text-align:left;background:var(--panel);border:1px solid var(--borde);border-radius:14px;padding:16px 18px;cursor:pointer;color:var(--texto);display:flex;flex-direction:column;gap:5px;overflow:hidden;transition:transform .12s,border-color .15s,background .15s}
+.proc-linea:hover{transform:translateY(-3px)}
+.proc-linea .pl-tag{position:absolute;top:8px;right:14px;font-family:var(--mono);font-weight:900;font-size:36px;line-height:1;opacity:.10}
+.proc-linea .pl-ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--borde);font-size:19px;margin-bottom:4px}
+.proc-linea .pl-nom{font-size:18px;font-weight:800}
+.proc-linea .pl-desc{color:var(--tenue);font-size:12.5px;line-height:1.5}
+.proc-linea .pl-count{font-family:var(--mono);font-size:11.5px;color:var(--txt-tenue);margin-top:6px}
+.proc-linea.wl{border-left:4px solid var(--naranja)} .proc-linea.wl .pl-ico{color:var(--naranja2)}
+.proc-linea.ws{border-left:4px solid var(--acero)} .proc-linea.ws .pl-ico{color:var(--acero)}
+.proc-linea.tx{border-left:4px solid var(--verde)} .proc-linea.tx .pl-ico{color:var(--verde)}
+.proc-linea.on{background:var(--side-activo);border-color:var(--naranja)}
+.proc-linea.ws.on{border-color:var(--acero)} .proc-linea.tx.on{border-color:var(--verde)}
+.proc-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.proc-buscar{flex:1;min-width:200px}
+.proc-buscar input{width:100%}
+.proc-live{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--verde);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.proc-live i{width:8px;height:8px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 0 rgba(53,194,106,.5);animation:procpulse 2s infinite}
+@keyframes procpulse{0%{box-shadow:0 0 0 0 rgba(53,194,106,.5)}70%{box-shadow:0 0 0 7px rgba(53,194,106,0)}100%{box-shadow:0 0 0 0 rgba(53,194,106,0)}}
+.proc-conteo{font-family:var(--mono);font-size:12px;color:var(--tenue)}
+.proc-refresh{white-space:nowrap}
+.proc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.proc-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.proc-grid{grid-template-columns:1fr}}
+.proc-doc{display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--borde);border-radius:12px;padding:14px;transition:transform .12s,border-color .15s}
+.proc-doc:hover{transform:translateY(-2px);border-color:var(--borde-ctrl2)}
+.proc-doc .pd-top{display:flex;gap:11px;align-items:flex-start}
+.proc-doc .pd-ic{width:40px;height:40px;flex:none;border-radius:9px;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:10px;color:#0d0e10}
+.pd-ic.pdf{background:var(--rojo)} .pd-ic.doc{background:var(--acero)} .pd-ic.xls{background:var(--verde)} .pd-ic.img{background:var(--ambar)} .pd-ic.file{background:var(--gris-ind);color:var(--texto)}
+.proc-doc h4{margin:0;font-size:14.5px;font-weight:700;line-height:1.3;word-break:break-word}
+.proc-doc .pd-sub{font-family:var(--mono);font-size:11px;color:var(--txt-tenue);margin-top:3px}
+.proc-doc .pd-badges{display:flex;gap:6px;flex-wrap:wrap}
+.pd-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:5px;border:1px solid var(--borde);color:var(--tenue)}
+.pd-badge.wl{color:var(--naranja2);background:rgba(255,106,0,.08);border-color:rgba(255,106,0,.25)}
+.pd-badge.ws{color:var(--acero);background:rgba(77,159,232,.09);border-color:rgba(77,159,232,.25)}
+.pd-badge.tx{color:var(--verde);background:rgba(53,194,106,.08);border-color:rgba(53,194,106,.25)}
+.proc-doc .pd-acts{display:flex;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid var(--borde-sutil)}
+.pd-btn{flex:1;text-align:center;padding:8px;border-radius:6px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid transparent;text-decoration:none;display:inline-block}
+.pd-btn.ver{background:var(--naranja);color:#180a00}
+.pd-btn.ver:hover{background:var(--naranja2)}
+.pd-btn.dl{background:var(--panel2);border-color:var(--borde);color:var(--texto)}
+.pd-btn.dl:hover{border-color:var(--tenue)}
+.proc-empty{border:1px dashed var(--borde-ctrl);border-radius:12px;padding:40px 22px;text-align:center;color:var(--tenue);font-size:13.5px;line-height:1.6}
+.proc-visor{width:min(1000px,96vw);max-width:1000px;height:min(88dvh,860px);max-height:88dvh;padding:0;display:flex;flex-direction:column;overflow:hidden}
+.pv-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--borde);flex:none}
+.pv-tit{flex:1;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-open{font-family:var(--mono);font-size:11px;color:var(--naranja2);border:1px solid var(--borde);padding:6px 10px;border-radius:6px;text-decoration:none;white-space:nowrap}
+.pv-open:hover{border-color:var(--naranja2)}
+.pv-close{width:32px;height:32px;flex:none;border-radius:8px;border:1px solid var(--borde);background:var(--panel2);color:var(--texto);font-size:18px;line-height:1;cursor:pointer}
+.pv-close:hover{border-color:var(--tenue)}
+.proc-visor iframe{flex:1;width:100%;border:0;background:#0d0e10}
+@media(max-width:600px){.proc-visor{width:100%;max-width:100%;height:calc(100dvh - 16px);max-height:calc(100dvh - 16px)}}
+</style>
+</head>
+<body>
+  <!-- PANTALLA PREVIA -->
+  <div id="landing" class="pantalla-video">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="intro.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="landing-inner">
+      <img src="logo.png" class="logo-grande" alt="Maxim Fishing">
+      <div class="landing-nombre">NEXUS <b>TOOLS</b></div>
+      <button class="btn-cta" id="btnLanding">Entrar</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE INGRESO -->
+  <div id="login" class="pantalla-video hidden">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="acceso.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="login-inner">
+      <div class="login-card">
+        <img src="logo.png" class="logo-card" alt="Maxim Fishing">
+        <h2 class="login-title">INGRESO</h2>
+        <form id="formLogin">
+          <label class="lbl">Correo<input id="correo" type="email" required autocomplete="username" placeholder="tucorreo@maximfishing.com"></label>
+          <label class="lbl">Contrase&ntilde;a<input id="clave" type="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></label>
+          <p class="err hidden" id="loginErr"></p>
+          <button class="btn-cta full" id="btnEntrar" type="submit">Ingresar</button>
+        </form>
+        <a href="#" class="volver" id="btnVolver">&larr; Volver al inicio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA HUB (NEXUS TOOLS) -->
+  <div id="hub" class="hidden">
+    <div class="hub-wrap">
+      <header class="hub-top">
+        <img src="logo.png" alt="Maxim Fishing">
+        <span class="sp"></span>
+        <span class="nombre" id="hNombre"></span>
+        <span class="rol" id="hRol"></span>
+        <button class="salir" id="hubSalir">Salir</button>
+      </header>
+      <div class="hub-hero">
+        <h1>NEXUS <b>TOOLS</b></h1>
+        <p>Plataforma de Maxim Fishing Solutions para administrar y controlar las herramientas, equipos y procesos de la operaci&oacute;n. Elige un m&oacute;dulo para comenzar.</p>
+      </div>
+      <div class="mod-grid">
+        <button class="mod on" id="modMtto" type="button">
+          <div class="mod-ic">MO</div>
+          <h3>Mtto Operativo</h3>
+          <p>Inventario, hojas de vida, mantenimientos con alertas y dashboard de herramientas y equipos de control de presi&oacute;n.</p>
+          <span class="mod-cta">Entrar &rarr;</span>
+        </button>
+        <button class="mod on" id="modIT" type="button">
+          <div class="mod-ic">IT</div>
+          <h3>Instrumentaci&oacute;n</h3>
+          <p>Inventario y control de calibraci&oacute;n y verificaci&oacute;n de instrumentos, con alertas de vencimiento.</p>
+          <span class="mod-cta">Entrar &rarr;</span>
+        </button>
+        <div class="mod soon hidden">
+          <div class="mod-ic">ME</div>
+          <h3>Mtto Electromec&aacute;nico</h3>
+          <p>Gesti&oacute;n del mantenimiento de equipos electromec&aacute;nicos.</p>
+          <span class="mod-badge">Pr&oacute;ximamente</span>
+        </div>
+        <button class="mod on" id="modProc" type="button">
+          <div class="mod-ic">PO</div>
+          <h3>Procedimientos Operativos</h3>
+          <p>Biblioteca de procedimientos e instructivos de la operaci&oacute;n, por l&iacute;nea WL, WS y transversales.</p>
+          <span class="mod-cta">Entrar &rarr;</span>
+        </button>
+        <a class="mod link" href="https://maxim-fishing.github.io/maxim-qaqc/login.html" target="_blank" rel="noopener">
+          <div class="mod-ic">QC</div>
+          <h3>QA/QC Insumos</h3>
+          <p>Control de calidad de insumos. Se abre la plataforma MAXIM QA/QC en una pesta&ntilde;a nueva.</p>
+          <span class="mod-cta">Ingresar &rarr;</span>
+        </a>
+      </div>
+      <section class="hub-info" id="hubInfo">
+        <div class="hub-info-head">
+          <h2>Banco de infograf&iacute;as</h2>
+          <button class="info-gear hidden" id="infoGear" type="button">Gestionar</button>
+        </div>
+        <div class="info-car">
+          <div class="info-viewport" id="infoVp">
+            <div class="info-track" id="infoTrack"></div>
+            <div class="info-empty hidden" id="infoEmpty">A&uacute;n no hay infograf&iacute;as cargadas.</div>
+          </div>
+          <button class="info-open hidden" id="infoOpen" type="button">Ampliar &#8599;</button>
+          <button class="info-nav prev hidden" id="infoPrev" type="button" aria-label="Anterior">&lsaquo;</button>
+          <button class="info-nav next hidden" id="infoNext" type="button" aria-label="Siguiente">&rsaquo;</button>
+          <div class="info-cap" id="infoCap"></div>
+          <div class="info-dots" id="infoDots"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- PANTALLA GUÍA -->
+  <div id="guia" class="hidden">
+    <div class="guia-wrap">
+      <div class="guia-top">
+        <img src="logo.png" alt="Maxim Fishing">
+        <span class="sp"></span>
+        <span class="nombre" id="gNombre"></span>
+        <span class="rol" id="gRol"></span>
+        <button class="btn-cta" id="gIr">Ir al inventario &rarr;</button>
+      </div>
+
+      <div class="guia-hero">
+        <h1><b>NEXUS TOOLS</b> &middot; Gu&iacute;a r&aacute;pida</h1>
+        <p>NEXUS TOOLS es la plataforma de Maxim Fishing Solutions para administrar y controlar las herramientas, equipos y procesos de la operaci&oacute;n. Se organiza en <b>m&oacute;dulos</b>; aqu&iacute; ves qu&eacute; hace cada uno y c&oacute;mo usar el que tienes abierto.</p>
+      </div>
+
+      <div class="guia-sec">M&oacute;dulos de NEXUS TOOLS <span class="hint">(se eligen desde el inicio)</span></div>
+      <div class="mods-guia">
+        <div class="mg-card mo">
+          <div class="mg-ic">MO</div>
+          <div class="mg-tx"><h3>Mtto Operativo</h3><p>Inventario, hojas de vida, mantenimientos con alertas y dashboard de herramientas y equipos de control de presi&oacute;n.</p></div>
+        </div>
+        <div class="mg-card it">
+          <div class="mg-ic">IT</div>
+          <div class="mg-tx"><h3>Instrumentaci&oacute;n</h3><p>Inventario y control de calibraci&oacute;n y verificaci&oacute;n de instrumentos, con alertas de vencimiento.</p></div>
+        </div>
+        <div class="mg-card po">
+          <div class="mg-ic">PO</div>
+          <div class="mg-tx"><h3>Procedimientos Operativos <span class="mg-new">NUEVO</span></h3><p>Biblioteca viva de procedimientos e instructivos por l&iacute;nea (WL, WS y transversales), le&iacute;da en vivo desde Google Drive. &Aacute;brelos en el visor o desc&aacute;rgalos; lo que subes a Drive aparece solo.</p></div>
+        </div>
+        <div class="mg-card qc">
+          <div class="mg-ic">QC</div>
+          <div class="mg-tx"><h3>QA/QC Insumos</h3><p>Control de calidad de insumos. Abre la plataforma MAXIM QA/QC en una pesta&ntilde;a nueva.</p></div>
+        </div>
+      </div>
+
+      <div class="guia-sec2">El m&oacute;dulo <b>Mtto Operativo</b> en detalle</div>
+
+      <div class="guia-sec">Roles &middot; qu&eacute; puede hacer cada uno <span class="hint">(toca una tarjeta para ver el detalle)</span></div>
+      <div class="rol-grid">
+        <div class="rol-card admin" data-rol>
+          <h3><span class="rol-ic">A</span> Administrador</h3>
+          <p class="cargo">Control total del sistema</p>
+          <div class="rol-more">Ver qu&eacute; puede hacer +</div>
+          <ul>
+            <li>Crear y editar la ficha (hoja de vida) de cada &iacute;tem.</li>
+            <li>Registrar mantenimientos y abrir nuevos ciclos.</li>
+            <li>Subir documentos est&aacute;ticos: COC, ficha t&eacute;cnica y manual.</li>
+            <li>Adjuntar los reportes de cada ciclo y el formulario Wireline.</li>
+            <li>Crear unidades nuevas.</li>
+            <li>Ver el dashboard completo.</li>
+          </ul>
+        </div>
+        <div class="rol-card oper" data-rol>
+          <h3><span class="rol-ic">O</span> Operador</h3>
+          <p class="cargo">Mantenimiento y documentos</p>
+          <div class="rol-more">Ver qu&eacute; puede hacer +</div>
+          <ul>
+            <li>Registrar mantenimientos (abre ciclo y calcula el vencimiento).</li>
+            <li>Subir los documentos del ciclo: reportes, NDT y pruebas.</li>
+            <li>Llenar el formulario digital Wireline.</li>
+            <li>Consultar todo el inventario y el dashboard.</li>
+            <li><b>No</b> crea ni edita la ficha del &iacute;tem.</li>
+          </ul>
+        </div>
+        <div class="rol-card cons" data-rol>
+          <h3><span class="rol-ic">C</span> Consulta</h3>
+          <p class="cargo">Solo lectura</p>
+          <div class="rol-more">Ver qu&eacute; puede hacer +</div>
+          <ul>
+            <li>Consultar fichas, documentos e historial de cada &iacute;tem.</li>
+            <li>Abrir y descargar los PDF.</li>
+            <li>Ver el dashboard y las alertas.</li>
+            <li>No modifica nada del sistema.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="guia-sec">Las dos familias de l&iacute;neas</div>
+      <div class="grp-grid">
+        <div class="grp-card wl">
+          <span class="tag">WL</span>
+          <h3>Wireline (WL)</h3>
+          <p>Herramientas y equipos de la operaci&oacute;n de wireline (cable). En los filtros y el dashboard, esta familia re&uacute;ne cuatro l&iacute;neas:</p>
+          <div class="chips"><span class="chip">EL</span><span class="chip">EP</span><span class="chip">SL</span><span class="chip">WL</span></div>
+        </div>
+        <div class="grp-card ws">
+          <span class="tag">WS</span>
+          <h3>Well Services (WS)</h3>
+          <p>Herramientas y equipos de servicios de pozo. Esta familia re&uacute;ne las otras cuatro l&iacute;neas:</p>
+          <div class="chips"><span class="chip">FB</span><span class="chip">SW</span><span class="chip">WT</span><span class="chip">WS</span></div>
+        </div>
+      </div>
+
+      <div class="guia-sec">C&oacute;mo funciona, paso a paso</div>
+      <div class="pasos">
+        <div class="paso"><span class="num">1</span><div class="tx"><b>Busca o filtra el &iacute;tem</b><span>Por familia (WL / WS), categor&iacute;a, tipo de herramienta, estado o texto (c&oacute;digo, S/N, descripci&oacute;n).</span></div></div>
+        <div class="paso"><span class="num">2</span><div class="tx"><b>Abre su ficha</b><span>Datos del &iacute;tem y documentos est&aacute;ticos: COC, ficha t&eacute;cnica y manual O&amp;M.</span></div></div>
+        <div class="paso"><span class="num">3</span><div class="tx"><b>Registra el mantenimiento</b><span>Se abre un ciclo con su fecha de vencimiento y una alerta cuando faltan 10 d&iacute;as o menos.</span></div></div>
+        <div class="paso"><span class="num">4</span><div class="tx"><b>Adjunta los documentos del ciclo</b><span>Reportes, NDT y pruebas; para Wireline puedes llenar el formulario digital.</span></div></div>
+        <div class="paso"><span class="num">5</span><div class="tx"><b>Todo se refleja en Google Drive</b><span>Cada PDF se archiva autom&aacute;ticamente en la ruta Categor&iacute;a &rarr; Tipo &rarr; C&oacute;digo.</span></div></div>
+        <div class="paso"><span class="num">6</span><div class="tx"><b>Controla desde el Dashboard</b><span>Vencidos, por vencer, al d&iacute;a, sin registro, completitud documental y cantidades por tipo.</span></div></div>
+      </div>
+
+      <div class="guia-sec">Sem&aacute;foro de mantenimiento</div>
+      <div class="legend">
+        <div class="lg"><b><span class="dot" style="background:var(--rojo)"></span>Vencido</b><p>Ya pas&oacute; la fecha de vencimiento del ciclo.</p></div>
+        <div class="lg"><b><span class="dot" style="background:var(--ambar)"></span>Por vencer</b><p>Vence en 10 d&iacute;as o menos. Aparece en la campana.</p></div>
+        <div class="lg"><b><span class="dot" style="background:var(--verde)"></span>Al d&iacute;a</b><p>Con mantenimiento vigente y sin urgencia.</p></div>
+        <div class="lg"><b><span class="dot" style="background:var(--tenue)"></span>Sin registro</b><p>A&uacute;n no tiene ning&uacute;n mantenimiento cargado.</p></div>
+      </div>
+
+      <div class="guia-cta">
+        <button class="btn-cta" id="gIr2">Ir al inventario &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div class="shell">
+      <aside class="side">
+        <div class="side-top">
+          <img src="logo.png" alt="Maxim Fishing" class="side-logo">
+          <div class="side-mod">MTTO / OPERATIVO</div>
+        </div>
+        <div class="side-grp">OPERACI&Oacute;N</div>
+        <nav class="side-nav">
+          <button class="snav" type="button" data-panel="resumen"><span class="nav-ico" aria-hidden="true">⌂</span><span class="lbl">Resumen</span><span class="bdg"></span></button>
+          <button class="snav" type="button" data-panel="inventario"><span class="nav-ico" aria-hidden="true">▦</span><span class="lbl">Inventario</span><span class="bdg">10.4k</span></button>
+          <button class="snav" type="button" data-panel="movilizacion"><span class="nav-ico" aria-hidden="true">⇄</span><span class="lbl">Movilizaci&oacute;n</span><span class="bdg">3</span></button>
+          <button class="snav" type="button" data-panel="dashboard"><span class="nav-ico" aria-hidden="true">▥</span><span class="lbl">Dashboard</span><span class="bdg"></span></button>
+          <button class="snav" type="button" data-panel="fabricantes"><span class="nav-ico" aria-hidden="true">⚙</span><span class="lbl">Fabricantes</span><span class="bdg">18</span></button>
+        </nav>
+        <div class="side-foot">
+          <div class="side-aviso" id="sideAvisoBox">
+            <div class="side-aviso-t" id="sideAvisoT">ATENCI&Oacute;N HOY</div>
+            <div class="side-aviso-x" id="sideAviso">Cargando&hellip;</div>
+          </div>
+
+          <button class="side-guia" id="navGuia" type="button">
+            <span class="side-guia-ic" aria-hidden="true">?</span>
+            <span class="side-guia-tx">
+              <b>&iquest;Perdido en Nexus Tools?</b>
+              <span>Abre la gu&iacute;a r&aacute;pida &rarr;</span>
+            </span>
+          </button>
+
+          <button class="side-volver" id="navHome" type="button">
+            <span class="sv-ic" aria-hidden="true">&#8862;</span> Volver a Nexus Tools
+          </button>
+
+          <div class="side-user">
+            <div class="side-ava" id="sideAva">--</div>
+            <div class="side-user-info">
+              <span class="nombre" id="nombre"></span>
+              <span class="rol" id="rol"></span>
+            </div>
+            <button class="side-salir" id="salir" type="button" title="Cerrar sesi&oacute;n" aria-label="Cerrar sesi&oacute;n">&#9211;</button>
+          </div>
+        </div>
+      </aside>
+      <div class="main">
+        <header class="topbar">
+          <div class="tb-head">
+            <div class="tb-tit" id="tbTitulo">Resumen</div>
+            <div class="tb-sub" id="tbSub"></div>
+          </div>
+          <div class="tb-r">
+            <input class="buscar tb-buscar hidden" id="q" placeholder="Buscar por c&oacute;digo, S/N o descripci&oacute;n&hellip;">
+            <button class="campana" id="campana" type="button" title="Vencimientos">&#128276;<span class="pt hidden" id="ptAlerta">0</span></button>
+            <button class="btn-nuevo hidden" id="btnSincNdt" type="button" title="Enlazar certificados NDT desde Drive">SINCRONIZAR NDT</button>
+            <button class="btn-nuevo hidden" id="btnSincPh" type="button" title="Enlazar pruebas hidrostáticas desde Drive">SINCRONIZAR PH</button>
+            <button class="btn-nuevo hidden" id="btnSincCoc" type="button" title="Enlazar COC desde Drive">SINCRONIZAR COC</button>
+            <button class="btn-nuevo hidden" id="nuevo" type="button">+ NUEVO</button>
+          </div>
+        </header>
+        <div class="contenido">
+          <div id="vResumen">
+            <div class="rs-banda" id="rsBanda">
+              <div>
+                <div class="rs-banda-sobre" id="rsBandaSobre">TURNO &middot; &mdash;</div>
+                <div class="rs-banda-tit" id="rsBandaTit">Cargando&hellip;</div>
+              </div>
+              <button class="rs-banda-btn hidden" id="rsBandaBtn" type="button">VER PENDIENTES</button>
+            </div>
+            <div class="rs-kpis" id="rsKpis"></div>
+            <div class="rs-fila">
+              <div class="rs-card">
+                <div class="rs-card-h"><span>Mantenimientos pr&oacute;ximos</span><button class="rs-link" id="rsVerInv" type="button">Ver en inventario &rarr;</button></div>
+                <div id="rsProx"><div class="rs-empty">Cargando&hellip;</div></div>
+                <div class="rs-card-f" id="rsProxPie"></div>
+              </div>
+              <div class="rs-side">
+                <div class="rs-card rs-acc">
+                  <button class="rs-acc-primary" id="rsRegistrar" type="button">REGISTRAR MANTENIMIENTO</button>
+                  <button class="rs-acc-sec" id="rsAdminUbic" type="button">ADMINISTRAR UBICACIONES</button>
+                  <button class="rs-acc-sec" type="button" data-goto="inventario">Ver inventario</button>
+                  <button class="rs-acc-sec" type="button" data-goto="movilizacion">Movilizar equipo</button>
+                  <button class="rs-acc-sec" type="button" data-goto="dashboard">Ir al Dashboard</button>
+                </div>
+                <div class="rs-card">
+                  <div class="rs-card-h"><span>Movilizaciones recientes</span></div>
+                  <div id="rsMov"><div class="rs-empty">Cargando&hellip;</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+    <!-- VISTA INVENTARIO -->
+    <div id="vInv">
+      <div class="inv-search" role="search" aria-label="Buscar en inventario">
+        <input class="inv-search-input" id="invBuscar" type="search" placeholder="Buscar por código, S/N o descripción…" autocomplete="off" enterkeyhint="search" aria-label="Buscar por código, S/N o descripción">
+        <button class="inv-search-btn" id="invBuscarBtn" type="button">BUSCAR</button>
+        <button class="inv-search-clear" id="invBuscarClear" type="button" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+      </div>
+      <div class="inv-filtro-bar">
+        <button class="inv-filtrar-btn" id="invFiltrarBtn" type="button" aria-expanded="false">☷ &nbsp;FILTRAR</button>
+        <span class="inv-filtro-resumen" id="invFiltroResumen">Todas las líneas · Todas las categorías · Todas las ubicaciones</span>
+      </div>
+      <div class="inv-filtros hidden" id="invFiltrosPanel">
+        <select id="fLinea" class="inv-sel" title="Grupo de l&iacute;neas">
+          <option value="">Todas las l&iacute;neas</option>
+          <option value="WL">Wireline (WL)</option>
+          <option value="WS">Well Services (WS)</option>
+        </select>
+        <select id="fCategoria" class="inv-sel">
+          <option value="">Todas las categor&iacute;as</option>
+          <option value="equipo">Equipo de Presi&oacute;n</option>
+          <option value="herramienta">Herramienta</option>
+          <option value="izaje">Izaje</option>
+        </select>
+        <select id="fUbi" class="inv-sel" title="Ubicaci&oacute;n (base o unidad)">
+          <option value="">Todas las ubicaciones</option>
+        </select>
+        <input class="inv-sel fTipo" id="fTipo" list="listaTipos" placeholder="Tipo de herramienta&hellip;" autocomplete="off">
+        <span class="inv-conteo"><b id="conteo">0</b> &Iacute;TEMS</span>
+        <span class="cargando hidden" id="cargando">buscando&hellip;</span>
+      </div>
+      <div class="inv-chips" id="invChips"></div>
+      <div class="inv-layout">
+        <div class="inv-main">
+          <div class="wrap inv-tabla">
+            <table>
+              <thead><tr>
+                <th class="c-cod">Cod</th><th class="c-tipo">Tipo</th><th class="c-ubi">Ubicaci&oacute;n</th><th class="c-mant">&Uacute;lt. mant.</th><th class="c-doc">Doc %</th>
+              </tr></thead>
+              <tbody id="filas"></tbody>
+            </table>
+          </div>
+          <div class="inv-foot">
+            <span class="inv-rango" id="invRango"></span>
+            <div class="inv-pager" id="invPager"></div>
+          </div>
+        </div>
+        <aside class="inv-detalle" id="invDetalle">
+          <button class="inv-det-x" id="invDetX" type="button" aria-label="Cerrar">&#10005;</button>
+          <div class="inv-det-vacio" id="invDetVacio">Selecciona un &iacute;tem para ver su detalle.</div>
+          <div class="inv-det-body hidden" id="invDetBody">
+            <div class="inv-det-head">
+              <div class="inv-det-cod" id="invDetCod"></div>
+              <div class="inv-det-nom" id="invDetNom"></div>
+            </div>
+            <div class="inv-det-foto">FOTO DE LA HERRAMIENTA</div>
+            <div id="invDetPairs"></div>
+            <button class="inv-det-abrir" id="invDetAbrir" type="button">ABRIR HOJA DE VIDA</button>
+            <button class="inv-det-mant" id="invDetMant" type="button">Registrar mantenimiento</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- VISTA PANEL -->
+    <div id="panel" class="hidden">
+      <div class="db-alertas" id="dbAlertas">
+        <button class="db-alerta crit" data-alert="venc"><span class="db-alerta-ic">!</span><span><b id="dbAlVenc">0</b><small>VENCIDOS</small></span></button>
+        <button class="db-alerta warn" data-alert="pv"><span class="db-alerta-ic">!</span><span><b id="dbAlPv">0</b><small>POR VENCER</small></span></button>
+        <button class="db-alerta doc" id="dbAlDocBtn" data-alert="doc"><span class="db-alerta-ic">%</span><span><b id="dbAlDoc">0%</b><small>DOCUMENTACI&Oacute;N</small></span></button>
+        <button class="db-alerta off" data-alert="off"><span class="db-alerta-ic">×</span><span><b id="dbAlOff">0</b><small>FUERA DE SERVICIO</small></span></button>
+        <button class="db-alerta warn" data-alert="inc"><span class="db-alerta-ic">!</span><span><b id="dbAlInc">0</b><small>MTTO INCOMPLETOS</small></span></button>
+      </div>
+      <div class="db-fila">
+        <div class="db-card">
+          <div class="db-card-t" id="dbMesesT">Mantenimientos por mes</div>
+          <div class="db-bars" id="dbMeses"><div class="rs-empty">Cargando&hellip;</div></div>
+        </div>
+        <div class="db-card" id="dbLineasCard">
+          <div class="db-card-t" id="dbLineasT">Inventario por l&iacute;nea</div>
+          <div class="db-lineas" id="dbLineas"><div class="rs-empty">Cargando&hellip;</div></div>
+        </div>
+      </div>
+      <div class="db-fila3">
+        <div class="db-metric">
+          <div class="db-metric-n" id="dbCumpl">&mdash;</div>
+          <div class="db-metric-t">CUMPLIMIENTO DE PLAN</div>
+          <div class="db-prog"><span id="dbCumplBar"></span></div>
+        </div>
+        <div class="db-metric">
+          <div class="db-metric-n" id="dbMes">&mdash;</div>
+          <div class="db-metric-t">MANTENIMIENTOS ESTE MES</div>
+        </div>
+        <div class="db-metric">
+          <div class="db-metric-n acc" id="dbFuera">&mdash;</div>
+          <div class="db-metric-t" id="dbFueraT">HERRAMIENTAS FUERA DE SERVICIO</div>
+        </div>
+      </div>
+      <div class="db-docs-grid" id="dbDocsGrid">
+        <div class="db-doc-card"><div class="n" id="dbCoc">0</div><div class="t">COC</div><div class="p" id="dbCocP">0%</div></div>
+        <div class="db-doc-card"><div class="n" id="dbRep">0</div><div class="t">Reportes de mantenimiento</div><div class="p" id="dbRepP">0%</div></div>
+        <div class="db-doc-card"><div class="n" id="dbNdt">0</div><div class="t">NDT</div><div class="p" id="dbNdtP">0%</div></div>
+      </div>
+      <div class="db-incomplete hidden" id="dbIncomplete"><button class="db-alerta warn" id="dbIncompleteBtn" type="button"><span class="db-alerta-ic">!</span><span><b id="dbIncompleteTitle">Mantenimientos incompletos</b><small id="dbIncompleteSub">Ver ciclos pendientes de documentación</small></span></button></div>
+    </div>
+
+    <!-- VISTA MOVILIZACIÓN -->
+    <div id="vMov" class="hidden">
+      <div class="mv-kpis" id="mvKpis"></div>
+      <div class="mv-masiva-head">
+        <div class="mv-form-t">Movilización de equipos / herramientas</div>
+        <button class="mv-masiva-btn" id="movMasivoBtn" type="button">+ Movilización masiva</button>
+      </div>
+      <div class="mv-form" id="movForm">
+        <div class="mv-form-t">Movilizar equipo / herramienta</div>
+        <div class="mv-row">
+          <input id="movCodigo" class="mv-inp" placeholder="C&oacute;digo del &iacute;tem (ej. EPBMS350X0002)" autocomplete="off">
+          <button class="mv-btn2" id="movBuscar" type="button">Buscar</button>
+        </div>
+        <p class="mv-info" id="movInfo"></p>
+        <div class="mv-row">
+          <select id="movDestino" class="mv-inp"><option value="">Mover a&hellip;</option></select>
+          <button class="mv-btn" id="movGuardar" type="button" disabled>Registrar movimiento</button>
+        </div>
+        <p class="msg hidden" id="movMsg"></p>
+      </div>
+      <div class="mv-hist-top">
+        <span class="mv-hist-t">Historial de movimientos</span>
+        <button class="mv-btn2" id="movInforme" type="button">Descargar informe &uacute;ltima semana (CSV)</button>
+      </div>
+      <div class="wrap mv-tabla">
+        <table>
+          <thead><tr><th>Fecha</th><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Origen</th><th>Destino</th><th>Usuario</th></tr></thead>
+          <tbody id="movFilas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODAL MOVILIZACION MASIVA -->
+    <div id="movMasivoBg" class="modal-bg hidden">
+      <div class="modal mv-bulk-modal" role="dialog" aria-modal="true" aria-labelledby="movMasivoTit">
+        <button class="modal-x" id="movMasivoX" type="button" aria-label="Cerrar">&times;</button>
+        <div class="modal-h" id="movMasivoTit">Movilización masiva</div>
+        <div class="modal-sub">AGRUPAR HERRAMIENTAS Y MOVERLAS A UNA SOLA BASE O UNIDAD</div>
+        <div class="mv-form" style="margin-top:14px">
+          <div class="mv-row">
+            <input id="movBulkCodigo" class="mv-inp" placeholder="Buscar código, S/N o descripción…" autocomplete="off">
+            <button class="mv-btn2" id="movBulkBuscar" type="button">Buscar</button>
+          </div>
+          <p class="mv-info" id="movBulkInfo"></p>
+        </div>
+        <div class="mv-form" style="margin-top:0">
+          <div class="mv-row">
+            <select id="movBulkOrigen" class="mv-inp" style="min-width:0"><option value="">Agregar unidad o base completa…</option></select>
+            <button class="mv-btn2" id="movBulkAgregarOrigen" type="button">Agregar todas</button>
+          </div>
+          <p class="mv-info" id="movBulkOrigenInfo"></p>
+        </div>
+        <div class="mv-bulk-list" id="movBulkLista"><div class="mv-bulk-empty">Aún no has agregado herramientas.</div></div>
+        <div class="mv-bulk-dest">
+          <label class="lbl">DESTINO ÚNICO</label>
+          <select id="movBulkDestino" class="mv-inp" style="width:100%;min-width:0"><option value="">Seleccionar base o unidad…</option></select>
+        </div>
+        <div class="mv-bulk-summary" id="movBulkResumen">Selecciona una o más herramientas y luego un destino.</div>
+        <div class="mv-bulk-actions">
+          <button class="mv-btn2" id="movBulkCancelar" type="button">Cancelar</button>
+          <button class="mv-btn" id="movBulkEjecutar" type="button" disabled>Mover grupo</button>
+        </div>
+        <p class="msg hidden" id="movBulkMsg"></p>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMACION MOVILIZACION MASIVA -->
+    <div id="movBulkConfirmBg" class="modal-bg hidden">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="movBulkConfirmTit">
+        <button class="modal-x" id="movBulkConfirmX" type="button" aria-label="Cerrar">&times;</button>
+        <div class="modal-h" id="movBulkConfirmTit">Confirmar movilización</div>
+        <div class="modal-sub">REVISA EL GRUPO ANTES DE EJECUTAR</div>
+        <div class="mv-bulk-confirm" id="movBulkConfirmText"></div>
+        <div class="mv-bulk-actions">
+          <button class="mv-btn2" id="movBulkConfirmNo" type="button">Cancelar</button>
+          <button class="mv-btn" id="movBulkConfirmYes" type="button">Confirmar movilización</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA FABRICANTES -->
+    <div id="vFab" class="hidden">
+      <div id="fabLista">
+        <div class="fab-top">
+          <input class="fab-buscar" id="fabBuscar" placeholder="Buscar fabricante&hellip;" autocomplete="off">
+          <span class="fab-conteo" id="fabConteo"></span>
+        </div>
+        <div class="fab-grid" id="fabGrid"><div class="rs-empty">Cargando&hellip;</div></div>
+      </div>
+      <div id="fabCatalogo" class="hidden">
+        <button class="fab-volver" id="fabVolver" type="button">&larr; Fabricantes</button>
+        <div class="fab-cat-h"><span class="fab-cat-ini" id="fabCatIni"></span><span class="fab-cat-nom" id="fabCatNom"></span></div>
+        <p class="fab-nota">La ficha t&eacute;cnica y el manual O&amp;M que se cargan aqu&iacute; se aplican a <b>todos</b> los c&oacute;digos de ese fabricante y tipo. En la ficha de cada &iacute;tem aparecen autom&aacute;ticamente como "Del fabricante".</p>
+        <p class="msg hidden" id="fabMsg"></p>
+        <div class="wrap" id="fabTipos"></div>
+      </div>
+    </div>
+
+    <!-- VISTA PROCEDIMIENTOS OPERATIVOS -->
+    <div id="vProc" class="hidden">
+      <div class="proc-intro">
+        <p class="proc-eyebrow">Documentaci&oacute;n controlada &middot; Lectura en vivo desde Drive</p>
+        <p class="proc-lead">Consulta los procedimientos por l&iacute;nea de operaci&oacute;n. Lo que se sube a Drive aparece aqu&iacute; al recargar la vista. Los <b>transversales</b> aplican a ambas l&iacute;neas y se muestran marcados dentro de WL y WS.</p>
+      </div>
+
+      <div class="proc-lineas" id="procLineas">
+        <button class="proc-linea wl on" type="button" data-linea="wl">
+          <span class="pl-tag">WL</span>
+          <span class="pl-ico" aria-hidden="true">&#9636;</span>
+          <span class="pl-nom">L&iacute;nea WL</span>
+          <span class="pl-desc">Wireline &middot; procedimientos propios + transversales</span>
+          <span class="pl-count" id="plCountWl">&mdash;</span>
+        </button>
+        <button class="proc-linea ws" type="button" data-linea="ws">
+          <span class="pl-tag">WS</span>
+          <span class="pl-ico" aria-hidden="true">&#9636;</span>
+          <span class="pl-nom">L&iacute;nea WS</span>
+          <span class="pl-desc">Well Services &middot; procedimientos propios + transversales</span>
+          <span class="pl-count" id="plCountWs">&mdash;</span>
+        </button>
+        <button class="proc-linea tx" type="button" data-linea="tx">
+          <span class="pl-tag">TX</span>
+          <span class="pl-ico" aria-hidden="true">&#8646;</span>
+          <span class="pl-nom">Transversales</span>
+          <span class="pl-desc">Compartidos por WL y WS</span>
+          <span class="pl-count" id="plCountTx">&mdash;</span>
+        </button>
+      </div>
+
+      <div class="proc-bar">
+        <div class="proc-buscar"><input id="procQ" type="search" placeholder="Buscar procedimiento por nombre&hellip;" autocomplete="off"></div>
+        <span class="proc-live"><i></i> EN VIVO</span>
+        <span class="proc-conteo" id="procConteo"></span>
+        <button class="btn2 proc-refresh" id="procRefresh" type="button">&#8635; Actualizar</button>
+      </div>
+
+      <div class="proc-grid" id="procGrid"><div class="rs-empty">Cargando&hellip;</div></div>
+
+      <!-- Visor de documento -->
+      <div id="procVisorBg" class="modal-bg hidden">
+        <div class="modal proc-visor" role="dialog" aria-modal="true" aria-label="Visor de procedimiento">
+          <div class="pv-head">
+            <div class="pv-tit" id="pvTit">Documento</div>
+            <a class="pv-open" id="pvOpen" target="_blank" rel="noopener">Abrir en Drive &#8599;</a>
+            <button class="pv-close" id="pvClose" type="button" aria-label="Cerrar">&times;</button>
+          </div>
+          <iframe id="pvFrame" title="Visor de procedimiento"></iframe>
+        </div>
+      </div>
+    </div>
+
+        </div>
+      </div>
+    </div>
+    <nav class="bottombar">
+      <button class="btab" type="button" data-panel="resumen"><span class="nav-ico" aria-hidden="true">⌂</span><span class="lbl">Resumen</span></button>
+      <button class="btab" type="button" data-panel="inventario"><span class="nav-ico" aria-hidden="true">▦</span><span class="lbl">Inventario</span></button>
+      <button class="btab" type="button" data-panel="movilizacion"><span class="nav-ico" aria-hidden="true">⇄</span><span class="lbl">Movil.</span></button>
+      <button class="btab" type="button" data-panel="dashboard"><span class="nav-ico" aria-hidden="true">▥</span><span class="lbl">Dashboard</span></button>
+      <button class="btab" type="button" data-panel="fabricantes"><span class="nav-ico" aria-hidden="true">⚙</span><span class="lbl">Fabric.</span></button>
+    </nav>
+  </div>
+
+  <!-- MODULO PROCEDIMIENTOS OPERATIVOS (pantalla propia) -->
+  <div id="appProc" class="hidden">
+    <div class="hub-wrap procm-wrap">
+      <header class="hub-top">
+        <img src="logo.png" alt="Maxim Fishing">
+        <span class="sp"></span>
+        <button class="salir procm-back" id="procHome" type="button">&larr; Nexus Tools</button>
+        <span class="nombre" id="pNombre"></span>
+        <span class="rol" id="pRol"></span>
+        <button class="salir" id="procSalir" type="button">Salir</button>
+      </header>
+      <div class="procm-hero">
+        <div class="procm-ic">PO</div>
+        <div>
+          <h1>Procedimientos <b>Operativos</b></h1>
+          <p>Biblioteca viva de procedimientos e instructivos, organizada por l&iacute;nea de operaci&oacute;n. Se actualiza con lo que subes a Drive.</p>
+        </div>
+      </div>
+      <div id="procMount"></div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modalBg" class="modal-bg hidden">
+    <div class="modal">
+      <h2 id="mTitulo">Ficha del &iacute;tem</h2>
+      <p class="sub" id="mSub"></p>
+      <div class="grid" id="mCampos"></div>
+      <div class="mant-box hidden" id="mDocsBox">
+        <div class="seccion" style="margin-top:0">Documentos est&aacute;ticos</div>
+        <div id="mDocsEst"></div>
+      </div>
+      <div class="mant-box hidden" id="mMantBox">
+        <div class="seccion" style="margin-top:0">Mantenimiento</div>
+        <p class="mant-estado hidden" id="mMantEstado"></p>
+        <div class="mant-menu">
+          <button class="btn hidden mant-menu-btn" id="mMantAbrir" type="button">Registrar mantenimiento</button>
+          <button class="btn mant-menu-btn" id="mDocsCicloBtn" type="button">Documentos del ciclo actual</button>
+          <button class="btn mant-menu-btn" id="mHistBtn" type="button">Historial de mantenimiento</button>
+        </div>
+        <button class="btn2 hidden" id="mVerFormWL">Editar formulario</button>
+        <div class="grid hidden" id="mMantForm" style="margin-top:8px">
+          <div class="row2">
+            <label>Fecha realizado<input id="mFecha" type="date"></label>
+            <label>Tipo de mantenimiento<select id="mTipoMant"><option value="">Seleccione…</option><option value="correctivo">Correctivo</option><option value="preventivo">Preventivo</option></select></label>
+          </div>
+          <div id="mPrevBox" class="hidden">
+            <label>Tipo preventivo<select id="mTipoPrev"><option value="">Seleccione…</option><option value="C2">C2: cada 3 meses</option><option value="C4">C4: Cada 6 meses</option><option value="C6">C6: cada 12 meses</option></select></label>
+            <p id="mPrevRegla" class="sub" style="margin-top:6px"></p>
+          </div>
+          <div id="mCorrectivoBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Correctivo</div>
+            <p class="sub">Requeridos para completar: Reporte de mantenimiento + Reporte de falla. Puedes guardar con uno solo y quedará INCOMPLETO.</p>
+          </div>
+          <div id="mPreventivoBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Preventivo</div>
+            <p class="sub" id="mPreventivoReq"></p>
+          </div>
+          <div id="mRepMantBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Reporte de mantenimiento</div>
+            <p class="sub">Elige <b>una sola</b> opción para el reporte de mantenimiento. Puedes cambiarla antes de guardar.</p>
+            <div class="row2">
+              <button class="btn2" type="button" id="mRepFormBtn">Formulario en línea</button>
+              <button class="btn2" type="button" id="mRepFileBtn">Anexar archivo</button>
+            </div>
+            <button class="btn2" type="button" id="mRepPhotoBtn" style="width:100%;margin-top:8px">Tomar / cargar foto directa</button>
+            <input type="file" id="mRepFile" class="hidden" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx">
+            <input type="file" id="mRepPhoto" class="hidden" accept="image/*" capture="environment">
+            <div id="mRepStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <div id="mFallaBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Reporte de falla</div>
+            <button class="btn2" type="button" id="mFallaBtn">Anexar reporte de falla</button>
+            <input type="file" id="mFallaFile" class="hidden" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx">
+            <div id="mFallaStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <div id="mNdtBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">Reporte NDT</div>
+            <button class="btn2" type="button" id="mNdtBtn">Anexar Reporte NDT</button>
+            <input type="file" id="mNdtFile" class="hidden" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx">
+            <div id="mNdtStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <div id="mPhBox" class="hidden">
+            <div class="seccion" style="margin-top:4px">PH</div>
+            <button class="btn2" type="button" id="mPhBtn">Anexar PH</button>
+            <input type="file" id="mPhFile" class="hidden" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx">
+            <div id="mPhStatus" class="sub" style="margin-top:8px"></div>
+          </div>
+          <label>Observaciones<textarea id="mObs" rows="2" placeholder="Notas del mantenimiento"></textarea></label>
+          <button class="btn" id="mMantGuardar" type="button">Guardar mantenimiento</button>
+        </div>
+        <div class="grid hidden" id="mIzajeBox" style="margin-top:8px">
+          <div class="seccion" style="margin-top:4px">Recertificación (Izaje)</div>
+          <p class="sub">Adjunta el <b>Certificado de inspección</b> y escribe el <b>nuevo código</b> (precinto). Al guardar, el código anterior se archiva en el historial y el vencimiento se recalcula a 6 meses.</p>
+          <div class="row2">
+            <label>Fecha de recertificación<input id="mIzajeFecha" type="date"></label>
+            <label>Nuevo código (precinto)<input id="mIzajeCodigo" type="text" placeholder="Ej. LCS5301" autocomplete="off"></label>
+          </div>
+          <div class="seccion" style="margin-top:4px">Certificado de inspección</div>
+          <input type="file" id="mIzajeCert" accept="application/pdf,image/*">
+          <div id="mIzajeCertStatus" class="sub" style="margin-top:6px"></div>
+          <button class="btn" id="mIzajeGuardar" type="button" style="margin-top:8px">Guardar recertificación</button>
+          <p class="msg hidden" id="mIzajeMsg"></p>
+        </div>
+        <div class="grid hidden" id="mInstrBox" style="margin-top:8px">
+          <div class="seccion" style="margin-top:4px">Registrar calibración / verificación</div>
+          <p class="sub">La <b>fecha de vencimiento</b> se toma tal cual del certificado (no se calcula). Puedes guardar sin el PDF y adjuntarlo después; el ciclo quedará marcado como <b>incompleto</b>.</p>
+          <div class="row2">
+            <label>Tipo de control<select id="mInstrTipo"><option value="calibracion">Calibración</option><option value="verificacion">Verificación</option><option value="certificado">Certificado</option><option value="ndt">Inspección NDT</option></select></label>
+            <label>N° de certificado<input id="mInstrNum" type="text" placeholder="Ej. 2026-076" autocomplete="off"></label>
+          </div>
+          <div class="row2">
+            <label>Fecha de calibración/verificación<input id="mInstrFecha" type="date"></label>
+            <label>Fecha de vencimiento (del certificado)<input id="mInstrVence" type="date"></label>
+          </div>
+          <div class="seccion" style="margin-top:4px">Certificado (PDF) — opcional</div>
+          <input type="file" id="mInstrFile" accept="application/pdf,image/*">
+          <div id="mInstrFileStatus" class="sub" style="margin-top:6px"></div>
+          <button class="btn" id="mInstrGuardar" type="button" style="margin-top:8px">Guardar calibración</button>
+          <p class="msg hidden" id="mInstrMsg"></p>
+        </div>
+        <div id="mDocsDin" style="margin-top:14px"></div>
+        <div id="mHistBox" class="mant-box" style="margin-top:14px">
+          <div class="seccion" style="margin-top:0">Historial de mantenimiento</div>
+          <div id="mHistorial"><div class="rs-empty">Consultando historial…</div></div>
+        </div>
+      </div>
+      <p class="msg hidden" id="mMsg"></p>
+      <div class="acc">
+        <button class="btn hidden" id="mGuardar">Guardar</button>
+        <button class="btn2 hidden" id="mDescargarPDF" type="button">⬇ Descargar PDF</button>
+        <button class="btn2" id="mCerrar">Cerrar</button>
+      </div>
+      <div class="admin-acciones hidden" id="mAdminAcciones">
+        <button class="btn-danger" id="mDarBaja" type="button">Dar de baja</button>
+        <button class="btn-danger hidden" id="mEliminarDef" type="button">Eliminar definitivamente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMINISTRACION DE UBICACIONES -->
+  <div id="ubicAdminBg" class="modal-bg hidden">
+    <div class="modal" style="max-width:720px">
+      <h2>Administrar ubicaciones</h2>
+      <p class="sub">Una ubicación solo puede eliminarse cuando no tiene herramientas asignadas. Eliminar una ubicación no elimina herramientas ni historial.</p>
+      <div class="row2">
+        <label>Tipo<select id="ubicTipo"><option value="base">Bases</option><option value="unidad">Unidades</option></select></label>
+        <label>Nueva ubicación<input id="ubicNueva" type="text" placeholder="Nombre de la base o unidad"></label>
+      </div>
+      <button class="btn" id="ubicAgregar" type="button">+ Agregar ubicación</button>
+      <p class="msg hidden" id="ubicMsg"></p>
+      <div id="ubicLista" class="loc-list"><div class="loc-empty">Cargando…</div></div>
+      <div class="acc"><button class="btn2" id="ubicCerrar" type="button">Cerrar</button></div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO WIRELINE (MF-F-MTO-025) -->
+  <div id="formWLbg" class="modal-bg hidden">
+    <div class="modal" style="max-width:660px">
+      <h2>Reporte de mantenimiento &mdash; Wireline</h2>
+      <p class="sub" id="wlSub"></p>
+      <div class="grid">
+        <div class="row2">
+          <label>Fecha<input id="wl_fecha" type="date"></label>
+          <label>N&ordm; Reporte<input id="wl_reporte" type="text" readonly></label>
+        </div>
+        <div class="row2">
+          <label>Lugar/Base<input id="wl_lugar" type="text"></label>
+          <label>T&eacute;cnico que repara<input id="wl_tecnico" type="text"></label>
+        </div>
+
+        <div class="seccion" style="margin-top:6px">1. Visual</div>
+        <div class="row2">
+          <label>Fishneck<select id="wl_fishneck"><option value="">&mdash;</option><option value="bueno">Bueno</option><option value="malo">Malo</option></select></label>
+          <label>Rosca<select id="wl_rosca"><option value="">&mdash;</option><option value="buena">Buena</option><option value="mala">Mala</option></select></label>
+        </div>
+        <label>Cuerpo<select id="wl_cuerpo"><option value="">&mdash;</option><option value="bueno">Bueno</option><option value="malo">Malo</option></select></label>
+        <label>Si el cuerpo est&aacute; malo, &iquest;cu&aacute;l?<select id="wl_cuerpo_cual"><option value="">&mdash;</option><option value="colapso">Colapso</option><option value="fisura">Fisura</option><option value="deformidad">Deformidad</option><option value="otro">Otro</option></select></label>
+        <div class="row2">
+          <label>Otro (cu&aacute;l)<input id="wl_cuerpo_otro" type="text"></label>
+          <label>Parte afectada (N&ordm;)<input id="wl_parte_afectada" type="text"></label>
+        </div>
+
+        <div class="seccion">2. Dimensiones</div>
+        <div class="row2">
+          <label>Rosca (OD)<input id="wl_rosca_od" type="text"></label>
+          <label>Fishneck (OD)<input id="wl_fishneck_od" type="text"></label>
+        </div>
+        <label>Dimensiones por parte</label>
+        <div id="wl_dims" class="grid"></div>
+        <button class="btn2" type="button" id="wl_dim_add">+ Agregar dimensi&oacute;n</button>
+
+        <div class="seccion">3. Operatividad</div>
+        <label>Operatividad<select id="wl_operatividad"><option value="">&mdash;</option><option value="buena">Buena</option><option value="mala">Mala</option><option value="na">No aplica</option></select></label>
+
+        <div class="seccion">Partes reemplazadas</div>
+        <div id="wl_partes" class="grid"></div>
+        <button class="btn2" type="button" id="wl_parte_add">+ Agregar parte</button>
+
+        <div class="seccion">4. Estado final</div>
+        <label>Estado final de la herramienta<select id="wl_estado_final"><option value="">&mdash;</option><option value="buena">Buena</option><option value="regular">Regular</option><option value="mala">Mala</option></select></label>
+        <label>Observaciones<textarea id="wl_obs" rows="3"></textarea></label>
+        <div class="row2">
+          <label>Firma/nombre quien repara<input id="wl_firma" type="text"></label>
+          <label>Nombre de quien supervisa<input id="wl_supervisa" type="text"></label>
+        </div>
+      </div>
+      <p class="msg hidden" id="wlMsg"></p>
+      <div class="acc">
+        <button class="btn" id="wlGuardar">Guardar mantenimiento</button>
+        <button class="btn2" id="wlCerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="infoAdminBg" class="modal-bg hidden">
+    <div class="modal">
+      <h2>Gestionar infograf&iacute;as</h2>
+      <p class="sub">Sube im&aacute;genes, ord&eacute;nalas con las flechas y borra las que no quieras. Solo el admin ve este panel.</p>
+      <div class="ia-up">
+        <label>Nueva infograf&iacute;a (imagen)
+          <input type="file" id="infoFile" accept="image/*">
+        </label>
+        <label>T&iacute;tulo (opcional)
+          <input type="text" id="infoTitulo" maxlength="120" placeholder="Ej: Procedimiento de armado">
+        </label>
+        <button class="btn" id="infoSubir" type="button">Subir infograf&iacute;a</button>
+        <p class="ia-msg" id="infoMsg"></p>
+      </div>
+      <div id="infoAdminList"></div>
+      <div class="acc"><button class="btn" id="infoAdminX" type="button">Cerrar</button></div>
+    </div>
+  </div>
+
+  <input type="file" id="filePicker" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
+  <input type="file" id="histFile" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
+
+<script>
+  const URL_SB = "https://ryfhzlbvcqnxaptltslo.supabase.co";
+  const KEY = "sb_publishable_KtRk1DP1IR5gNl_woH30YA_wiB--4V9";
+  const DRIVE_URL = "https://script.google.com/macros/s/AKfycbxeZtWbb8jcBGBYioD-zqWcwcJ54ZBOPHyk8A32MgjE6ywRfGJVOrsVfx_sCjq4yr6o/exec"; // URL del Apps Script
+  const DRIVE_TOKEN = "maxim-pce-2026"; // debe coincidir con el TOKEN del Apps Script
   const POR = 50;
   const LINEAS_OK = ["EL","EP","FB","SL","SW","WL","WS","WT"];
   const GRUPO = {EL:"WL",EP:"WL",SL:"WL",WL:"WL",FB:"WS",SW:"WS",WT:"WS",WS:"WS"};
@@ -91,7 +2061,7 @@
 
   // ---- Pantallas (previa / ingreso / guia / app) ----
   function mostrarPantalla(id){
-    ["landing","login","hub","guia","app","appProc","appDD"].forEach(function(p){
+    ["landing","login","hub","guia","app","appProc"].forEach(function(p){
       var el=document.getElementById(p); if(el) el.classList.toggle("hidden", p!==id);
     });
     window.scrollTo(0,0);
@@ -151,21 +2121,8 @@
   var _mp=$("#modProc"); if(_mp) _mp.addEventListener("click", entrarPO); // modulo Procedimientos Operativos
   var _ph=$("#procHome"); if(_ph) _ph.addEventListener("click", verHub);
   var _ps=$("#procSalir"); if(_ps) _ps.addEventListener("click", cerrarSesion);
-  var _md=$("#modDD"); if(_md) _md.addEventListener("click", entrarDD); // modulo Diseño y Dibujo
-  var _dh=$("#ddHome"); if(_dh) _dh.addEventListener("click", verHub);
-  var _ds=$("#ddSalir"); if(_ds) _ds.addEventListener("click", cerrarSesion);
   $("#navHome").addEventListener("click", verHub);       // volver al hub de modulos
   $("#hubSalir").addEventListener("click", cerrarSesion);
-  // Menú de usuario del topbar (móvil): Volver / Guía / Salir
-  var _tbMenu=$("#tbMenu"), _tbPop=$("#tbMenuPop");
-  if(_tbMenu && _tbPop){
-    _tbMenu.addEventListener("click", function(e){ e.stopPropagation(); var open=_tbPop.classList.toggle("hidden"); _tbMenu.setAttribute("aria-expanded", open?"false":"true"); });
-    _tbPop.addEventListener("click", function(e){ e.stopPropagation(); });
-    document.addEventListener("click", function(){ _tbPop.classList.add("hidden"); _tbMenu.setAttribute("aria-expanded","false"); });
-  }
-  var _tbHome=$("#tbHome"); if(_tbHome) _tbHome.addEventListener("click", verHub);
-  var _tbGuia=$("#tbGuia"); if(_tbGuia) _tbGuia.addEventListener("click", verGuia);
-  var _tbSalir=$("#tbSalir"); if(_tbSalir) _tbSalir.addEventListener("click", cerrarSesion);
   $("#gIr").addEventListener("click", entrarApp);
   $("#gIr2").addEventListener("click", entrarApp);
   $("#navGuia").addEventListener("click", verGuia);
@@ -1273,9 +3230,6 @@
     var n=($("#nombre").textContent||"").trim(); var ini="--";
     if(n){ var ps=n.split(/\s+/); ini=((ps[0]&&ps[0][0])||"")+((ps[1]&&ps[1][0])||""); ini=ini.toUpperCase()||"--"; }
     var a=$("#sideAva"); if(a) a.textContent=ini;
-    var ta=$("#tbAva"); if(ta) ta.textContent=ini;
-    var mn=$("#tbMenuNom"); if(mn) mn.textContent=n||"";
-    var mr=$("#tbMenuRol"); if(mr){ var rl=$("#rol"); mr.textContent=(rl?rl.textContent:"")||""; }
   }
   // Opciones originales del filtro "Categoría" (modo Mtto Operativo).
   var _CAT_OPCIONES_MTTO='<option value="">Todas las categorías</option><option value="equipo">Equipo de Presión</option><option value="herramienta">Herramienta</option><option value="izaje">Izaje</option>';
@@ -1356,10 +3310,11 @@
     document.querySelectorAll("#vResumen [data-goto]").forEach(function(b){ b.addEventListener("click", function(){ irPanel(b.getAttribute("data-goto")); }); });
   }
   async function contarRest(tabla, filtro){
-    // MIGRADO a la capa de datos (db.js). Antes: fetch(URL_SB + "/rest/v1/…" HEAD count=exact).
-    // DB.count construye la misma petición (HEAD · select=id · Prefer:count=exact) en un solo lugar.
-    try{ return await DB.count(tabla, { filters: filtro ? filtro.split("&") : [] }); }
-    catch(e){ return 0; }
+    try{
+      var r=await fetch(URL_SB+"/rest/v1/"+tabla+"?select=id"+(filtro?("&"+filtro):""),{method:"HEAD",headers:headers({"Prefer":"count=exact"})});
+      var cr=r.headers.get("content-range")||"";
+      return cr.includes("/") ? (parseInt(cr.split("/")[1],10)||0) : 0;
+    }catch(e){ return 0; }
   }
   // Cuenta ciclos_mantenimiento respetando el modulo activo.
   // En modo 'it' hace join items!inner y filtra por categoria=instrumento; en 'mtto' cuenta todos.
@@ -2253,296 +4208,6 @@
       if(cont) cont.innerHTML='<div class="proc-empty">No se pudo leer Drive: '+esc(e.message||String(e))+
         '.<br><br>Verifica que el Apps Script tenga desplegada la acción <b>list_proc</b> (vuelve a implementar la versión).</div>';
     }finally{ PROC.cargando=false; }
-  }
-
-  // ===== Diseño y Dibujo (DD) — gestión de solicitudes =====
-  var DD = { data:[], filtro:"", actual:null };
-  var _ddBound=false;
-  var DD_TIPOS = {
-    levantamiento_3d:"Levantamiento y modelado 3D", modelado_3d:"Modelado 3D",
-    diseno_3d:"Diseño y modelado 3D", planos:"Planos", informes_aef:"Informes / AEF",
-    ficha_tecnica:"Ficha técnica", simulaciones:"Simulaciones"
-  };
-  var DD_ESTADOS = { pendiente:"Pendiente", en_proceso:"En proceso", entregada:"Entregada" };
-  function ddFecha(iso){ try{ return new Date(iso).toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric"}); }catch(e){ return ""; } }
-  function ddFechaHora(iso){ try{ return new Date(iso).toLocaleString("es-CO",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
-  function ddFormMsg(t,ok){ var m=$("#ddFormMsg"); if(!m) return; m.textContent=t||""; m.classList.toggle("hidden",!t); m.style.color=ok?"var(--verde)":"var(--rojo)"; }
-  function ddEntMsg(t,ok){ var m=$("#ddEntMsg"); if(!m) return; m.textContent=t||""; m.classList.toggle("hidden",!t); m.style.color=ok?"var(--verde)":"var(--rojo)"; }
-
-  // ---- Drive: subir entregables/formato y obtener su link ----
-  function ddFileToB64(file){
-    return new Promise(function(resolve,reject){
-      var fr=new FileReader();
-      fr.onload=function(){ var s=String(fr.result||""); var i=s.indexOf(","); resolve(i>=0?s.slice(i+1):s); };
-      fr.onerror=function(){ reject(new Error("No se pudo leer el archivo")); };
-      fr.readAsDataURL(file);
-    });
-  }
-  function ddJsonp(url){
-    return new Promise(function(resolve,reject){
-      var cb="__dd"+Date.now()+Math.floor(Math.random()*10000);
-      var s=document.createElement("script");
-      var to=setTimeout(function(){ cleanup(); reject(new Error("timeout")); }, 20000);
-      function cleanup(){ try{delete window[cb];}catch(e){window[cb]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); clearTimeout(to); }
-      window[cb]=function(d){ cleanup(); resolve(d); };
-      s.onerror=function(){ cleanup(); reject(new Error("jsonp error")); };
-      s.src=url+(url.indexOf("?")<0?"?":"&")+"callback="+cb;
-      document.body.appendChild(s);
-    });
-  }
-  async function ddDriveFind(folder, codigo, filename, timeoutMs){
-    var inicio=Date.now(); timeoutMs=timeoutMs||60000;
-    while(Date.now()-inicio < timeoutMs){
-      try{
-        var url=DRIVE_URL+"?action=find_dd&token="+encodeURIComponent(DRIVE_TOKEN)+
-          "&folder="+encodeURIComponent(folder)+"&codigo="+encodeURIComponent(codigo||"")+"&filename="+encodeURIComponent(filename);
-        var r=await ddJsonp(url);
-        if(r && r.found && r.url) return r;
-      }catch(e){}
-      await new Promise(function(res){ setTimeout(res,1500); });
-    }
-    throw new Error("No se encontró el archivo en Drive (tiempo agotado).");
-  }
-  async function ddDriveUpload(folder, codigo, file){
-    if(!DRIVE_URL) throw new Error("Drive no está configurado.");
-    var b64=await ddFileToB64(file);
-    var filename=Date.now()+"_"+((file.name||"archivo").replace(/[^\w.\-]+/g,"_"));
-    await fetch(DRIVE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({action:"upload_dd",token:DRIVE_TOKEN,folder:folder,codigo:codigo,filename:filename,mime:file.type||"application/octet-stream",dataB64:b64})});
-    return await ddDriveFind(folder, codigo, filename, 90000); // {url,id}
-  }
-  // Dispara la generación del formato diligenciado (PDF) en FORMATOS (fire-and-forget).
-  function ddGenerarFormato(s){
-    if(!DRIVE_URL || !s) return;
-    try{
-      fetch(DRIVE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body:JSON.stringify(Object.assign({action:"generar_formato_diseno",token:DRIVE_TOKEN}, s))});
-    }catch(e){}
-  }
-  // Abre el formato diligenciado: SIEMPRE lo regenera con los datos/código actuales
-  // (el backend borra el anterior primero), así nunca se muestra un PDF viejo.
-  function ddVerFormato(s){
-    if(!s) return;
-    var btn=$("#ddVerFormato");
-    var w=window.open("", "_blank"); // ventana abierta con el gesto del clic (evita bloqueo de pop-ups)
-    if(btn){ btn.disabled=true; btn.textContent="Generando formato…"; }
-    function done(){ if(btn){ btn.disabled=false; btn.textContent="Ver formato diligenciado ↗"; } }
-    ddGenerarFormato(s); // regenera (borra el anterior y crea el nuevo)
-    // Espera breve a que el backend borre el viejo, luego busca el nuevo.
-    setTimeout(function(){
-      ddDriveFind("formatos", s.codigo, (s.codigo||"")+".pdf", 25000).then(function(f){
-        if(f&&f.url){ if(w) w.location.href=f.url; else window.open(f.url,"_blank","noopener"); }
-        else { if(w){ try{w.close();}catch(e){} } }
-        done();
-      }).catch(function(){ if(w){ try{w.close();}catch(e){} } done(); });
-    }, 2500);
-  }
-
-  function entrarDD(){
-    ddBind();
-    var hn=$("#hNombre"), hr=$("#hRol");
-    if($("#ddNombre")) $("#ddNombre").textContent = hn?hn.textContent:"";
-    if($("#ddRol")){ $("#ddRol").textContent = hr?hr.textContent:""; $("#ddRol").className = hr?hr.className:"rol"; }
-    mostrarPantalla("appDD");
-    cargarDD();
-  }
-
-  async function cargarDD(){
-    var cont=$("#ddList"); if(!cont) return;
-    cont.innerHTML='<div class="rs-empty">Cargando solicitudes…</div>';
-    try{
-      var r=await fetch(URL_SB+"/rest/v1/solicitudes_diseno?select=*&order=created_at.desc",{headers:headers()});
-      if(!r.ok) throw new Error("HTTP "+r.status);
-      DD.data=await r.json()||[];
-      ddRender();
-    }catch(e){
-      cont.innerHTML='<div class="proc-empty">No se pudieron cargar las solicitudes.<br>'+esc(e.message||"")+
-        '<br><br>¿Ya creaste la tabla <b>solicitudes_diseno</b> en Supabase (archivo solicitudes_diseno.sql)?</div>';
-    }
-  }
-
-  function ddRender(){
-    var cont=$("#ddList"); if(!cont) return;
-    var list=DD.data.filter(function(s){ return !DD.filtro || s.estado===DD.filtro; });
-    var cnt=$("#ddCount"); if(cnt) cnt.textContent=list.length+(list.length===1?" solicitud":" solicitudes");
-    if(!list.length){
-      cont.innerHTML='<div class="proc-empty">'+(DD.filtro?"No hay solicitudes en este estado.":"Aún no hay solicitudes. Crea la primera con “+ Nueva solicitud”.")+'</div>';
-      return;
-    }
-    var grid=document.createElement("div"); grid.className="dd-grid";
-    grid.innerHTML=list.map(ddCardHTML).join("");
-    cont.innerHTML=""; cont.appendChild(grid);
-  }
-
-  function ddCardHTML(s){
-    var av=s.avance||0;
-    return '<button class="dd-card" data-id="'+esc(s.id)+'" type="button">'+
-      '<div class="dd-c-top"><span class="dd-cod">'+esc(s.codigo||"—")+'</span>'+
-        '<span class="dd-badge est-'+esc(s.estado)+'">'+esc(DD_ESTADOS[s.estado]||s.estado)+'</span></div>'+
-      '<h4>'+esc(s.nombre_proyecto||"(sin proyecto)")+'</h4>'+
-      '<div class="dd-proj">'+esc(s.nombre_solicita||"")+(s.area?(" · "+esc(s.area)):"")+'</div>'+
-      '<div class="dd-badges"><span class="dd-badge pri-'+esc(s.prioridad)+'">Prioridad '+esc(s.prioridad)+'</span></div>'+
-      '<div class="dd-prog"><span style="width:'+av+'%"></span></div>'+
-      '<div class="dd-prog-t">'+av+'% de avance</div>'+
-    '</button>';
-  }
-
-  // ---- Formulario nueva solicitud ----
-  function ddAbrirForm(){
-    var f=$("#ddForm"); if(f) f.reset();
-    var w=$("#dd_norma_wrap"); if(w) w.classList.add("hidden");
-    ddFormMsg("");
-    var hn=$("#hNombre"); var nom=(hn?hn.textContent:"").replace(/^Hola,?\s*/i,"");
-    if($("#dd_solicita")) $("#dd_solicita").value=nom||"";
-    if($("#dd_fecha")) $("#dd_fecha").value=new Date().toISOString().slice(0,10);
-    $("#ddFormBg").classList.remove("hidden");
-  }
-  function ddCerrarForm(){ var b=$("#ddFormBg"); if(b) b.classList.add("hidden"); }
-
-  async function ddGuardarSolicitud(e){
-    e.preventDefault();
-    var tipos=[]; document.querySelectorAll("#dd_tipos input:checked").forEach(function(c){ tipos.push(c.value); });
-    var obj={
-      solicitante_id: usuario&&usuario.id, email_cliente: usuario&&usuario.email,
-      nombre_solicita:$("#dd_solicita").value.trim(), area:$("#dd_area").value.trim(),
-      contacto:$("#dd_contacto").value.trim(), lugar:$("#dd_lugar").value.trim(),
-      nombre_proyecto:$("#dd_proyecto").value.trim(), prioridad:$("#dd_prioridad").value,
-      tipos:tipos, descripcion:$("#dd_descripcion").value.trim(),
-      requiere_memoria_calculo:$("#dd_memoria").checked, requiere_norma:$("#dd_norma").checked,
-      norma_cual:$("#dd_norma_cual").value.trim(), info_adicional:$("#dd_info_adic").value.trim()
-    };
-    var btn=$("#ddFormGuardar"); if(btn){btn.disabled=true;btn.textContent="Guardando…";}
-    try{
-      var r=await fetch(URL_SB+"/rest/v1/solicitudes_diseno",{method:"POST",headers:headers({"Prefer":"return=representation"}),body:JSON.stringify(obj)});
-      if(!r.ok){ var er=await r.json().catch(function(){return {};}); throw new Error(er.message||("HTTP "+r.status)); }
-      var rows=await r.json().catch(function(){return [];});
-      var creada=(rows&&rows[0])||null;
-      ddCerrarForm();
-      await cargarDD();
-      // Genera el formato MF-F-QHSE-142 diligenciado y lo guarda en Drive/FORMATOS.
-      if(creada) ddGenerarFormato(creada);
-    }catch(e2){ ddFormMsg("No se pudo guardar: "+(e2.message||e2)); }
-    finally{ if(btn){btn.disabled=false;btn.textContent="Radicar solicitud";} }
-  }
-
-  // ---- Detalle + entregas ----
-  async function ddAbrirDetalle(id){
-    var s=DD.data.find(function(x){return x.id===id;}); if(!s) return;
-    DD.actual=s;
-    $("#ddDetTit").textContent=(s.codigo||"Solicitud")+" · "+(DD_ESTADOS[s.estado]||s.estado);
-    $("#ddDetSub").textContent=s.nombre_proyecto||"";
-    var tiposH=(s.tipos||[]).map(function(t){return '<span class="dd-tag">'+esc(DD_TIPOS[t]||t)+'</span>';}).join("") || '<span class="dd-empty">—</span>';
-    function dt(k,v){ return '<div class="dd-dt"><span class="k">'+esc(k)+'</span><span class="v">'+esc(v==null||v===""?"—":v)+'</span></div>'; }
-    $("#ddDetBody").innerHTML=
-      '<div style="margin:2px 0 12px"><button class="btn2" id="ddVerFormato" type="button">Ver formato diligenciado &#8599;</button></div>'+
-      '<div class="dd-det-grid">'+
-        dt("Solicitante",s.nombre_solicita)+dt("Área",s.area)+dt("Contacto",s.contacto)+dt("Lugar",s.lugar)+
-        dt("Prioridad",(s.prioridad||"").toUpperCase())+dt("Radicada",ddFecha(s.created_at))+
-        dt("Memoria de cálculo",s.requiere_memoria_calculo?"Sí":"No")+
-        dt("Norma",s.requiere_norma?("Sí — "+(s.norma_cual||"")):"No")+
-      '</div>'+
-      '<div class="dd-sec">Tipo de solicitud</div><div class="dd-tags">'+tiposH+'</div>'+
-      '<div class="dd-sec">Descripción</div><p style="margin:0;font-size:14px;color:var(--texto);line-height:1.55">'+esc(s.descripcion||"—")+'</p>'+
-      (s.info_adicional?('<div class="dd-sec">Información adicional para entrega</div><p style="margin:0;font-size:14px;color:var(--tenue);line-height:1.55">'+esc(s.info_adicional)+'</p>'):'')+
-      '<div class="dd-sec">Entregas · '+(s.avance||0)+'% de avance</div><div class="dd-ent-list" id="ddEntList"><div class="dd-empty">Cargando…</div></div>';
-    var vf=$("#ddVerFormato"); if(vf) vf.addEventListener("click", function(){ ddVerFormato(s); });
-    var box=$("#ddEntregaBox"); if(box) box.classList.toggle("hidden", !esAdmin());
-    if(esAdmin()){ $("#dd_ent_avance").value=s.avance||0; $("#dd_ent_desc").value=""; var f=$("#dd_ent_file"); if(f) f.value=""; var fn=$("#ddEntregaBox .fname"); if(fn) fn.textContent=""; ddEntMsg(""); }
-    $("#ddDetBg").classList.remove("hidden");
-    ddCargarEntregas(s.id);
-  }
-  function ddCerrarDetalle(){ var b=$("#ddDetBg"); if(b) b.classList.add("hidden"); DD.actual=null; }
-
-  async function ddCargarEntregas(solId){
-    var cont=$("#ddEntList"); if(!cont) return;
-    try{
-      var r=await fetch(URL_SB+"/rest/v1/entregas_diseno?select=*&solicitud_id=eq."+solId+"&order=created_at.desc",{headers:headers()});
-      var d=r.ok?await r.json():[];
-      if(!d.length){ cont.innerHTML='<div class="dd-empty">Aún no hay entregas registradas.</div>'; return; }
-      cont.innerHTML=d.map(function(e){
-        var link=e.archivo_path?('<a href="#" class="dd-ent-open" data-path="'+esc(e.archivo_path)+'">Ver entregable ↗</a>'):'';
-        return '<div class="dd-ent-item"><div class="h"><b>Entrega '+esc(e.tipo)+'</b>'+
-          '<span class="dd-badge est-en_proceso">'+(e.avance||0)+'%</span>'+
-          '<span class="fecha">'+esc(ddFechaHora(e.created_at))+'</span></div>'+
-          '<p>'+esc(e.descripcion||"")+'</p>'+link+'</div>';
-      }).join("");
-      cont.querySelectorAll(".dd-ent-open").forEach(function(a){ a.addEventListener("click", function(ev){ ev.preventDefault(); verArchivo(a.getAttribute("data-path")); }); });
-    }catch(e){ cont.innerHTML='<div class="dd-empty">No se pudieron cargar las entregas.</div>'; }
-  }
-
-  async function ddGuardarEntrega(){
-    var s=DD.actual; if(!s) return;
-    var fEl=$("#dd_ent_file"), file=fEl&&fEl.files&&fEl.files[0];
-    var tipo=$("#dd_ent_tipo").value, avance=parseInt($("#dd_ent_avance").value||"0",10);
-    var desc=$("#dd_ent_desc").value.trim(), mail=$("#dd_ent_mail").checked;
-    if(!file){ ddEntMsg("Adjunta el archivo del entregable."); return; }
-    if(tipo==="total") avance=100;
-    if(isNaN(avance)||avance<0) avance=0; if(avance>100) avance=100;
-    var btn=$("#ddEntGuardar"); if(btn){btn.disabled=true;btn.textContent="Subiendo a Drive…";}
-    try{
-      // El entregable se guarda en Drive → carpeta PLANOS/<codigo>. Ese link va al correo.
-      var subida=await ddDriveUpload("planos", s.codigo||s.id, file);
-      var driveUrl=(subida&&subida.url)||"";
-      if(btn) btn.textContent="Guardando…";
-      var re=await fetch(URL_SB+"/rest/v1/entregas_diseno",{method:"POST",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({solicitud_id:s.id,tipo:tipo,descripcion:desc,avance:avance,archivo_path:driveUrl})});
-      if(!re.ok){ var er=await re.json().catch(function(){return {};}); throw new Error(er.message||"No se pudo registrar la entrega"); }
-      var nuevoEstado=(tipo==="total")?"entregada":"en_proceso";
-      await fetch(URL_SB+"/rest/v1/solicitudes_diseno?id=eq."+s.id,{method:"PATCH",headers:headers({"Prefer":"return=minimal"}),body:JSON.stringify({estado:nuevoEstado,avance:avance,asignado_id:(usuario&&usuario.id)||null})});
-      if(mail) await ddEnviarCorreo(s,{tipo:tipo,avance:avance,desc:desc,url:driveUrl});
-      s.estado=nuevoEstado; s.avance=avance;
-      $("#ddDetTit").textContent=(s.codigo||"Solicitud")+" · "+(DD_ESTADOS[nuevoEstado]||nuevoEstado);
-      if(fEl) fEl.value=""; var fn=$("#ddEntregaBox .fname"); if(fn) fn.textContent=""; $("#dd_ent_desc").value="";
-      ddCargarEntregas(s.id);
-      cargarDD();
-      ddEntMsg("Entrega guardada"+(mail?" y correo enviado al cliente.":"."), true);
-    }catch(e){ ddEntMsg("Error: "+(e.message||e)); }
-    finally{ if(btn){btn.disabled=false;btn.textContent="Guardar entrega y notificar";} }
-  }
-
-  async function ddEnviarCorreo(s, ent){
-    if(!DRIVE_URL || !s.email_cliente) return;
-    var link=(ent&&ent.url)||"";
-    var asunto="Diseño y Dibujo · "+(s.codigo||"")+" · Entrega "+ent.tipo+" ("+ent.avance+"%)";
-    var cuerpo="Hola "+(s.nombre_solicita||"")+",\n\n"+
-      "Tu solicitud de diseño "+(s.codigo||"")+" — "+(s.nombre_proyecto||"")+" — tiene una entrega "+ent.tipo+".\n"+
-      "Avance: "+ent.avance+"%\n"+
-      (ent.desc?("Detalle de lo realizado: "+ent.desc+"\n"):"")+
-      (link?("\nDescarga el entregable aquí:\n"+link+"\n"):"")+
-      "\nTambién puedes verlo en NEXUS TOOLS → módulo Diseño y Dibujo.\n\n— Maxim Fishing Solutions";
-    try{
-      await fetch(DRIVE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body:JSON.stringify({action:"send_email",token:DRIVE_TOKEN,to:s.email_cliente,subject:asunto,body:cuerpo})});
-    }catch(e){}
-  }
-
-  function ddBind(){
-    if(_ddBound) return; _ddBound=true;
-    document.querySelectorAll("#ddFiltros .dd-fchip").forEach(function(b){
-      b.addEventListener("click", function(){
-        DD.filtro=b.getAttribute("data-estado")||"";
-        document.querySelectorAll("#ddFiltros .dd-fchip").forEach(function(x){ x.classList.toggle("on", x===b); });
-        ddRender();
-      });
-    });
-    var lst=$("#ddList"); if(lst) lst.addEventListener("click", function(e){
-      var c=e.target.closest && e.target.closest(".dd-card"); if(!c) return;
-      ddAbrirDetalle(c.getAttribute("data-id"));
-    });
-    var nv=$("#ddNueva"); if(nv) nv.addEventListener("click", ddAbrirForm);
-    var fx=$("#ddFormX"); if(fx) fx.addEventListener("click", ddCerrarForm);
-    var fc=$("#ddFormCancel"); if(fc) fc.addEventListener("click", ddCerrarForm);
-    var fb=$("#ddFormBg"); if(fb) fb.addEventListener("click", function(e){ if(e.target===fb) ddCerrarForm(); });
-    var frm=$("#ddForm"); if(frm) frm.addEventListener("submit", ddGuardarSolicitud);
-    var nrm=$("#dd_norma"); if(nrm) nrm.addEventListener("change", function(){ var w=$("#dd_norma_wrap"); if(w) w.classList.toggle("hidden", !nrm.checked); });
-    var dx=$("#ddDetX"); if(dx) dx.addEventListener("click", ddCerrarDetalle);
-    var db=$("#ddDetBg"); if(db) db.addEventListener("click", function(e){ if(e.target===db) ddCerrarDetalle(); });
-    var eg=$("#ddEntGuardar"); if(eg) eg.addEventListener("click", ddGuardarEntrega);
-    var ef=$("#dd_ent_file"); if(ef) ef.addEventListener("change", function(){
-      var lab=ef.closest(".dropzone"); if(!lab) return;
-      var fn=lab.querySelector(".fname"); if(!fn){ fn=document.createElement("span"); fn.className="fname"; lab.appendChild(fn); }
-      fn.textContent=ef.files&&ef.files[0]?("Archivo: "+ef.files[0].name):"";
-    });
-    document.addEventListener("keydown", function(e){ if(e.key==="Escape"){ ddCerrarForm(); ddCerrarDetalle(); } });
   }
 
   // ===== Sincronizar COC desde la bandeja de Drive (solo admin) =====
@@ -3554,3 +5219,6 @@
       refrescarSesion().then(function(ok){ if(ok) iniciar(); else verLanding(); });
     } else { iniciar(); }
   } else { verLanding(); }
+</script>
+</body>
+</html>

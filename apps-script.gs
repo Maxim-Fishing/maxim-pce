@@ -602,32 +602,80 @@ function obtenerPlantillaFormato(){
 function diligenciarFormatoDiseno(sh, d){
   d = d || {};
   var tipos = d.tipos || [];
-  function put(a1, valor){ try{ var r=sh.getRange(a1); r.setValue(String(r.getValue()||'') + '   ' + (valor==null?'':valor)); }catch(e){} }
-  function multi(a1, valor){ try{ var r=sh.getRange(a1); r.setValue(String(r.getValue()||'') + '\n' + (valor==null?'':valor)); r.setWrap(true); r.setVerticalAlignment('top'); }catch(e){} }
-  // Pone una X (recuadro de marca vacío)
-  function equis(a1){ try{ var r=sh.getRange(a1); r.setValue('X'); r.setHorizontalAlignment('center'); r.setVerticalAlignment('middle'); r.setFontWeight('bold'); }catch(e){} }
-  // Antepone una X a una etiqueta (cuando no hay recuadro aparte)
-  function marcaLabel(a1){ try{ var r=sh.getRange(a1); r.setValue('X  ' + String(r.getValue()||'')); r.setFontWeight('bold'); }catch(e){} }
-  // Datos generales (valor a continuación de la etiqueta)
-  put('A5', d.nombre_solicita);
+  // Escribe "etiqueta + separador + respuesta" dejando la ETIQUETA con su estilo
+  // original y la RESPUESTA en peso normal (sin negrita). sep puede ser espacios
+  // o saltos de línea.
+  function escribir(a1, valor, sep){
+    var r;
+    try{ r = sh.getRange(a1); }catch(e){ return; }
+    var label = String(r.getValue()||'');
+    var full = label + (sep||'   ') + (valor==null?'':String(valor));
+    try{
+      var st = r.getTextStyle();
+      var estiloLabel = st.copy().build();
+      var estiloResp  = st.copy().setBold(false).build();
+      var rich = SpreadsheetApp.newRichTextValue().setText(full)
+        .setTextStyle(0, label.length, estiloLabel)
+        .setTextStyle(label.length, full.length, estiloResp)
+        .build();
+      r.setRichTextValue(rich);
+    }catch(e){
+      try{ r.setValue(full); r.setFontWeight('normal'); }catch(e2){}
+    }
+  }
+  function put(a1, valor){ escribir(a1, valor, '   '); }
+  function multi(a1, valor, sep){
+    escribir(a1, valor, sep||'\n');
+    try{ var r=sh.getRange(a1); r.setWrap(true); r.setVerticalAlignment('top'); }catch(e){}
+  }
+  // Pone una X centrada en un recuadro (sin negrita)
+  function equis(a1){ try{ var r=sh.getRange(a1); r.setValue('X'); r.setFontWeight('normal'); r.setHorizontalAlignment('center'); r.setVerticalAlignment('middle'); }catch(e){} }
+  // Escribe un valor en una celda que ya es de VALOR (sin etiqueta), en peso normal.
+  function val(a1, valor){ try{ var r=sh.getRange(a1); r.setValue(valor==null?'':String(valor)); r.setFontWeight('normal'); }catch(e){} }
+  // Fecha de la solicitud (dd/MM/yyyy) a partir de created_at o de hoy.
+  function fechaFmt(){ var f = d.created_at ? new Date(d.created_at) : new Date(); try{ return Utilities.formatDate(f, Session.getScriptTimeZone(), 'dd/MM/yyyy'); }catch(e){ return ''; } }
+
+  // ---- Datos generales (respuesta en peso normal) ----
+  // Nuevo layout: A5:B5 = etiqueta "NOMBRE...", C5 = valor del nombre,
+  // E5 = "FECHA:", F5:J5 = valor de la fecha.
+  val('C5', d.nombre_solicita);
+  val('F5', fechaFmt());
   put('A6', d.area);
   put('D6', d.contacto);
   put('A7', d.lugar);
   put('A8', d.nombre_proyecto);
-  // Prioridad: C9 ALTA · D9 MEDIA · E9 BAJA (sin recuadro → se marca la opción)
+
+  // ---- Prioridad: la opción PRIMERO y la X después (ej. "ALTA  X") ----
   var pcell = {alta:'C9', media:'D9', baja:'E9'}[d.prioridad];
-  if(pcell) marcaLabel(pcell);
-  // Tipo de solicitud (encabezados fila 13, sin recuadro → se marca la opción)
+  if(pcell){ try{ var rp=sh.getRange(pcell); rp.setValue(String(rp.getValue()||'') + '  X'); }catch(e){} }
+
+  // ---- Tipo de solicitud: X justo DEBAJO del nombre, dentro del mismo recuadro
+  // del encabezado (antes caía muy abajo, pegada a las descripciones). ----
+  function marcaTipo(a1){
+    var r; try{ r=sh.getRange(a1); }catch(e){ return; }
+    var nombre=String(r.getValue()||''); var full=nombre+'\nX';
+    try{
+      var st=r.getTextStyle();
+      var rich=SpreadsheetApp.newRichTextValue().setText(full)
+        .setTextStyle(0, nombre.length, st.copy().build())
+        .setTextStyle(nombre.length, full.length, st.copy().setBold(false).build())
+        .build();
+      r.setRichTextValue(rich); r.setWrap(true); r.setHorizontalAlignment('center');
+    }catch(e){ try{ r.setValue(full); }catch(e2){} }
+  }
   var tmap = {levantamiento_3d:'A13', modelado_3d:'B13', diseno_3d:'C13', planos:'D13', informes_aef:'E13', ficha_tecnica:'F13', simulaciones:'I13'};
-  for(var i=0;i<tipos.length;i++){ if(tmap[tipos[i]]) marcaLabel(tmap[tipos[i]]); }
-  // Descripción (área A24:J28)
-  multi('A24', d.descripcion);
-  // Memoria de cálculo: recuadro H29 (SI) / J29 (NO) · Norma: H30 (SI) / J30 (NO)
+  for(var i=0;i<tipos.length;i++){ if(tmap[tipos[i]]) marcaTipo(tmap[tipos[i]]); }
+
+  // ---- Descripción (A24): un enter extra para que no quede pegado ----
+  multi('A24', d.descripcion, '\n\n');
+
+  // ---- Memoria de cálculo H29(SI)/J29(NO) · Norma H30(SI)/J30(NO) ----
   equis(d.requiere_memoria_calculo ? 'H29' : 'J29');
   equis(d.requiere_norma ? 'H30' : 'J30');
   put('A31', d.norma_cual);
-  // Info adicional (A32:J35)
-  multi('A32', d.info_adicional);
+
+  // ---- Info adicional (A32) ----
+  multi('A32', d.info_adicional, '\n');
 }
 
 // Respaldo: genera el formato como PDF por HTML (si no hay plantilla .xlsx).

@@ -1255,3 +1255,8 @@ table.it-tab td.ct b{color:var(--naranja2)}
 .it-badge.rep{background:rgba(80,140,220,.18);color:#8fbdf5}
 .it-badge.fab{background:rgba(220,120,60,.18);color:#f0a26a}
 .it-badge.fcl{background:rgba(60,170,90,.16);color:#7ee29b}
+.it-acc{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.it-form{background:var(--panel2);border:1px solid var(--borde-ctrl);border-radius:12px;padding:12px;margin:8px 0}
+.it-form label{display:block;margin-bottom:8px}
+.it-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.it-form .row2{grid-template-columns:1fr}}

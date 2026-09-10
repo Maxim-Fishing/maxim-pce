@@ -677,6 +677,7 @@
     if(!esInstrumento()){ box.classList.add("hidden"); return; }
     box.classList.remove("hidden");
     var cod=it.codigo||"", anio=new Date().getFullYear();
+    setupMttoITForms(cod);
     $("#itFicha").innerHTML='<div class="rs-empty">Cargando…</div>';
     $("#itMatriz").innerHTML=''; $("#itPrograma").innerHTML=''; $("#itHistIT").innerHTML='';
     var eq=null; try{ eq=await DB.first("mtto_equipo",{eq:{codigo:cod}}); }catch(e){}
@@ -728,6 +729,83 @@
         }).join("");
       }else{ $("#itHistIT").innerHTML='<div class="rs-empty">Sin reportes ni fallas registrados.</div>'; }
     }catch(e){ $("#itHistIT").innerHTML='<div class="rs-empty">No se pudo cargar el historial.</div>'; }
+  }
+
+  // ---- Mantenimiento IT · escritura (Fase 2) ----
+  function setupMttoITForms(cod){
+    var acc=$("#itAcc"); if(acc) acc.classList.toggle("hidden", !puedeMant());
+    var fm=$("#itFormMtto"), ff=$("#itFormFalla");
+    if(fm) fm.classList.add("hidden"); if(ff) ff.classList.add("hidden");
+    var im=$("#imMsg"); if(im) im.className="msg hidden";
+    var ifm=$("#ifMsg"); if(ifm) ifm.className="msg hidden";
+    if(!puedeMant()) return;
+    $("#itBtnMtto").onclick=function(){ ff.classList.add("hidden"); fm.classList.toggle("hidden");
+      $("#imFecha").value=hoyISO(); $("#imFileStatus").textContent=""; };
+    $("#itBtnFalla").onclick=function(){ fm.classList.add("hidden"); ff.classList.toggle("hidden");
+      $("#ifFecha").value=hoyISO(); $("#ifFileStatus").textContent=""; };
+    $("#imCancelar").onclick=function(){ fm.classList.add("hidden"); };
+    $("#ifCancelar").onclick=function(){ ff.classList.add("hidden"); };
+    $("#imGuardar").onclick=function(){ guardarMttoReporte(cod); };
+    $("#ifGuardar").onclick=function(){ guardarMttoFalla(cod); };
+  }
+  function safeName(s){ return String(s||"archivo").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_").slice(0,80); }
+  async function subirAdjuntoMtto(carpeta, cod, file){
+    if(!file) return null;
+    var path="mtto/"+carpeta+"/"+safeName(cod)+"/"+Date.now()+"_"+safeName(file.name);
+    return await subirArchivo(path, file);
+  }
+  function msg(el, txt, ok){ var e=$(el); if(!e) return; e.textContent=txt; e.className="msg "+(ok?"ok":"err"); }
+  async function guardarMttoReporte(cod){
+    if(!puedeMant()) return;
+    var fecha=$("#imFecha").value||hoyISO();
+    var cert=$("#imCert").value.trim();
+    var btn=$("#imGuardar"); btn.disabled=true; msg("#imMsg","Guardando…",true);
+    try{
+      var f=$("#imFile").files[0]||null, adj=null;
+      if(f){ $("#imFileStatus").textContent="Subiendo adjunto…"; adj=await subirAdjuntoMtto("reporte",cod,f); $("#imFileStatus").textContent="Adjunto listo."; }
+      var costoV=$("#imCosto").value; costoV = costoV===""?null:Number(costoV);
+      var fila={ codigo:cod, consecutivo:(cert||null), no_certificado:(cert||null),
+        fecha:fecha, ciclo:($("#imCiclo").value||null), tipo_trabajo:$("#imTipo").value,
+        ubicacion:($("#imUbic").value.trim()||null), costo:costoV,
+        tecnico:($("#imTecnico").value.trim()||null), descripcion_trabajo:($("#imDesc").value.trim()||null),
+        adjunto_path:adj, origen:'app' };
+      var ins=await DB.insert("mtto_reporte", fila);
+      var repId=(ins&&ins[0]&&ins[0].id)||null;
+      // marcar el programa del mes/ciclo como ejecutado
+      var ciclo=$("#imCiclo").value;
+      if(ciclo){ var mes=parseInt(fecha.slice(5,7),10), an=parseInt(fecha.slice(0,4),10);
+        try{ await DB.update("mtto_programa",
+          { fecha_ejecutado:fecha, reporte_id:repId, estado:'ejecutado' },
+          { eq:{ codigo:cod, anio:an, mes:mes, ciclo:ciclo, estado:'programado' } }); }catch(_e){}
+      }
+      msg("#imMsg","Mantenimiento guardado ✓",true);
+      $("#itFormMtto").classList.add("hidden");
+      ["imCert","imUbic","imCosto","imTecnico","imDesc"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
+      var _fi=$("#imFile"); if(_fi) _fi.value="";
+      cargarMttoIT(itemActual);
+    }catch(e){ msg("#imMsg","No se pudo guardar: "+(e&&e.message||e),false); }
+    finally{ btn.disabled=false; }
+  }
+  async function guardarMttoFalla(cod){
+    if(!puedeMant()) return;
+    var fecha=$("#ifFecha").value||hoyISO();
+    var desc=$("#ifDesc").value.trim();
+    if(!desc){ msg("#ifMsg","Escribe la descripción de la falla.",false); return; }
+    var btn=$("#ifGuardar"); btn.disabled=true; msg("#ifMsg","Guardando…",true);
+    try{
+      var f=$("#ifFile").files[0]||null, sop=null;
+      if(f){ $("#ifFileStatus").textContent="Subiendo soporte…"; sop=await subirAdjuntoMtto("falla",cod,f); $("#ifFileStatus").textContent="Soporte listo."; }
+      var fila={ codigo:cod, codigo_serial_texto:cod, unidad:($("#ifUnidad").value.trim()||null),
+        fecha:fecha, quien_reporta:($("#ifQuien").value.trim()||null), proceso:($("#ifProc").value||null),
+        descripcion:desc, soporte_path:sop, estado:'abierta', origen:'app' };
+      await DB.insert("mtto_falla", fila);
+      msg("#ifMsg","Reporte de falla guardado ✓",true);
+      $("#itFormFalla").classList.add("hidden");
+      ["ifUnidad","ifQuien","ifDesc"].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=""; });
+      var _fi=$("#ifFile"); if(_fi) _fi.value="";
+      cargarMttoIT(itemActual);
+    }catch(e){ msg("#ifMsg","No se pudo guardar: "+(e&&e.message||e),false); }
+    finally{ btn.disabled=false; }
   }
 
   let histAbierto=null;

@@ -772,6 +772,57 @@
       </div>
       <div class="mant-box hidden" id="mMttoIT">
         <div class="seccion" style="margin-top:0">Mantenimiento IT</div>
+        <div class="it-acc hidden" id="itAcc">
+          <button class="btn2" type="button" id="itBtnMtto">➕ Agregar mantenimiento</button>
+          <button class="btn2" type="button" id="itBtnFalla">➕ Anexar reporte de falla</button>
+        </div>
+        <!-- Form: Agregar mantenimiento -->
+        <div class="it-form hidden" id="itFormMtto">
+          <div class="seccion" style="margin-top:4px">Nuevo mantenimiento</div>
+          <div class="row2">
+            <label>Fecha<input id="imFecha" type="date"></label>
+            <label>Ciclo<select id="imCiclo"><option value="">—</option><option value="C1">C1 · 1 mes</option><option value="C2">C2 · 3 meses</option><option value="C4">C4 · 6 meses</option><option value="C6">C6 · 12 meses</option></select></label>
+          </div>
+          <div class="row2">
+            <label>Tipo de trabajo<select id="imTipo"><option value="mantenimiento">Mantenimiento</option><option value="calibracion">Calibración</option><option value="verificacion">Verificación</option><option value="prueba_hidrostatica">Prueba hidrostática</option></select></label>
+            <label>N° de certificado / reporte<input id="imCert" type="text" placeholder="Ej. 2026-091" autocomplete="off"></label>
+          </div>
+          <div class="row2">
+            <label>Ubicación / unidad<input id="imUbic" type="text" placeholder="Ej. LAMBDA, GTE, IT" autocomplete="off"></label>
+            <label>Costo<input id="imCosto" type="number" min="0" step="1000" placeholder="0"></label>
+          </div>
+          <label>Técnico<input id="imTecnico" type="text" placeholder="Nombre de quien ejecuta" autocomplete="off"></label>
+          <label>Descripción del trabajo<textarea id="imDesc" rows="3" placeholder="Qué se realizó"></textarea></label>
+          <div class="seccion" style="margin-top:4px">Adjunto (certificado/reporte PDF) — opcional</div>
+          <input type="file" id="imFile" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx">
+          <div id="imFileStatus" class="sub" style="margin-top:6px"></div>
+          <div class="row2" style="margin-top:8px">
+            <button class="btn" type="button" id="imGuardar">Guardar mantenimiento</button>
+            <button class="btn2" type="button" id="imCancelar">Cancelar</button>
+          </div>
+          <p class="msg hidden" id="imMsg"></p>
+        </div>
+        <!-- Form: Reporte de falla -->
+        <div class="it-form hidden" id="itFormFalla">
+          <div class="seccion" style="margin-top:4px">Nuevo reporte de falla</div>
+          <div class="row2">
+            <label>Fecha<input id="ifFecha" type="date"></label>
+            <label>Unidad<input id="ifUnidad" type="text" placeholder="Ej. IOTA, CICLOPE" autocomplete="off"></label>
+          </div>
+          <div class="row2">
+            <label>Quién reporta<input id="ifQuien" type="text" autocomplete="off"></label>
+            <label>Proceso<select id="ifProc"><option value="">—</option><option>MEC.</option><option>OP. SL</option><option>ING. IT</option><option>AUX. OP</option><option>AUX. MTTO</option><option>SUPERVISOR</option><option>OP GRUA</option><option>OTRO</option></select></label>
+          </div>
+          <label>Descripción de la falla<textarea id="ifDesc" rows="3" placeholder="Qué ocurrió"></textarea></label>
+          <div class="seccion" style="margin-top:4px">Soporte (PDF/imagen) — opcional</div>
+          <input type="file" id="ifFile" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx">
+          <div id="ifFileStatus" class="sub" style="margin-top:6px"></div>
+          <div class="row2" style="margin-top:8px">
+            <button class="btn" type="button" id="ifGuardar">Guardar reporte de falla</button>
+            <button class="btn2" type="button" id="ifCancelar">Cancelar</button>
+          </div>
+          <p class="msg hidden" id="ifMsg"></p>
+        </div>
         <div id="itFicha"></div>
         <details id="itMatrizWrap" style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">Matriz de mantenimiento (por tipo)</summary><div id="itMatriz" style="margin-top:8px"></div></details>
         <details id="itProgramaWrap" style="margin-top:10px" open><summary style="cursor:pointer;font-weight:600">Programa del año</summary><div id="itPrograma" style="margin-top:8px"></div></details>

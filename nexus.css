@@ -1260,3 +1260,15 @@ table.it-tab td.ct b{color:var(--naranja2)}
 .it-form label{display:block;margin-bottom:8px}
 .it-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:640px){.it-form .row2{grid-template-columns:1fr}}
+.ind-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ind-card{background:var(--panel2);border:1px solid var(--borde-ctrl);border-radius:12px;padding:12px}
+.ind-card.ok{border-color:rgba(60,170,90,.55)}
+.ind-card.bad{border-color:rgba(220,70,70,.55)}
+.ind-card.warn{border-color:rgba(230,170,50,.55)}
+.ind-cod{font-family:var(--mono);font-size:10px;color:var(--txt-tenue)}
+.ind-nom{font-size:12px;color:var(--tenue);margin-bottom:6px}
+.ind-val{font-family:var(--sans);font-weight:700;font-size:26px;line-height:1}
+.ind-card.ok .ind-val{color:#7ee29b}
+.ind-card.bad .ind-val{color:#f08a8a}
+.ind-card.warn .ind-val{color:#f0c46a}
+.ind-meta{font-size:11px;color:var(--txt-tenue);margin-top:6px}

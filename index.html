@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="nexus.css?v=20260907">
+<link rel="stylesheet" href="nexus.css?v=20260910">
 </head>
 <body>
   <!-- PANTALLA PREVIA -->
@@ -770,6 +770,13 @@
         <div class="seccion" style="margin-top:0">Documentos est&aacute;ticos</div>
         <div id="mDocsEst"></div>
       </div>
+      <div class="mant-box hidden" id="mMttoIT">
+        <div class="seccion" style="margin-top:0">Mantenimiento IT</div>
+        <div id="itFicha"></div>
+        <details id="itMatrizWrap" style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">Matriz de mantenimiento (por tipo)</summary><div id="itMatriz" style="margin-top:8px"></div></details>
+        <details id="itProgramaWrap" style="margin-top:10px" open><summary style="cursor:pointer;font-weight:600">Programa del año</summary><div id="itPrograma" style="margin-top:8px"></div></details>
+        <details id="itHistWrap" style="margin-top:10px" open><summary style="cursor:pointer;font-weight:600">Historial: reportes y fallas</summary><div id="itHistIT" style="margin-top:8px"></div></details>
+      </div>
       <div class="mant-box hidden" id="mMantBox">
         <div class="seccion" style="margin-top:0">Mantenimiento</div>
         <p class="mant-estado hidden" id="mMantEstado"></p>
@@ -975,8 +982,8 @@
   <input type="file" id="filePicker" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
   <input type="file" id="histFile" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
 
-<script src="config.js?v=20260907"></script>
-<script src="db.js?v=20260907"></script>
-<script src="nexus.js?v=20260907"></script>
+<script src="config.js?v=20260910"></script>
+<script src="db.js?v=20260910"></script>
+<script src="nexus.js?v=20260910"></script>
 </body>
 </html>

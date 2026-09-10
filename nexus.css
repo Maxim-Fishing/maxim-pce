@@ -1235,3 +1235,23 @@
 .dd-entrega{margin-top:8px;background:var(--panel2);border:1px solid var(--borde-ctrl);border-radius:12px;padding:16px}
 .dd-entrega-h{font-family:var(--sans);font-weight:700;font-size:15px;margin-bottom:10px}
 .dd-empty{color:var(--tenue);font-size:13px;padding:10px 0}
+
+/* ---- Mantenimiento IT (módulo nuevo) ---- */
+#mMttoIT .inv-pairs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
+#mMttoIT .inv-pair{display:flex;flex-direction:column;background:var(--panel2);border:1px solid var(--borde-ctrl);border-radius:8px;padding:6px 8px}
+#mMttoIT .inv-pair .k{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--txt-tenue)}
+#mMttoIT .inv-pair .v{font-size:13px;color:var(--tenue)}
+table.it-tab{width:100%;border-collapse:collapse;font-size:12px}
+table.it-tab th,table.it-tab td{border:1px solid var(--borde-ctrl);padding:4px 6px;text-align:left}
+table.it-tab th{background:var(--panel2);font-size:11px;color:var(--txt-tenue);white-space:nowrap}
+table.it-tab td.ct{text-align:center}
+table.it-tab td.ct b{color:var(--naranja2)}
+.it-chips{display:flex;flex-wrap:wrap;gap:6px}
+.it-chip{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--borde-ctrl);color:var(--tenue)}
+.it-chip.ok{background:rgba(60,170,90,.14);border-color:rgba(60,170,90,.5);color:#7ee29b}
+.it-hi{background:var(--panel2);border:1px solid var(--borde-ctrl);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:13px;color:var(--tenue)}
+.it-hi-d{margin-top:4px;font-size:12px;color:var(--txt-tenue);white-space:pre-wrap}
+.it-badge{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-right:4px}
+.it-badge.rep{background:rgba(80,140,220,.18);color:#8fbdf5}
+.it-badge.fab{background:rgba(220,120,60,.18);color:#f0a26a}
+.it-badge.fcl{background:rgba(60,170,90,.16);color:#7ee29b}

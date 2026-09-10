@@ -434,9 +434,19 @@
   async function idsVencidos(){
     try{
       const hoyISOs=new Date().toISOString().slice(0,10);
-      const r=await fetch(URL_SB+"/rest/v1/ciclos_mantenimiento?select=item_id&vigente=eq.true&fecha_vencimiento=lt."+hoyISOs+"&limit=500",{headers:headers()});
-      const d=r.ok?await r.json():[];
-      return d.map(function(x){ return x.item_id; }).filter(function(v){ return v!=null; });
+      const base=URL_SB+"/rest/v1/ciclos_mantenimiento?select=item_id&vigente=eq.true&fecha_vencimiento=lt."+hoyISOs+"&order=item_id.asc";
+      const out=[]; const PAG=1000; let desde=0;
+      // Paginación por rangos hasta traerlos todos (antes: limit=500 truncaba el filtro).
+      // Tope de seguridad: 20 páginas (20k) para no colgar el navegador.
+      for(let i=0;i<20;i++){
+        const r=await fetch(base+"&limit="+PAG+"&offset="+desde,{headers:headers()});
+        if(!r.ok) break;
+        const d=await r.json()||[];
+        for(let k=0;k<d.length;k++){ if(d[k].item_id!=null) out.push(d[k].item_id); }
+        if(d.length<PAG) break;
+        desde+=PAG;
+      }
+      return [...new Set(out)];
     }catch(e){ return []; }
   }
   async function setChipInv(k){
@@ -555,37 +565,46 @@
       const ri=await fetch(itemsUrl,{method:"HEAD",headers:headers({"Prefer":"count=exact"})});
       const rg=ri.headers.get("content-range"); totalItems = rg&&rg.includes("/") ? parseInt(rg.split("/")[1]) : 0;
     }catch(e){}
-    // ciclos vigentes
-    let cUrl=URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_vencimiento,fecha_realizado,items!inner(id,codigo,descripcion,linea_codigo,categoria_id,base_id,bases(nombre))&vigente=eq.true"+itemFiltro+"&order=fecha_vencimiento.asc&limit=2000";
+    // Métricas de estado + completitud: server-side vía RPC (misma fuente que el otro panel).
+    // Antes se contaba en el cliente sobre un fetch de ciclos con limit=2000, que se
+    // truncaba a escala. Ahora los conteos vienen exactos del RPC; los ciclos se traen
+    // solo para poblar el detalle (listas por estado).
+    let R={};
+    try{
+      const body={p_linea: grupo||null, p_categoria: (MODULO==='it'?'instrumento':(cat||null)), p_base: base?parseInt(base):null, p_tipo: tipoCodes||null};
+      const rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify(body)});
+      if(rr.ok) R=await rr.json();
+    }catch(e){}
+    const venc=(R.vencidos)||0, pv=(R.por_vencer)||0, ok=(R.al_dia)||0;
+    const sr = Math.max(totalItems - (venc+pv+ok), 0);
+    // Detalle: ciclos vigentes ordenados por urgencia (para la tabla de detalle).
+    // Los conteos de arriba ya no dependen de esta lista.
+    let cUrl=URL_SB+"/rest/v1/ciclos_mantenimiento?select=id,fecha_vencimiento,fecha_realizado,items!inner(id,codigo,descripcion,linea_codigo,categoria_id,base_id,bases(nombre))&vigente=eq.true"+itemFiltro+"&order=fecha_vencimiento.asc&limit=5000";
     let ciclos=[];
     try{ const rc=await fetch(cUrl,{headers:headers()}); if(rc.ok) ciclos=await rc.json(); }catch(e){}
     const hoy=new Date(hoyISO());
-    let venc=0,pv=0,ok=0; const bVenc=[],bPv=[],bOk=[];
+    const bVenc=[],bPv=[],bOk=[];
     ciclos.forEach(c=>{
       const v=new Date(c.fecha_vencimiento);
       const dias=Math.round((v-hoy)/86400000);
       const aviso=avisoDias(c.items&&c.items.categoria_id);
-      if(v<hoy){ venc++; bVenc.push({c,dias}); }
-      else if(dias<=aviso){ pv++; bPv.push({c,dias}); }
-      else { ok++; bOk.push({c,dias}); }
+      if(v<hoy){ bVenc.push({c,dias}); }
+      else if(dias<=aviso){ bPv.push({c,dias}); }
+      else { bOk.push({c,dias}); }
     });
-    const sr = Math.max(totalItems - ciclos.length, 0);
     dashBuckets={venc:bVenc,pv:bPv,ok:bOk}; dashTotalItems=totalItems;
-    $("#kVenc").textContent=venc; $("#kPv").textContent=pv; $("#kOk").textContent=ok; $("#kSr").textContent=sr.toLocaleString("es-CO");
+    $("#kVenc").textContent=venc.toLocaleString("es-CO"); $("#kPv").textContent=pv.toLocaleString("es-CO"); $("#kOk").textContent=ok.toLocaleString("es-CO"); $("#kSr").textContent=sr.toLocaleString("es-CO");
     const nAlerta=venc+pv;
-    const pt=$("#ptAlerta"); pt.textContent=nAlerta; pt.classList.toggle("hidden", nAlerta===0);
+    const ptA=$("#ptAlerta"); ptA.textContent=nAlerta; ptA.classList.toggle("hidden", nAlerta===0);
     const don=$("#donut");
     if(don){ don.innerHTML=donutSVG(venc,pv,ok,sr); don.querySelectorAll("[data-seg]").forEach(function(s){ s.addEventListener("click", function(){ renderDetalle(s.getAttribute("data-seg")); }); }); }
     renderDetalle(dashState);
-    // Completitud documental y cantidades por tipo (via RPC)
+    // Completitud documental y cantidades por tipo (reutiliza el mismo R del RPC)
     try{
-      const body={p_linea: grupo||null, p_categoria: (MODULO==='it'?'instrumento':(cat||null)), p_base: base?parseInt(base):null, p_tipo: tipoCodes||null};
-      const rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify(body)});
-      const R=await rr.json();
       const T=(R&&R.total)||0;
       $("#docCards").innerHTML = docCard("COC",R&&R.con_coc,T)+docCard("Ficha técnica",R&&R.con_ficha,T)+docCard("Manual O&M",R&&R.con_manual,T);
-      const pt=(R&&R.por_tipo)||[]; const mx=pt.length?pt[0].n:1;
-      $("#porTipo").innerHTML = pt.length ? pt.map(x=>barra(x.tipo,x.n,mx)).join("") : '<div class="vacio">Sin datos.</div>';
+      const ptt=(R&&R.por_tipo)||[]; const mx=ptt.length?ptt[0].n:1;
+      $("#porTipo").innerHTML = ptt.length ? ptt.map(x=>barra(x.tipo,x.n,mx)).join("") : '<div class="vacio">Sin datos.</div>';
     }catch(e){ $("#porTipo").innerHTML=""; }
     $("#pCargando").classList.add("hidden");
   }
@@ -648,7 +667,67 @@
     $("#mDocsDin").innerHTML="";
     cargarEstadoMant(it.id);
     cargarHistorialItem(it.id);
+    cargarMttoIT(it);
     $("#modalBg").classList.remove("hidden");
+  }
+
+  // ---- Mantenimiento IT (módulo nuevo, solo lectura · Fase 1) ----
+  async function cargarMttoIT(it){
+    var box=$("#mMttoIT"); if(!box) return;
+    if(!esInstrumento()){ box.classList.add("hidden"); return; }
+    box.classList.remove("hidden");
+    var cod=it.codigo||"", anio=new Date().getFullYear();
+    $("#itFicha").innerHTML='<div class="rs-empty">Cargando…</div>';
+    $("#itMatriz").innerHTML=''; $("#itPrograma").innerHTML=''; $("#itHistIT").innerHTML='';
+    var eq=null; try{ eq=await DB.first("mtto_equipo",{eq:{codigo:cod}}); }catch(e){}
+    var tipo=(eq&&eq.tipo_equipo)||(it.tipo_codigo||"");
+    // Ficha
+    if(eq){
+      var pares=[["Tipo",esc(eq.tipo_equipo||"—")],["Modelo/Ref",esc(eq.modelo||eq.referencia||"—")],
+        ["Serie",esc(eq.serie||"—")],["Marca",esc(eq.marca||"—")],["Ubicación",esc(eq.ubicacion_unidad||"—")],
+        ["Vence calibración",eq.vence_calibracion?fechaDMY(eq.vence_calibracion):"—"],
+        ["Vida útil",esc(eq.vida_util||"—")],["Estado",esc(eq.estado||"—")]];
+      $("#itFicha").innerHTML='<div class="inv-pairs">'+pares.map(function(p){return '<div class="inv-pair"><span class="k">'+p[0]+'</span><span class="v">'+p[1]+'</span></div>';}).join("")+'</div>';
+    }else{
+      $("#itFicha").innerHTML='<div class="rs-empty">Sin ficha de Mantenimiento IT para '+esc(cod)+'. (¿Se corrió la importación?)</div>';
+    }
+    // Matriz por tipo
+    try{
+      var mtz=tipo?await DB.select("mtto_matriz",{eq:{tipo_equipo:tipo},order:"orden.asc"}):[];
+      if(mtz&&mtz.length){
+        var crit={A:"Ajustar",B:"Calibración",C:"Cambiar/recargar",D:"Engrase/Lubric.",E:"Verif. Funcionamiento",F:"Revisar Filtros",I:"Inspeccionar/Corregir",L:"Limpiar",S:"Verif. Partes/Conex.",V:"Verif. Color/Textura"};
+        var rr=mtz.map(function(m){function c(v){return v?('<b title="'+esc(crit[v]||v)+'">'+esc(v)+'</b>'):'·';}
+          return '<tr><td>'+esc(m.sistema||"")+'</td><td>'+esc(m.componente||"")+'</td><td class="ct">'+c(m.c1)+'</td><td class="ct">'+c(m.c2)+'</td><td class="ct">'+c(m.c4)+'</td><td class="ct">'+c(m.c6)+'</td></tr>';}).join("");
+        $("#itMatriz").innerHTML='<div style="overflow-x:auto"><table class="it-tab"><thead><tr><th>Sistema</th><th>Componente</th><th>C1<br>1m</th><th>C2<br>3m</th><th>C4<br>6m</th><th>C6<br>12m</th></tr></thead><tbody>'+rr+'</tbody></table></div><p class="sub" style="margin-top:6px">A Ajustar·B Calibración·C Cambiar·D Engrase·E Verif.func.·F Filtros·I Inspeccionar·L Limpiar·S Verif.partes·V Verif.color</p>';
+      }else{ $("#itMatriz").innerHTML='<div class="rs-empty">Sin matriz para el tipo «'+esc(tipo||"—")+'».</div>'; }
+    }catch(e){ $("#itMatriz").innerHTML='<div class="rs-empty">No se pudo cargar la matriz.</div>'; }
+    // Programa del año
+    try{
+      var pr=await DB.select("mtto_programa",{eq:{codigo:cod,anio:anio},order:"mes.asc"});
+      if(pr&&pr.length){
+        var meses=["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+        var chips=pr.map(function(p){var ok=(p.estado==='ejecutado');
+          var txt=meses[p.mes||0]+' '+(p.ciclo||'')+(ok?(' ✓'+(p.fecha_ejecutado?(' '+fechaDMY(p.fecha_ejecutado)):'')):'');
+          return '<span class="it-chip '+(ok?'ok':'')+'">'+esc(txt)+'</span>';}).join(" ");
+        $("#itPrograma").innerHTML='<div class="it-chips">'+chips+'</div>';
+      }else{ $("#itPrograma").innerHTML='<div class="rs-empty">Sin programa '+anio+' para este equipo.</div>'; }
+    }catch(e){ $("#itPrograma").innerHTML='<div class="rs-empty">No se pudo cargar el programa.</div>'; }
+    // Historial: reportes + fallas
+    try{
+      var reps=[],fls=[];
+      try{ reps=await DB.select("mtto_reporte",{eq:{codigo:cod},order:"fecha.desc"}); }catch(e){}
+      try{ fls =await DB.select("mtto_falla",{eq:{codigo:cod},order:"fecha.desc"}); }catch(e){}
+      var arr=[];
+      (reps||[]).forEach(function(r){arr.push({t:r.fecha,k:'rep',d:r});});
+      (fls||[]).forEach(function(r){arr.push({t:r.fecha,k:'fal',d:r});});
+      arr.sort(function(a,b){return String(b.t||'').localeCompare(String(a.t||''));});
+      if(arr.length){
+        $("#itHistIT").innerHTML=arr.map(function(x){
+          if(x.k==='rep'){var r=x.d; return '<div class="it-hi"><span class="it-badge rep">MTTO</span> <b>'+fechaDMY(r.fecha)+'</b> · '+esc(r.tipo_trabajo||'mantenimiento')+(r.no_certificado?(' · Cert '+esc(r.no_certificado)):'')+(r.ubicacion?(' · '+esc(r.ubicacion)):'')+'<div class="it-hi-d">'+esc(r.descripcion_trabajo||'')+'</div></div>';}
+          var f=x.d; return '<div class="it-hi"><span class="it-badge '+(f.estado==='cerrada'?'fcl':'fab')+'">FALLA'+(f.estado==='cerrada'?' ✓':'')+'</span> <b>'+fechaDMY(f.fecha)+'</b>'+(f.unidad?(' · '+esc(f.unidad)):'')+(f.quien_reporta?(' · '+esc(f.quien_reporta)):'')+'<div class="it-hi-d">'+esc(f.descripcion||'')+(f.descripcion_cierre?('<br><i>Cierre: '+esc(f.descripcion_cierre)+'</i>'):'')+'</div></div>';
+        }).join("");
+      }else{ $("#itHistIT").innerHTML='<div class="rs-empty">Sin reportes ni fallas registrados.</div>'; }
+    }catch(e){ $("#itHistIT").innerHTML='<div class="rs-empty">No se pudo cargar el historial.</div>'; }
   }
 
   let histAbierto=null;
@@ -1804,6 +1883,19 @@
     if(t&&t.value.trim()) vals.push((MODULO==='it'?"Tipo de instrumento: ":"Tipo: ")+t.value.trim());
     el.textContent=vals.join(" · ");
   }
+  // Cobertura documental (COC/Reporte/NDT) contada en el servidor, por ítem.
+  // Reemplaza a idsConDocumento(...).length, que traía filas con limit=5000 y
+  // subestimaba los números a escala. Respeta el módulo activo (mtto / it).
+  async function contarDocsDashboard(){
+    try{
+      var body={ p_categoria: (MODULO==='it' ? 'instrumento' : null) };
+      var r=await fetch(URL_SB+"/rest/v1/rpc/dashboard_doc_counts",{method:"POST",headers:headers(),body:JSON.stringify(body)});
+      if(!r.ok) return {con_coc:0,con_reporte:0,con_ndt:0};
+      var d=await r.json();
+      // PostgREST devuelve un array de filas para funciones RETURNS TABLE.
+      return Array.isArray(d) ? (d[0]||{con_coc:0,con_reporte:0,con_ndt:0}) : (d||{con_coc:0,con_reporte:0,con_ndt:0});
+    }catch(e){ return {con_coc:0,con_reporte:0,con_ndt:0}; }
+  }
   async function cargarDbMetricas(){
     var R={};
     try{ var rr=await fetch(URL_SB+"/rest/v1/rpc/dashboard_resumen",{method:"POST",headers:headers(),body:JSON.stringify({p_linea:null,p_categoria:(MODULO==='it'?'instrumento':null),p_base:null,p_tipo:null})}); if(rr.ok) R=await rr.json(); }catch(e){}
@@ -1822,16 +1914,14 @@
       contarCiclos("fecha_realizado=gte."+iniISO),
       contarRest("items","estado=eq.fuera_servicio&"+scopeItemsMod()),
       contarRest("items",scopeItemsMod()),
-      idsConDocumento("coc"),
-      idsConDocumento("reporte_mantenimiento"),
-      idsConDocumento("ndt"),
+      contarDocsDashboard(),
       contarCiclos("datos_formulario->>incompleto=eq.true")
     ]);
-    var mesN=res[0], fuera=res[1], total=res[2], idsCoc=res[3], idsRep=res[4], idsNdt=res[5], inc=res[6];
+    var mesN=res[0], fuera=res[1], total=res[2], docs=res[3], inc=res[4];
     $("#dbMes").textContent=mesN.toLocaleString("es-CO");
     $("#dbFuera").textContent=fuera.toLocaleString("es-CO");
     const ao=$("#dbAlOff"); if(ao) ao.textContent=fuera.toLocaleString("es-CO");
-    var coc=idsCoc.length, rep=idsRep.length, ndt=idsNdt.length;
+    var coc=docs.con_coc||0, rep=docs.con_reporte||0, ndt=docs.con_ndt||0;
     [["dbCoc",coc],["dbRep",rep],["dbNdt",ndt]].forEach(function(x){var e=$("#"+x[0]);if(e)e.textContent=x[1].toLocaleString("es-CO");});
     [["dbCocP",coc/Math.max(total,1)],["dbRepP",rep/Math.max(total,1)],["dbNdtP",ndt/Math.max(total,1)]].forEach(function(x){var e=$("#"+x[0]);if(e)e.textContent=Math.round(x[1]*1000)/10+"% de la totalidad";});
     document.querySelectorAll(".db-doc-card").forEach(function(card){ card.style.cursor="pointer"; });

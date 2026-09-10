@@ -91,7 +91,7 @@
 
   // ---- Pantallas (previa / ingreso / guia / app) ----
   function mostrarPantalla(id){
-    ["landing","login","hub","guia","app","appProc","appDD"].forEach(function(p){
+    ["landing","login","hub","guia","app","appProc","appDD","appIT"].forEach(function(p){
       var el=document.getElementById(p); if(el) el.classList.toggle("hidden", p!==id);
     });
     window.scrollTo(0,0);
@@ -107,6 +107,14 @@
     localStorage.removeItem("maxim_token"); localStorage.removeItem("maxim_user"); localStorage.removeItem("maxim_refresh");
     verLanding();
   }
+
+  // Mini-API para módulos externos (nexus-it.js): reutilizan sesión, rol y navegación.
+  window.NEXUS_APP = {
+    hub: function(){ verHub(); },
+    salir: function(){ cerrarSesion(); },
+    rol: function(){ return rolActual; },
+    nombre: function(){ try{ return (usuario && (usuario.user_metadata && usuario.user_metadata.nombre)) || (usuario && usuario.email) || ($("#nombre") && $("#nombre").textContent) || ""; }catch(e){ return ""; } }
+  };
 
   // ---- Sesión: renovación automática del token ----
   // El access_token de Supabase expira (~1h). Guardamos el refresh_token y
@@ -147,7 +155,7 @@
   $("#btnLanding").addEventListener("click", verLogin);
   $("#btnVolver").addEventListener("click", function(e){ e.preventDefault(); verLanding(); });
   $("#modMtto").addEventListener("click", entrarApp);   // modulo Mtto Operativo -> app actual
-  $("#modIT").addEventListener("click", entrarIT);      // modulo Instrumentacion (IT) -> vista scopeada a instrumentos
+  $("#modIT").addEventListener("click", function(){ if(window.NEXUS_IT && window.NEXUS_IT.entrar) window.NEXUS_IT.entrar(); else entrarIT(); }); // modulo Instrumentacion (IT) dedicado; fallback a la vista antigua
   var _mp=$("#modProc"); if(_mp) _mp.addEventListener("click", entrarPO); // modulo Procedimientos Operativos
   var _ph=$("#procHome"); if(_ph) _ph.addEventListener("click", verHub);
   var _ps=$("#procSalir"); if(_ps) _ps.addEventListener("click", cerrarSesion);

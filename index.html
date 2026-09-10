@@ -10,7 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="nexus.css?v=20260910b">
+<link rel="stylesheet" href="nexus.css?v=20260910c">
+<link rel="stylesheet" href="nexus-it.css?v=20260910c">
 </head>
 <body>
   <!-- PANTALLA PREVIA -->
@@ -662,6 +663,39 @@
     </div>
   </div>
 
+  <!-- MODULO INSTRUMENTACION (IT) -->
+  <div id="appIT" class="hidden">
+    <div class="hub-wrap procm-wrap">
+      <header class="hub-top">
+        <img src="logo.png" alt="Maxim Fishing">
+        <span class="sp"></span>
+        <button class="salir procm-back" id="itHome" type="button">&larr; Nexus Tools</button>
+        <span class="nombre" id="itNombre"></span>
+        <span class="rol" id="itRol"></span>
+        <button class="salir" id="itSalir" type="button">Salir</button>
+      </header>
+      <div class="procm-hero">
+        <div class="procm-ic">IT</div>
+        <div>
+          <h1>Instrumentaci&oacute;n</h1>
+          <p>Mantenimiento de instrumentos: tablero de indicadores, equipos y hojas de vida.</p>
+        </div>
+      </div>
+      <div class="it2-nav" id="it2Nav">
+        <button class="it2-tab on" data-view="tablero" type="button">Tablero</button>
+        <button class="it2-tab" data-view="equipos" type="button">Equipos</button>
+      </div>
+      <div id="it2Body"><div class="rs-empty">Cargando&hellip;</div></div>
+    </div>
+    <!-- Detalle / Hoja de vida -->
+    <div id="itDetBg" class="modal-bg hidden">
+      <div class="modal" style="max-width:920px">
+        <div id="itDetBody"><div class="rs-empty">Cargando&hellip;</div></div>
+        <div class="acc"><button class="btn2" id="itDetCerrar" type="button">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: Nueva solicitud de diseño -->
   <div id="ddFormBg" class="modal-bg hidden">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ddFormTit">
@@ -1051,8 +1085,9 @@
   <input type="file" id="filePicker" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
   <input type="file" id="histFile" accept="application/pdf,image/*,.doc,.docx,.xls,.xlsx" class="hidden">
 
-<script src="config.js?v=20260910b"></script>
-<script src="db.js?v=20260910b"></script>
-<script src="nexus.js?v=20260910b"></script>
+<script src="config.js?v=20260910c"></script>
+<script src="db.js?v=20260910c"></script>
+<script src="nexus.js?v=20260910c"></script>
+<script src="nexus-it.js?v=20260910c"></script>
 </body>
 </html>

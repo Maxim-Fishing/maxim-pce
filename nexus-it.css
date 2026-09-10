@@ -1,0 +1,26 @@
+/* =========================================================================
+   NEXUS TOOLS · Módulo Instrumentación (IT) — estilos propios
+   Reutiliza variables de nexus.css (--panel2, --borde-ctrl, --tenue, etc.)
+   Las clases .it-* / .ind-* / .inv-pairs ya viven en nexus.css.
+   ========================================================================= */
+#appIT .it2-nav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+#appIT .it2-tab{font-family:var(--sans);font-weight:600;font-size:14px;padding:8px 16px;border-radius:999px;
+  background:var(--panel2);border:1px solid var(--borde-ctrl);color:var(--tenue);cursor:pointer}
+#appIT .it2-tab.on{background:var(--naranja2,#ff6a00);border-color:var(--naranja2,#ff6a00);color:#0d0e10}
+#appIT .it2-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 10px}
+#appIT .it2-titulo{font-family:var(--sans);font-weight:700;font-size:18px}
+#appIT .it2-selper{margin-left:auto;display:flex;gap:8px}
+#appIT .it2-selper select{padding:6px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--borde-ctrl);color:var(--tenue)}
+#appIT .it2-buscar{margin-left:auto;min-width:min(340px,100%);padding:8px 12px;border-radius:10px;
+  background:var(--panel2);border:1px solid var(--borde-ctrl);color:var(--tenue)}
+table.it2-tab{width:100%;border-collapse:collapse;font-size:13px}
+table.it2-tab th,table.it2-tab td{border-bottom:1px solid var(--borde-ctrl);padding:8px 10px;text-align:left}
+table.it2-tab th{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--txt-tenue)}
+table.it2-tab tbody tr{cursor:pointer}
+table.it2-tab tbody tr:hover{background:var(--panel2)}
+table.it2-tab td.mono{font-family:var(--mono);font-size:12px}
+table.it2-tab td.vc-bad{color:#f08a8a;font-weight:600}
+table.it2-tab td.vc-warn{color:#f0c46a;font-weight:600}
+#appIT .it-sum{cursor:pointer;font-weight:600;color:var(--tenue)}
+#appIT .seccion{margin-top:14px}
+#itDetBody h2{font-family:var(--sans)}

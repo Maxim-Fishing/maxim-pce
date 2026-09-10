@@ -808,6 +808,76 @@
     finally{ btn.disabled=false; }
   }
 
+  // ---- Indicadores IT · resumen mensual (Fase 3) ----
+  var _indMetas=null;
+  function abrirIndicadoresIT(){
+    var selM=$("#indMes"), selA=$("#indAnio");
+    if(selM && !selM.options.length){
+      var meses=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+      selM.innerHTML=meses.map(function(m,i){ return '<option value="'+(i+1)+'">'+m+'</option>'; }).join("");
+    }
+    if(selA && !selA.options.length){
+      var y=new Date().getFullYear(); var opt="";
+      for(var a=y;a>=y-3;a--) opt+='<option value="'+a+'">'+a+'</option>';
+      selA.innerHTML=opt;
+    }
+    var now=new Date();
+    if(selM) selM.value=String(now.getMonth()+1);
+    if(selA) selA.value=String(now.getFullYear());
+    $("#indBody").innerHTML='<div class="rs-empty">Elige el periodo y genera el resumen.</div>';
+    $("#modalInd").classList.remove("hidden");
+    generarIndicadoresIT();
+  }
+  function pad2(n){ return (n<10?"0":"")+n; }
+  async function cnt(tabla, opts){ try{ return await DB.count(tabla, opts||{}); }catch(e){ return 0; } }
+  async function generarIndicadoresIT(){
+    var mes=parseInt($("#indMes").value,10)||(new Date().getMonth()+1);
+    var anio=parseInt($("#indAnio").value,10)||new Date().getFullYear();
+    var body=$("#indBody"); body.innerHTML='<div class="rs-empty">Calculando…</div>';
+    var d1=anio+"-"+pad2(mes)+"-01";
+    var nm=(mes===12)?(anio+1)+"-01-01":(anio+"-"+pad2(mes+1)+"-01");
+    var hoy=hoyISO(); var d30=new Date(); d30.setDate(d30.getDate()+30); var hoy30=d30.toISOString().slice(0,10);
+    try{
+      if(!_indMetas){ try{ var cat=await DB.select("mtto_indicador",{}); _indMetas={}; (cat||[]).forEach(function(k){ _indMetas[k.codigo]=k; }); }catch(e){ _indMetas={}; } }
+      var metaProg=(_indMetas["MTO-04"]&&_indMetas["MTO-04"].meta)||0.8;
+      var metaFall=(_indMetas["MTO-03"]&&_indMetas["MTO-03"].meta)||0.8;
+      var progTot=await cnt("mtto_programa",{eq:{anio:anio,mes:mes}});
+      var progEje=await cnt("mtto_programa",{eq:{anio:anio,mes:mes,estado:"ejecutado"}});
+      var falTot=await cnt("mtto_falla",{filters:["fecha=gte."+d1,"fecha=lt."+nm]});
+      var falCer=await cnt("mtto_falla",{filters:["fecha=gte."+d1,"fecha=lt."+nm,"estado=eq.cerrada"]});
+      var falAbi=await cnt("mtto_falla",{eq:{estado:"abierta"}});
+      var repMes=await cnt("mtto_reporte",{filters:["fecha=gte."+d1,"fecha=lt."+nm]});
+      var calVen=await cnt("mtto_equipo",{select:"codigo",filters:["vence_calibracion=lt."+hoy]});
+      var calPor=await cnt("mtto_equipo",{select:"codigo",filters:["vence_calibracion=gte."+hoy,"vence_calibracion=lte."+hoy30]});
+      var equip =await cnt("mtto_equipo",{select:"codigo"});
+      var pctProg=progTot?progEje/progTot:null;
+      var pctFall=falTot?falCer/falTot:null;
+      function kpi(cod,nom,pct,meta,detalle){
+        var has=(pct!=null); var ok=has&&pct>=meta;
+        var val=has?Math.round(pct*100)+"%":"—";
+        return '<div class="ind-card '+(has?(ok?"ok":"bad"):"")+'">'
+          +'<div class="ind-cod">'+esc(cod)+'</div><div class="ind-nom">'+esc(nom)+'</div>'
+          +'<div class="ind-val">'+val+'</div>'
+          +'<div class="ind-meta">Meta '+Math.round(meta*100)+'% · '+esc(detalle)+'</div></div>';
+      }
+      function stat(nom,val,cls){ return '<div class="ind-card '+(cls||"")+'"><div class="ind-nom">'+esc(nom)+'</div><div class="ind-val">'+val+'</div></div>'; }
+      body.innerHTML=''
+        +'<div class="ind-grid">'
+          +kpi("MTO-04","Cumplimiento del programa",pctProg,metaProg,progEje+" de "+progTot+" programados")
+          +kpi("MTO-03","Fallas solucionadas",pctFall,metaFall,falCer+" cerradas de "+falTot)
+        +'</div>'
+        +'<div class="ind-grid" style="margin-top:10px">'
+          +stat("Reportes de mtto (mes)",repMes)
+          +stat("Fallas del mes",falTot)
+          +stat("Fallas abiertas (total)",falAbi,falAbi>0?"warn":"")
+          +stat("Calibración vencida",calVen,calVen>0?"bad":"ok")
+          +stat("Por vencer (30 días)",calPor,calPor>0?"warn":"")
+          +stat("Equipos registrados",equip)
+        +'</div>'
+        +'<p class="sub" style="margin-top:10px">MTO-01 (Intervención de oportunidades) y MTO-02 (Intervención de riesgos) son cuatrimestrales y se registran manualmente en el tablero MF-F-DE-030.</p>';
+    }catch(e){ body.innerHTML='<div class="rs-empty">No se pudo calcular: '+esc(e&&e.message||String(e))+'</div>'; }
+  }
+
   let histAbierto=null;
   function fechaDMY(iso){ if(!iso) return "Sin fecha"; var s=String(iso).slice(0,10).split("-"); return (s.length===3)?(s[2]+"-"+s[1]+"-"+s[0]):String(iso); }
   async function cargarHistorialItem(itemId){
@@ -1477,6 +1547,7 @@
     $("#btnSincNdt").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
     $("#btnSincPh").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
     $("#btnSincCoc").classList.toggle("hidden", !(p==="resumen" && esAdmin()));
+    var _bind=$("#btnIndIT"); if(_bind) _bind.classList.toggle("hidden", !(MODULO==='it' && p==="resumen"));
     setAvatar();
     try{ PANELES[p].load(); }catch(e){}
   }
@@ -1618,6 +1689,9 @@
   $("#btnSincNdt").addEventListener("click", sincronizarNdt);
   $("#btnSincPh").addEventListener("click", sincronizarPh);
   $("#btnSincCoc").addEventListener("click", sincronizarCoc);
+  (function(){ var b=$("#btnIndIT"); if(b) b.addEventListener("click", abrirIndicadoresIT);
+    var c=$("#indCerrar"); if(c) c.addEventListener("click", function(){ $("#modalInd").classList.add("hidden"); });
+    var g=$("#indGenerar"); if(g) g.addEventListener("click", generarIndicadoresIT); })();
 
   // ---- Movilizacion masiva ----
   let movBulkItems=[];
